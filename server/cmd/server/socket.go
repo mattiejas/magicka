@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"log"
-	"net"
 	"net/http"
 	"net/url"
 	"slices"
@@ -59,7 +58,7 @@ func (s *server) handleSocket(w http.ResponseWriter, r *http.Request) {
 	c := newConn(ws, cancel, s.config.logMessages)
 	go c.write(ctx)
 
-	address, _, _ := net.SplitHostPort(r.RemoteAddr)
+	address := clientAddress(r.RemoteAddr, r.Header, s.config.trustedProxies)
 	sess := &session{server: s, conn: c, address: address, chat: newBudget(chatBurst, chatPerSecond)}
 	defer sess.end()
 	timeout := time.AfterFunc(signInTimeout, func() {

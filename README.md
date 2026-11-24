@@ -28,11 +28,12 @@ Production, one binary and one port:
 | `DB_PATH`         | `driftwake.db`   | SQLite file (`npm run dev` uses `server/driftwake.db`) |
 | `CLIENT_DIR`      | `client/dist`  | Built client                                         |
 | `ALLOWED_ORIGINS` | same host only | Comma-separated origins                              |
+| `TRUSTED_PROXIES` | (none)         | Comma-separated proxy IPs; when the peer matches, login limits use `X-Forwarded-For` / `Forwarded` |
 | `MODERATORS`      | nobody         | Comma-separated names of registered players, who type `/mod` for help |
 
 Messages are binary. To read them in development, open `http://localhost:5173/?messages`, or start the server with `LOG_MESSAGES=1`.
 
-Put a TLS proxy in front for public use. Login limits count the socket address, so behind a proxy all players share one limit until forwarded addresses are supported.
+Put a TLS proxy in front for public use. Set `TRUSTED_PROXIES` to the proxy's address so login limits count each real client instead of the shared socket address. Forwarded headers from untrusted peers are ignored.
 
 ## Controls
 

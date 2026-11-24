@@ -13,6 +13,7 @@ import (
 type config struct {
 	port, dbPath, clientDir string
 	origins                 []string // allowed in browsers; nil means this host only
+	trustedProxies          []string // peer IPs whose X-Forwarded-For / Forwarded we trust
 	prod, dev               bool
 	moderators              []string // account names
 	logMessages, tickStats  bool
@@ -36,6 +37,9 @@ func loadConfig() (config, error) {
 	c.logMessages = c.logMessages && c.dev
 	c.origins = list(os.Getenv("ALLOWED_ORIGINS"))
 	c.moderators = list(os.Getenv("MODERATORS"))
+	for _, proxy := range list(os.Getenv("TRUSTED_PROXIES")) {
+		c.trustedProxies = append(c.trustedProxies, normalizeIP(proxy))
+	}
 	return c, nil
 }
 
