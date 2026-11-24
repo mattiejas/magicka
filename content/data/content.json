@@ -1,0 +1,4036 @@
+{
+ "items": [
+  {
+   "id": "worn_pickaxe",
+   "name": "Worn pickaxe",
+   "icon": "pickaxe",
+   "color": "#94887c",
+   "tier": 0,
+   "tool": "pickaxe"
+  },
+  {
+   "id": "worn_axe",
+   "name": "Worn axe",
+   "icon": "axe",
+   "color": "#94887c",
+   "tier": 0,
+   "tool": "axe"
+  },
+  {
+   "id": "worn_sword",
+   "name": "Worn sword",
+   "icon": "sword",
+   "color": "#94887c",
+   "tier": 0,
+   "slot": "weapon",
+   "style": "melee",
+   "acc": 2,
+   "power": 2,
+   "speed": 4,
+   "range": 1
+  },
+  {
+   "id": "essence",
+   "name": "Essence",
+   "icon": "essence",
+   "color": "#8fb8d8",
+   "tier": 1,
+   "stack": true,
+   "slot": "ammo",
+   "ammo": "essence"
+  },
+  {
+   "id": "berries",
+   "name": "Berries",
+   "icon": "berries",
+   "color": "#a8485e",
+   "tier": 1,
+   "heal": 4
+  },
+  {
+   "id": "meat",
+   "name": "Raw meat",
+   "icon": "meat",
+   "color": "#b0625a",
+   "tier": 1
+  },
+  {
+   "id": "ration",
+   "name": "Trail ration",
+   "icon": "ration",
+   "color": "#b58a58",
+   "tier": 1,
+   "heal": 12
+  },
+  {
+   "id": "feast",
+   "name": "Hearty feast",
+   "icon": "ration",
+   "color": "#d0a060",
+   "tier": 3,
+   "heal": 26
+  },
+  {
+   "id": "rudder",
+   "name": "Swallowed rudder",
+   "icon": "rudder",
+   "color": "#8d7a5e",
+   "tier": 1
+  },
+  {
+   "id": "copper_ore",
+   "name": "Copper ore",
+   "icon": "ore",
+   "color": "#e07f3c",
+   "tier": 1
+  },
+  {
+   "id": "copper_bar",
+   "name": "Copper bar",
+   "icon": "bar",
+   "color": "#e07f3c",
+   "tier": 1
+  },
+  {
+   "id": "ash_log",
+   "name": "Ash log",
+   "icon": "log",
+   "color": "#d8b47c",
+   "tier": 1
+  },
+  {
+   "id": "copper_pickaxe",
+   "name": "Copper pickaxe",
+   "icon": "pickaxe",
+   "color": "#e07f3c",
+   "tier": 1,
+   "tool": "pickaxe",
+   "req": {
+    "mining": 1
+   }
+  },
+  {
+   "id": "copper_axe",
+   "name": "Copper axe",
+   "icon": "axe",
+   "color": "#e07f3c",
+   "tier": 1,
+   "tool": "axe",
+   "req": {
+    "woodcutting": 1
+   }
+  },
+  {
+   "id": "copper_sword",
+   "name": "Copper sword",
+   "icon": "sword",
+   "color": "#e07f3c",
+   "tier": 1,
+   "slot": "weapon",
+   "style": "melee",
+   "acc": 8,
+   "power": 8,
+   "speed": 4,
+   "range": 1,
+   "req": {
+    "melee": 1
+   }
+  },
+  {
+   "id": "copper_helm",
+   "name": "Copper helm",
+   "icon": "helm",
+   "color": "#e07f3c",
+   "tier": 1,
+   "slot": "head",
+   "armour": 4,
+   "req": {
+    "defence": 1
+   }
+  },
+  {
+   "id": "copper_plate",
+   "name": "Copper plate",
+   "icon": "body",
+   "color": "#e07f3c",
+   "tier": 1,
+   "slot": "body",
+   "armour": 8,
+   "req": {
+    "defence": 1
+   }
+  },
+  {
+   "id": "copper_greaves",
+   "name": "Copper greaves",
+   "icon": "legs",
+   "color": "#e07f3c",
+   "tier": 1,
+   "slot": "legs",
+   "armour": 6,
+   "req": {
+    "defence": 1
+   }
+  },
+  {
+   "id": "copper_arrowhead",
+   "name": "Copper arrowhead",
+   "icon": "arrowhead",
+   "color": "#e07f3c",
+   "tier": 1,
+   "stack": true
+  },
+  {
+   "id": "ash_shaft",
+   "name": "Ash shaft",
+   "icon": "shaft",
+   "color": "#d8b47c",
+   "tier": 1,
+   "stack": true
+  },
+  {
+   "id": "copper_arrow",
+   "name": "Copper arrow",
+   "icon": "arrow",
+   "color": "#e07f3c",
+   "tier": 1,
+   "stack": true,
+   "slot": "ammo",
+   "ammo": "arrow",
+   "power": 3
+  },
+  {
+   "id": "ash_bow",
+   "name": "Ash bow",
+   "icon": "bow",
+   "color": "#d8b47c",
+   "tier": 1,
+   "slot": "weapon",
+   "style": "ranged",
+   "acc": 8,
+   "power": 5,
+   "speed": 4,
+   "range": 6,
+   "req": {
+    "ranged": 1
+   }
+  },
+  {
+   "id": "ash_staff",
+   "name": "Ash staff",
+   "icon": "staff",
+   "color": "#d8b47c",
+   "tier": 1,
+   "slot": "weapon",
+   "style": "magic",
+   "acc": 9,
+   "power": 9,
+   "speed": 5,
+   "range": 6,
+   "req": {
+    "magic": 1
+   }
+  },
+  {
+   "id": "hide_1",
+   "name": "Soft hide",
+   "icon": "hide",
+   "color": "#b98f66",
+   "tier": 1
+  },
+  {
+   "id": "fibre_1",
+   "name": "Flax",
+   "icon": "fibre",
+   "color": "#d7c98f",
+   "tier": 1
+  },
+  {
+   "id": "gem_1",
+   "name": "Quartz",
+   "icon": "gem",
+   "color": "#dfe3e6",
+   "tier": 1
+  },
+  {
+   "id": "amulet_1",
+   "name": "Quartz amulet",
+   "icon": "amulet",
+   "color": "#dfe3e6",
+   "tier": 1,
+   "slot": "neck",
+   "acc": 3,
+   "power": 1,
+   "req": {
+    "vitality": 1
+   }
+  },
+  {
+   "id": "leather_cowl_1",
+   "name": "Soft cowl",
+   "icon": "helm",
+   "color": "#b98f66",
+   "tier": 1,
+   "slot": "head",
+   "armour": 2,
+   "acc": 2,
+   "req": {
+    "ranged": 1
+   }
+  },
+  {
+   "id": "leather_jerkin_1",
+   "name": "Soft jerkin",
+   "icon": "body",
+   "color": "#b98f66",
+   "tier": 1,
+   "slot": "body",
+   "armour": 5,
+   "acc": 2,
+   "req": {
+    "ranged": 1
+   }
+  },
+  {
+   "id": "leather_chaps_1",
+   "name": "Soft chaps",
+   "icon": "legs",
+   "color": "#b98f66",
+   "tier": 1,
+   "slot": "legs",
+   "armour": 4,
+   "acc": 2,
+   "req": {
+    "ranged": 1
+   }
+  },
+  {
+   "id": "cloth_hood_1",
+   "name": "Flax hood",
+   "icon": "helm",
+   "color": "#d7c98f",
+   "tier": 1,
+   "slot": "head",
+   "armour": 1,
+   "power": 1,
+   "req": {
+    "magic": 1
+   }
+  },
+  {
+   "id": "cloth_robe_1",
+   "name": "Flax robe",
+   "icon": "body",
+   "color": "#d7c98f",
+   "tier": 1,
+   "slot": "body",
+   "armour": 4,
+   "power": 1,
+   "req": {
+    "magic": 1
+   }
+  },
+  {
+   "id": "cloth_skirt_1",
+   "name": "Flax wrap",
+   "icon": "legs",
+   "color": "#d7c98f",
+   "tier": 1,
+   "slot": "legs",
+   "armour": 3,
+   "power": 1,
+   "req": {
+    "magic": 1
+   }
+  },
+  {
+   "id": "iron_ore",
+   "name": "Iron ore",
+   "icon": "ore",
+   "color": "#b4bcc8",
+   "tier": 2
+  },
+  {
+   "id": "iron_bar",
+   "name": "Iron bar",
+   "icon": "bar",
+   "color": "#b4bcc8",
+   "tier": 2
+  },
+  {
+   "id": "pine_log",
+   "name": "Pine log",
+   "icon": "log",
+   "color": "#b87a48",
+   "tier": 2
+  },
+  {
+   "id": "iron_pickaxe",
+   "name": "Iron pickaxe",
+   "icon": "pickaxe",
+   "color": "#b4bcc8",
+   "tier": 2,
+   "tool": "pickaxe",
+   "req": {
+    "mining": 10
+   }
+  },
+  {
+   "id": "iron_axe",
+   "name": "Iron axe",
+   "icon": "axe",
+   "color": "#b4bcc8",
+   "tier": 2,
+   "tool": "axe",
+   "req": {
+    "woodcutting": 10
+   }
+  },
+  {
+   "id": "iron_sword",
+   "name": "Iron sword",
+   "icon": "sword",
+   "color": "#b4bcc8",
+   "tier": 2,
+   "slot": "weapon",
+   "style": "melee",
+   "acc": 16,
+   "power": 16,
+   "speed": 4,
+   "range": 1,
+   "req": {
+    "melee": 10
+   }
+  },
+  {
+   "id": "iron_helm",
+   "name": "Iron helm",
+   "icon": "helm",
+   "color": "#b4bcc8",
+   "tier": 2,
+   "slot": "head",
+   "armour": 8,
+   "req": {
+    "defence": 10
+   }
+  },
+  {
+   "id": "iron_plate",
+   "name": "Iron plate",
+   "icon": "body",
+   "color": "#b4bcc8",
+   "tier": 2,
+   "slot": "body",
+   "armour": 16,
+   "req": {
+    "defence": 10
+   }
+  },
+  {
+   "id": "iron_greaves",
+   "name": "Iron greaves",
+   "icon": "legs",
+   "color": "#b4bcc8",
+   "tier": 2,
+   "slot": "legs",
+   "armour": 12,
+   "req": {
+    "defence": 10
+   }
+  },
+  {
+   "id": "iron_arrowhead",
+   "name": "Iron arrowhead",
+   "icon": "arrowhead",
+   "color": "#b4bcc8",
+   "tier": 2,
+   "stack": true
+  },
+  {
+   "id": "pine_shaft",
+   "name": "Pine shaft",
+   "icon": "shaft",
+   "color": "#b87a48",
+   "tier": 2,
+   "stack": true
+  },
+  {
+   "id": "iron_arrow",
+   "name": "Iron arrow",
+   "icon": "arrow",
+   "color": "#b4bcc8",
+   "tier": 2,
+   "stack": true,
+   "slot": "ammo",
+   "ammo": "arrow",
+   "power": 6
+  },
+  {
+   "id": "pine_bow",
+   "name": "Pine bow",
+   "icon": "bow",
+   "color": "#b87a48",
+   "tier": 2,
+   "slot": "weapon",
+   "style": "ranged",
+   "acc": 16,
+   "power": 10,
+   "speed": 4,
+   "range": 6,
+   "req": {
+    "ranged": 10
+   }
+  },
+  {
+   "id": "pine_staff",
+   "name": "Pine staff",
+   "icon": "staff",
+   "color": "#b87a48",
+   "tier": 2,
+   "slot": "weapon",
+   "style": "magic",
+   "acc": 18,
+   "power": 18,
+   "speed": 5,
+   "range": 6,
+   "req": {
+    "magic": 10
+   }
+  },
+  {
+   "id": "hide_2",
+   "name": "Thick hide",
+   "icon": "hide",
+   "color": "#8d6a4c",
+   "tier": 2
+  },
+  {
+   "id": "fibre_2",
+   "name": "Silkgrass",
+   "icon": "fibre",
+   "color": "#a8c27a",
+   "tier": 2
+  },
+  {
+   "id": "gem_2",
+   "name": "Topaz",
+   "icon": "gem",
+   "color": "#e0a640",
+   "tier": 2
+  },
+  {
+   "id": "amulet_2",
+   "name": "Topaz amulet",
+   "icon": "amulet",
+   "color": "#e0a640",
+   "tier": 2,
+   "slot": "neck",
+   "acc": 6,
+   "power": 2,
+   "req": {
+    "vitality": 10
+   }
+  },
+  {
+   "id": "leather_cowl_2",
+   "name": "Thick cowl",
+   "icon": "helm",
+   "color": "#8d6a4c",
+   "tier": 2,
+   "slot": "head",
+   "armour": 4,
+   "acc": 4,
+   "req": {
+    "ranged": 10
+   }
+  },
+  {
+   "id": "leather_jerkin_2",
+   "name": "Thick jerkin",
+   "icon": "body",
+   "color": "#8d6a4c",
+   "tier": 2,
+   "slot": "body",
+   "armour": 10,
+   "acc": 4,
+   "req": {
+    "ranged": 10
+   }
+  },
+  {
+   "id": "leather_chaps_2",
+   "name": "Thick chaps",
+   "icon": "legs",
+   "color": "#8d6a4c",
+   "tier": 2,
+   "slot": "legs",
+   "armour": 8,
+   "acc": 4,
+   "req": {
+    "ranged": 10
+   }
+  },
+  {
+   "id": "cloth_hood_2",
+   "name": "Silkgrass hood",
+   "icon": "helm",
+   "color": "#a8c27a",
+   "tier": 2,
+   "slot": "head",
+   "armour": 2,
+   "power": 2,
+   "req": {
+    "magic": 10
+   }
+  },
+  {
+   "id": "cloth_robe_2",
+   "name": "Silkgrass robe",
+   "icon": "body",
+   "color": "#a8c27a",
+   "tier": 2,
+   "slot": "body",
+   "armour": 8,
+   "power": 2,
+   "req": {
+    "magic": 10
+   }
+  },
+  {
+   "id": "cloth_skirt_2",
+   "name": "Silkgrass wrap",
+   "icon": "legs",
+   "color": "#a8c27a",
+   "tier": 2,
+   "slot": "legs",
+   "armour": 6,
+   "power": 2,
+   "req": {
+    "magic": 10
+   }
+  },
+  {
+   "id": "mithril_ore",
+   "name": "Mithril ore",
+   "icon": "ore",
+   "color": "#7fb0f0",
+   "tier": 3
+  },
+  {
+   "id": "mithril_bar",
+   "name": "Mithril bar",
+   "icon": "bar",
+   "color": "#7fb0f0",
+   "tier": 3
+  },
+  {
+   "id": "oak_log",
+   "name": "Oak log",
+   "icon": "log",
+   "color": "#8f5c38",
+   "tier": 3
+  },
+  {
+   "id": "mithril_pickaxe",
+   "name": "Mithril pickaxe",
+   "icon": "pickaxe",
+   "color": "#7fb0f0",
+   "tier": 3,
+   "tool": "pickaxe",
+   "req": {
+    "mining": 20
+   }
+  },
+  {
+   "id": "mithril_axe",
+   "name": "Mithril axe",
+   "icon": "axe",
+   "color": "#7fb0f0",
+   "tier": 3,
+   "tool": "axe",
+   "req": {
+    "woodcutting": 20
+   }
+  },
+  {
+   "id": "mithril_sword",
+   "name": "Mithril sword",
+   "icon": "sword",
+   "color": "#7fb0f0",
+   "tier": 3,
+   "slot": "weapon",
+   "style": "melee",
+   "acc": 24,
+   "power": 24,
+   "speed": 4,
+   "range": 1,
+   "req": {
+    "melee": 20
+   }
+  },
+  {
+   "id": "mithril_helm",
+   "name": "Mithril helm",
+   "icon": "helm",
+   "color": "#7fb0f0",
+   "tier": 3,
+   "slot": "head",
+   "armour": 12,
+   "req": {
+    "defence": 20
+   }
+  },
+  {
+   "id": "mithril_plate",
+   "name": "Mithril plate",
+   "icon": "body",
+   "color": "#7fb0f0",
+   "tier": 3,
+   "slot": "body",
+   "armour": 24,
+   "req": {
+    "defence": 20
+   }
+  },
+  {
+   "id": "mithril_greaves",
+   "name": "Mithril greaves",
+   "icon": "legs",
+   "color": "#7fb0f0",
+   "tier": 3,
+   "slot": "legs",
+   "armour": 18,
+   "req": {
+    "defence": 20
+   }
+  },
+  {
+   "id": "mithril_arrowhead",
+   "name": "Mithril arrowhead",
+   "icon": "arrowhead",
+   "color": "#7fb0f0",
+   "tier": 3,
+   "stack": true
+  },
+  {
+   "id": "oak_shaft",
+   "name": "Oak shaft",
+   "icon": "shaft",
+   "color": "#8f5c38",
+   "tier": 3,
+   "stack": true
+  },
+  {
+   "id": "mithril_arrow",
+   "name": "Mithril arrow",
+   "icon": "arrow",
+   "color": "#7fb0f0",
+   "tier": 3,
+   "stack": true,
+   "slot": "ammo",
+   "ammo": "arrow",
+   "power": 9
+  },
+  {
+   "id": "oak_bow",
+   "name": "Oak bow",
+   "icon": "bow",
+   "color": "#8f5c38",
+   "tier": 3,
+   "slot": "weapon",
+   "style": "ranged",
+   "acc": 24,
+   "power": 15,
+   "speed": 4,
+   "range": 6,
+   "req": {
+    "ranged": 20
+   }
+  },
+  {
+   "id": "oak_staff",
+   "name": "Oak staff",
+   "icon": "staff",
+   "color": "#8f5c38",
+   "tier": 3,
+   "slot": "weapon",
+   "style": "magic",
+   "acc": 27,
+   "power": 27,
+   "speed": 5,
+   "range": 6,
+   "req": {
+    "magic": 20
+   }
+  },
+  {
+   "id": "hide_3",
+   "name": "Thorned hide",
+   "icon": "hide",
+   "color": "#6e7b4a",
+   "tier": 3
+  },
+  {
+   "id": "fibre_3",
+   "name": "Moonreed",
+   "icon": "fibre",
+   "color": "#a9b6d6",
+   "tier": 3
+  },
+  {
+   "id": "gem_3",
+   "name": "Garnet",
+   "icon": "gem",
+   "color": "#a83b4b",
+   "tier": 3
+  },
+  {
+   "id": "amulet_3",
+   "name": "Garnet amulet",
+   "icon": "amulet",
+   "color": "#a83b4b",
+   "tier": 3,
+   "slot": "neck",
+   "acc": 9,
+   "power": 3,
+   "req": {
+    "vitality": 20
+   }
+  },
+  {
+   "id": "leather_cowl_3",
+   "name": "Thorned cowl",
+   "icon": "helm",
+   "color": "#6e7b4a",
+   "tier": 3,
+   "slot": "head",
+   "armour": 6,
+   "acc": 6,
+   "req": {
+    "ranged": 20
+   }
+  },
+  {
+   "id": "leather_jerkin_3",
+   "name": "Thorned jerkin",
+   "icon": "body",
+   "color": "#6e7b4a",
+   "tier": 3,
+   "slot": "body",
+   "armour": 15,
+   "acc": 6,
+   "req": {
+    "ranged": 20
+   }
+  },
+  {
+   "id": "leather_chaps_3",
+   "name": "Thorned chaps",
+   "icon": "legs",
+   "color": "#6e7b4a",
+   "tier": 3,
+   "slot": "legs",
+   "armour": 12,
+   "acc": 6,
+   "req": {
+    "ranged": 20
+   }
+  },
+  {
+   "id": "cloth_hood_3",
+   "name": "Moonreed hood",
+   "icon": "helm",
+   "color": "#a9b6d6",
+   "tier": 3,
+   "slot": "head",
+   "armour": 3,
+   "power": 3,
+   "req": {
+    "magic": 20
+   }
+  },
+  {
+   "id": "cloth_robe_3",
+   "name": "Moonreed robe",
+   "icon": "body",
+   "color": "#a9b6d6",
+   "tier": 3,
+   "slot": "body",
+   "armour": 12,
+   "power": 3,
+   "req": {
+    "magic": 20
+   }
+  },
+  {
+   "id": "cloth_skirt_3",
+   "name": "Moonreed wrap",
+   "icon": "legs",
+   "color": "#a9b6d6",
+   "tier": 3,
+   "slot": "legs",
+   "armour": 9,
+   "power": 3,
+   "req": {
+    "magic": 20
+   }
+  },
+  {
+   "id": "cobalt_ore",
+   "name": "Cobalt ore",
+   "icon": "ore",
+   "color": "#2f62c8",
+   "tier": 4
+  },
+  {
+   "id": "cobalt_bar",
+   "name": "Cobalt bar",
+   "icon": "bar",
+   "color": "#2f62c8",
+   "tier": 4
+  },
+  {
+   "id": "maple_log",
+   "name": "Maple log",
+   "icon": "log",
+   "color": "#b04a38",
+   "tier": 4
+  },
+  {
+   "id": "cobalt_pickaxe",
+   "name": "Cobalt pickaxe",
+   "icon": "pickaxe",
+   "color": "#2f62c8",
+   "tier": 4,
+   "tool": "pickaxe",
+   "req": {
+    "mining": 30
+   }
+  },
+  {
+   "id": "cobalt_axe",
+   "name": "Cobalt axe",
+   "icon": "axe",
+   "color": "#2f62c8",
+   "tier": 4,
+   "tool": "axe",
+   "req": {
+    "woodcutting": 30
+   }
+  },
+  {
+   "id": "cobalt_sword",
+   "name": "Cobalt sword",
+   "icon": "sword",
+   "color": "#2f62c8",
+   "tier": 4,
+   "slot": "weapon",
+   "style": "melee",
+   "acc": 32,
+   "power": 32,
+   "speed": 4,
+   "range": 1,
+   "req": {
+    "melee": 30
+   }
+  },
+  {
+   "id": "cobalt_helm",
+   "name": "Cobalt helm",
+   "icon": "helm",
+   "color": "#2f62c8",
+   "tier": 4,
+   "slot": "head",
+   "armour": 16,
+   "req": {
+    "defence": 30
+   }
+  },
+  {
+   "id": "cobalt_plate",
+   "name": "Cobalt plate",
+   "icon": "body",
+   "color": "#2f62c8",
+   "tier": 4,
+   "slot": "body",
+   "armour": 32,
+   "req": {
+    "defence": 30
+   }
+  },
+  {
+   "id": "cobalt_greaves",
+   "name": "Cobalt greaves",
+   "icon": "legs",
+   "color": "#2f62c8",
+   "tier": 4,
+   "slot": "legs",
+   "armour": 24,
+   "req": {
+    "defence": 30
+   }
+  },
+  {
+   "id": "cobalt_arrowhead",
+   "name": "Cobalt arrowhead",
+   "icon": "arrowhead",
+   "color": "#2f62c8",
+   "tier": 4,
+   "stack": true
+  },
+  {
+   "id": "maple_shaft",
+   "name": "Maple shaft",
+   "icon": "shaft",
+   "color": "#b04a38",
+   "tier": 4,
+   "stack": true
+  },
+  {
+   "id": "cobalt_arrow",
+   "name": "Cobalt arrow",
+   "icon": "arrow",
+   "color": "#2f62c8",
+   "tier": 4,
+   "stack": true,
+   "slot": "ammo",
+   "ammo": "arrow",
+   "power": 12
+  },
+  {
+   "id": "maple_bow",
+   "name": "Maple bow",
+   "icon": "bow",
+   "color": "#b04a38",
+   "tier": 4,
+   "slot": "weapon",
+   "style": "ranged",
+   "acc": 32,
+   "power": 20,
+   "speed": 4,
+   "range": 6,
+   "req": {
+    "ranged": 30
+   }
+  },
+  {
+   "id": "maple_staff",
+   "name": "Maple staff",
+   "icon": "staff",
+   "color": "#b04a38",
+   "tier": 4,
+   "slot": "weapon",
+   "style": "magic",
+   "acc": 36,
+   "power": 36,
+   "speed": 5,
+   "range": 6,
+   "req": {
+    "magic": 30
+   }
+  },
+  {
+   "id": "hide_4",
+   "name": "Storm hide",
+   "icon": "hide",
+   "color": "#5c6f8c",
+   "tier": 4
+  },
+  {
+   "id": "fibre_4",
+   "name": "Frostvine",
+   "icon": "fibre",
+   "color": "#8fc7cf",
+   "tier": 4
+  },
+  {
+   "id": "gem_4",
+   "name": "Opal",
+   "icon": "gem",
+   "color": "#b9d6d0",
+   "tier": 4
+  },
+  {
+   "id": "amulet_4",
+   "name": "Opal amulet",
+   "icon": "amulet",
+   "color": "#b9d6d0",
+   "tier": 4,
+   "slot": "neck",
+   "acc": 12,
+   "power": 4,
+   "req": {
+    "vitality": 30
+   }
+  },
+  {
+   "id": "leather_cowl_4",
+   "name": "Storm cowl",
+   "icon": "helm",
+   "color": "#5c6f8c",
+   "tier": 4,
+   "slot": "head",
+   "armour": 8,
+   "acc": 8,
+   "req": {
+    "ranged": 30
+   }
+  },
+  {
+   "id": "leather_jerkin_4",
+   "name": "Storm jerkin",
+   "icon": "body",
+   "color": "#5c6f8c",
+   "tier": 4,
+   "slot": "body",
+   "armour": 20,
+   "acc": 8,
+   "req": {
+    "ranged": 30
+   }
+  },
+  {
+   "id": "leather_chaps_4",
+   "name": "Storm chaps",
+   "icon": "legs",
+   "color": "#5c6f8c",
+   "tier": 4,
+   "slot": "legs",
+   "armour": 16,
+   "acc": 8,
+   "req": {
+    "ranged": 30
+   }
+  },
+  {
+   "id": "cloth_hood_4",
+   "name": "Frostvine hood",
+   "icon": "helm",
+   "color": "#8fc7cf",
+   "tier": 4,
+   "slot": "head",
+   "armour": 4,
+   "power": 4,
+   "req": {
+    "magic": 30
+   }
+  },
+  {
+   "id": "cloth_robe_4",
+   "name": "Frostvine robe",
+   "icon": "body",
+   "color": "#8fc7cf",
+   "tier": 4,
+   "slot": "body",
+   "armour": 16,
+   "power": 4,
+   "req": {
+    "magic": 30
+   }
+  },
+  {
+   "id": "cloth_skirt_4",
+   "name": "Frostvine wrap",
+   "icon": "legs",
+   "color": "#8fc7cf",
+   "tier": 4,
+   "slot": "legs",
+   "armour": 12,
+   "power": 4,
+   "req": {
+    "magic": 30
+   }
+  },
+  {
+   "id": "adamantite_ore",
+   "name": "Adamantite ore",
+   "icon": "ore",
+   "color": "#2fb58a",
+   "tier": 5
+  },
+  {
+   "id": "adamantite_bar",
+   "name": "Adamantite bar",
+   "icon": "bar",
+   "color": "#2fb58a",
+   "tier": 5
+  },
+  {
+   "id": "ebony_log",
+   "name": "Ebony log",
+   "icon": "log",
+   "color": "#4a3454",
+   "tier": 5
+  },
+  {
+   "id": "adamantite_pickaxe",
+   "name": "Adamantite pickaxe",
+   "icon": "pickaxe",
+   "color": "#2fb58a",
+   "tier": 5,
+   "tool": "pickaxe",
+   "req": {
+    "mining": 40
+   }
+  },
+  {
+   "id": "adamantite_axe",
+   "name": "Adamantite axe",
+   "icon": "axe",
+   "color": "#2fb58a",
+   "tier": 5,
+   "tool": "axe",
+   "req": {
+    "woodcutting": 40
+   }
+  },
+  {
+   "id": "adamantite_sword",
+   "name": "Adamantite sword",
+   "icon": "sword",
+   "color": "#2fb58a",
+   "tier": 5,
+   "slot": "weapon",
+   "style": "melee",
+   "acc": 40,
+   "power": 40,
+   "speed": 4,
+   "range": 1,
+   "req": {
+    "melee": 40
+   }
+  },
+  {
+   "id": "adamantite_helm",
+   "name": "Adamantite helm",
+   "icon": "helm",
+   "color": "#2fb58a",
+   "tier": 5,
+   "slot": "head",
+   "armour": 20,
+   "req": {
+    "defence": 40
+   }
+  },
+  {
+   "id": "adamantite_plate",
+   "name": "Adamantite plate",
+   "icon": "body",
+   "color": "#2fb58a",
+   "tier": 5,
+   "slot": "body",
+   "armour": 40,
+   "req": {
+    "defence": 40
+   }
+  },
+  {
+   "id": "adamantite_greaves",
+   "name": "Adamantite greaves",
+   "icon": "legs",
+   "color": "#2fb58a",
+   "tier": 5,
+   "slot": "legs",
+   "armour": 30,
+   "req": {
+    "defence": 40
+   }
+  },
+  {
+   "id": "adamantite_arrowhead",
+   "name": "Adamantite arrowhead",
+   "icon": "arrowhead",
+   "color": "#2fb58a",
+   "tier": 5,
+   "stack": true
+  },
+  {
+   "id": "ebony_shaft",
+   "name": "Ebony shaft",
+   "icon": "shaft",
+   "color": "#4a3454",
+   "tier": 5,
+   "stack": true
+  },
+  {
+   "id": "adamantite_arrow",
+   "name": "Adamantite arrow",
+   "icon": "arrow",
+   "color": "#2fb58a",
+   "tier": 5,
+   "stack": true,
+   "slot": "ammo",
+   "ammo": "arrow",
+   "power": 15
+  },
+  {
+   "id": "ebony_bow",
+   "name": "Ebony bow",
+   "icon": "bow",
+   "color": "#4a3454",
+   "tier": 5,
+   "slot": "weapon",
+   "style": "ranged",
+   "acc": 40,
+   "power": 25,
+   "speed": 4,
+   "range": 6,
+   "req": {
+    "ranged": 40
+   }
+  },
+  {
+   "id": "ebony_staff",
+   "name": "Ebony staff",
+   "icon": "staff",
+   "color": "#4a3454",
+   "tier": 5,
+   "slot": "weapon",
+   "style": "magic",
+   "acc": 45,
+   "power": 45,
+   "speed": 5,
+   "range": 6,
+   "req": {
+    "magic": 40
+   }
+  },
+  {
+   "id": "hide_5",
+   "name": "Dread hide",
+   "icon": "hide",
+   "color": "#6b4456",
+   "tier": 5
+  },
+  {
+   "id": "fibre_5",
+   "name": "Nightbloom",
+   "icon": "fibre",
+   "color": "#8a6cae",
+   "tier": 5
+  },
+  {
+   "id": "gem_5",
+   "name": "Beryl",
+   "icon": "gem",
+   "color": "#4fb38a",
+   "tier": 5
+  },
+  {
+   "id": "amulet_5",
+   "name": "Beryl amulet",
+   "icon": "amulet",
+   "color": "#4fb38a",
+   "tier": 5,
+   "slot": "neck",
+   "acc": 15,
+   "power": 5,
+   "req": {
+    "vitality": 40
+   }
+  },
+  {
+   "id": "leather_cowl_5",
+   "name": "Dread cowl",
+   "icon": "helm",
+   "color": "#6b4456",
+   "tier": 5,
+   "slot": "head",
+   "armour": 10,
+   "acc": 10,
+   "req": {
+    "ranged": 40
+   }
+  },
+  {
+   "id": "leather_jerkin_5",
+   "name": "Dread jerkin",
+   "icon": "body",
+   "color": "#6b4456",
+   "tier": 5,
+   "slot": "body",
+   "armour": 25,
+   "acc": 10,
+   "req": {
+    "ranged": 40
+   }
+  },
+  {
+   "id": "leather_chaps_5",
+   "name": "Dread chaps",
+   "icon": "legs",
+   "color": "#6b4456",
+   "tier": 5,
+   "slot": "legs",
+   "armour": 20,
+   "acc": 10,
+   "req": {
+    "ranged": 40
+   }
+  },
+  {
+   "id": "cloth_hood_5",
+   "name": "Nightbloom hood",
+   "icon": "helm",
+   "color": "#8a6cae",
+   "tier": 5,
+   "slot": "head",
+   "armour": 5,
+   "power": 5,
+   "req": {
+    "magic": 40
+   }
+  },
+  {
+   "id": "cloth_robe_5",
+   "name": "Nightbloom robe",
+   "icon": "body",
+   "color": "#8a6cae",
+   "tier": 5,
+   "slot": "body",
+   "armour": 20,
+   "power": 5,
+   "req": {
+    "magic": 40
+   }
+  },
+  {
+   "id": "cloth_skirt_5",
+   "name": "Nightbloom wrap",
+   "icon": "legs",
+   "color": "#8a6cae",
+   "tier": 5,
+   "slot": "legs",
+   "armour": 15,
+   "power": 5,
+   "req": {
+    "magic": 40
+   }
+  },
+  {
+   "id": "barnacle_charm",
+   "name": "Barnacle charm",
+   "icon": "amulet",
+   "color": "#7fb5a8",
+   "tier": 1,
+   "slot": "neck",
+   "acc": 6,
+   "power": 3,
+   "armour": 4,
+   "unique": true
+  },
+  {
+   "id": "rootcleaver",
+   "name": "Rootcleaver",
+   "icon": "sword",
+   "color": "#9fc36a",
+   "tier": 5,
+   "slot": "weapon",
+   "style": "melee",
+   "acc": 48,
+   "power": 50,
+   "speed": 4,
+   "range": 1,
+   "req": {
+    "melee": 40
+   },
+   "unique": true
+  },
+  {
+   "id": "briarstring",
+   "name": "Briarstring",
+   "icon": "bow",
+   "color": "#9fc36a",
+   "tier": 5,
+   "slot": "weapon",
+   "style": "ranged",
+   "acc": 48,
+   "power": 34,
+   "speed": 4,
+   "range": 7,
+   "req": {
+    "ranged": 40
+   },
+   "unique": true
+  },
+  {
+   "id": "heartwood",
+   "name": "Heartwood staff",
+   "icon": "staff",
+   "color": "#9fc36a",
+   "tier": 5,
+   "slot": "weapon",
+   "style": "magic",
+   "acc": 52,
+   "power": 56,
+   "speed": 5,
+   "range": 7,
+   "req": {
+    "magic": 40
+   },
+   "unique": true
+  }
+ ],
+ "recipes": [
+  {
+   "id": "ration",
+   "out": "ration",
+   "qty": 1,
+   "station": "workbench",
+   "skill": "crafting",
+   "level": 1,
+   "xp": 12,
+   "in": [
+    [
+     "meat",
+     1
+    ],
+    [
+     "berries",
+     1
+    ]
+   ]
+  },
+  {
+   "id": "feast",
+   "out": "feast",
+   "qty": 1,
+   "station": "workbench",
+   "skill": "crafting",
+   "level": 25,
+   "xp": 60,
+   "in": [
+    [
+     "meat",
+     2
+    ],
+    [
+     "berries",
+     2
+    ]
+   ]
+  },
+  {
+   "id": "leather_cowl_1",
+   "out": "leather_cowl_1",
+   "qty": 1,
+   "station": "workbench",
+   "skill": "crafting",
+   "level": 2,
+   "xp": 50,
+   "in": [
+    [
+     "hide_1",
+     2
+    ]
+   ]
+  },
+  {
+   "id": "leather_jerkin_1",
+   "out": "leather_jerkin_1",
+   "qty": 1,
+   "station": "workbench",
+   "skill": "crafting",
+   "level": 4,
+   "xp": 100,
+   "in": [
+    [
+     "hide_1",
+     4
+    ]
+   ]
+  },
+  {
+   "id": "leather_chaps_1",
+   "out": "leather_chaps_1",
+   "qty": 1,
+   "station": "workbench",
+   "skill": "crafting",
+   "level": 3,
+   "xp": 75,
+   "in": [
+    [
+     "hide_1",
+     3
+    ]
+   ]
+  },
+  {
+   "id": "cloth_hood_1",
+   "out": "cloth_hood_1",
+   "qty": 1,
+   "station": "workbench",
+   "skill": "crafting",
+   "level": 2,
+   "xp": 50,
+   "in": [
+    [
+     "fibre_1",
+     2
+    ]
+   ]
+  },
+  {
+   "id": "cloth_robe_1",
+   "out": "cloth_robe_1",
+   "qty": 1,
+   "station": "workbench",
+   "skill": "crafting",
+   "level": 4,
+   "xp": 100,
+   "in": [
+    [
+     "fibre_1",
+     4
+    ]
+   ]
+  },
+  {
+   "id": "cloth_skirt_1",
+   "out": "cloth_skirt_1",
+   "qty": 1,
+   "station": "workbench",
+   "skill": "crafting",
+   "level": 3,
+   "xp": 75,
+   "in": [
+    [
+     "fibre_1",
+     3
+    ]
+   ]
+  },
+  {
+   "id": "copper_bar",
+   "out": "copper_bar",
+   "qty": 1,
+   "station": "furnace",
+   "skill": "smithing",
+   "level": 1,
+   "xp": 25,
+   "in": [
+    [
+     "copper_ore",
+     2
+    ]
+   ]
+  },
+  {
+   "id": "copper_pickaxe",
+   "out": "copper_pickaxe",
+   "qty": 1,
+   "station": "anvil",
+   "skill": "smithing",
+   "level": 1,
+   "xp": 50,
+   "in": [
+    [
+     "copper_bar",
+     2
+    ],
+    [
+     "ash_log",
+     1
+    ]
+   ]
+  },
+  {
+   "id": "copper_axe",
+   "out": "copper_axe",
+   "qty": 1,
+   "station": "anvil",
+   "skill": "smithing",
+   "level": 1,
+   "xp": 50,
+   "in": [
+    [
+     "copper_bar",
+     2
+    ],
+    [
+     "ash_log",
+     1
+    ]
+   ]
+  },
+  {
+   "id": "copper_sword",
+   "out": "copper_sword",
+   "qty": 1,
+   "station": "anvil",
+   "skill": "smithing",
+   "level": 2,
+   "xp": 50,
+   "in": [
+    [
+     "copper_bar",
+     3
+    ],
+    [
+     "ash_log",
+     1
+    ]
+   ]
+  },
+  {
+   "id": "copper_arrowhead",
+   "out": "copper_arrowhead",
+   "qty": 15,
+   "station": "anvil",
+   "skill": "smithing",
+   "level": 2,
+   "xp": 25,
+   "in": [
+    [
+     "copper_bar",
+     1
+    ]
+   ]
+  },
+  {
+   "id": "copper_helm",
+   "out": "copper_helm",
+   "qty": 1,
+   "station": "anvil",
+   "skill": "smithing",
+   "level": 3,
+   "xp": 75,
+   "in": [
+    [
+     "copper_bar",
+     3
+    ]
+   ]
+  },
+  {
+   "id": "copper_greaves",
+   "out": "copper_greaves",
+   "qty": 1,
+   "station": "anvil",
+   "skill": "smithing",
+   "level": 4,
+   "xp": 100,
+   "in": [
+    [
+     "copper_bar",
+     4
+    ]
+   ]
+  },
+  {
+   "id": "copper_plate",
+   "out": "copper_plate",
+   "qty": 1,
+   "station": "anvil",
+   "skill": "smithing",
+   "level": 5,
+   "xp": 125,
+   "in": [
+    [
+     "copper_bar",
+     5
+    ]
+   ]
+  },
+  {
+   "id": "ash_shaft",
+   "out": "ash_shaft",
+   "qty": 15,
+   "station": "workbench",
+   "skill": "crafting",
+   "level": 1,
+   "xp": 15,
+   "in": [
+    [
+     "ash_log",
+     1
+    ]
+   ]
+  },
+  {
+   "id": "copper_arrow",
+   "out": "copper_arrow",
+   "qty": 15,
+   "station": "workbench",
+   "skill": "crafting",
+   "level": 1,
+   "xp": 15,
+   "in": [
+    [
+     "copper_arrowhead",
+     15
+    ],
+    [
+     "ash_shaft",
+     15
+    ]
+   ]
+  },
+  {
+   "id": "ash_bow",
+   "out": "ash_bow",
+   "qty": 1,
+   "station": "workbench",
+   "skill": "crafting",
+   "level": 2,
+   "xp": 50,
+   "in": [
+    [
+     "ash_log",
+     3
+    ],
+    [
+     "fibre_1",
+     1
+    ]
+   ]
+  },
+  {
+   "id": "ash_staff",
+   "out": "ash_staff",
+   "qty": 1,
+   "station": "workbench",
+   "skill": "crafting",
+   "level": 2,
+   "xp": 50,
+   "in": [
+    [
+     "ash_log",
+     3
+    ],
+    [
+     "essence",
+     10
+    ]
+   ]
+  },
+  {
+   "id": "amulet_1",
+   "out": "amulet_1",
+   "qty": 1,
+   "station": "workbench",
+   "skill": "crafting",
+   "level": 5,
+   "xp": 75,
+   "in": [
+    [
+     "gem_1",
+     1
+    ],
+    [
+     "fibre_1",
+     1
+    ]
+   ]
+  },
+  {
+   "id": "leather_cowl_2",
+   "out": "leather_cowl_2",
+   "qty": 1,
+   "station": "workbench",
+   "skill": "crafting",
+   "level": 11,
+   "xp": 90,
+   "in": [
+    [
+     "hide_2",
+     2
+    ]
+   ]
+  },
+  {
+   "id": "leather_jerkin_2",
+   "out": "leather_jerkin_2",
+   "qty": 1,
+   "station": "workbench",
+   "skill": "crafting",
+   "level": 13,
+   "xp": 180,
+   "in": [
+    [
+     "hide_2",
+     4
+    ]
+   ]
+  },
+  {
+   "id": "leather_chaps_2",
+   "out": "leather_chaps_2",
+   "qty": 1,
+   "station": "workbench",
+   "skill": "crafting",
+   "level": 12,
+   "xp": 135,
+   "in": [
+    [
+     "hide_2",
+     3
+    ]
+   ]
+  },
+  {
+   "id": "cloth_hood_2",
+   "out": "cloth_hood_2",
+   "qty": 1,
+   "station": "workbench",
+   "skill": "crafting",
+   "level": 11,
+   "xp": 90,
+   "in": [
+    [
+     "fibre_2",
+     2
+    ]
+   ]
+  },
+  {
+   "id": "cloth_robe_2",
+   "out": "cloth_robe_2",
+   "qty": 1,
+   "station": "workbench",
+   "skill": "crafting",
+   "level": 13,
+   "xp": 180,
+   "in": [
+    [
+     "fibre_2",
+     4
+    ]
+   ]
+  },
+  {
+   "id": "cloth_skirt_2",
+   "out": "cloth_skirt_2",
+   "qty": 1,
+   "station": "workbench",
+   "skill": "crafting",
+   "level": 12,
+   "xp": 135,
+   "in": [
+    [
+     "fibre_2",
+     3
+    ]
+   ]
+  },
+  {
+   "id": "iron_bar",
+   "out": "iron_bar",
+   "qty": 1,
+   "station": "furnace",
+   "skill": "smithing",
+   "level": 10,
+   "xp": 45,
+   "in": [
+    [
+     "iron_ore",
+     2
+    ]
+   ]
+  },
+  {
+   "id": "iron_pickaxe",
+   "out": "iron_pickaxe",
+   "qty": 1,
+   "station": "anvil",
+   "skill": "smithing",
+   "level": 10,
+   "xp": 90,
+   "in": [
+    [
+     "iron_bar",
+     2
+    ],
+    [
+     "pine_log",
+     1
+    ]
+   ]
+  },
+  {
+   "id": "iron_axe",
+   "out": "iron_axe",
+   "qty": 1,
+   "station": "anvil",
+   "skill": "smithing",
+   "level": 10,
+   "xp": 90,
+   "in": [
+    [
+     "iron_bar",
+     2
+    ],
+    [
+     "pine_log",
+     1
+    ]
+   ]
+  },
+  {
+   "id": "iron_sword",
+   "out": "iron_sword",
+   "qty": 1,
+   "station": "anvil",
+   "skill": "smithing",
+   "level": 11,
+   "xp": 90,
+   "in": [
+    [
+     "iron_bar",
+     3
+    ],
+    [
+     "pine_log",
+     1
+    ]
+   ]
+  },
+  {
+   "id": "iron_arrowhead",
+   "out": "iron_arrowhead",
+   "qty": 15,
+   "station": "anvil",
+   "skill": "smithing",
+   "level": 11,
+   "xp": 45,
+   "in": [
+    [
+     "iron_bar",
+     1
+    ]
+   ]
+  },
+  {
+   "id": "iron_helm",
+   "out": "iron_helm",
+   "qty": 1,
+   "station": "anvil",
+   "skill": "smithing",
+   "level": 12,
+   "xp": 135,
+   "in": [
+    [
+     "iron_bar",
+     3
+    ]
+   ]
+  },
+  {
+   "id": "iron_greaves",
+   "out": "iron_greaves",
+   "qty": 1,
+   "station": "anvil",
+   "skill": "smithing",
+   "level": 13,
+   "xp": 180,
+   "in": [
+    [
+     "iron_bar",
+     4
+    ]
+   ]
+  },
+  {
+   "id": "iron_plate",
+   "out": "iron_plate",
+   "qty": 1,
+   "station": "anvil",
+   "skill": "smithing",
+   "level": 14,
+   "xp": 225,
+   "in": [
+    [
+     "iron_bar",
+     5
+    ]
+   ]
+  },
+  {
+   "id": "pine_shaft",
+   "out": "pine_shaft",
+   "qty": 15,
+   "station": "workbench",
+   "skill": "crafting",
+   "level": 10,
+   "xp": 27,
+   "in": [
+    [
+     "pine_log",
+     1
+    ]
+   ]
+  },
+  {
+   "id": "iron_arrow",
+   "out": "iron_arrow",
+   "qty": 15,
+   "station": "workbench",
+   "skill": "crafting",
+   "level": 10,
+   "xp": 27,
+   "in": [
+    [
+     "iron_arrowhead",
+     15
+    ],
+    [
+     "pine_shaft",
+     15
+    ]
+   ]
+  },
+  {
+   "id": "pine_bow",
+   "out": "pine_bow",
+   "qty": 1,
+   "station": "workbench",
+   "skill": "crafting",
+   "level": 11,
+   "xp": 90,
+   "in": [
+    [
+     "pine_log",
+     3
+    ],
+    [
+     "fibre_2",
+     1
+    ]
+   ]
+  },
+  {
+   "id": "pine_staff",
+   "out": "pine_staff",
+   "qty": 1,
+   "station": "workbench",
+   "skill": "crafting",
+   "level": 11,
+   "xp": 90,
+   "in": [
+    [
+     "pine_log",
+     3
+    ],
+    [
+     "essence",
+     10
+    ]
+   ]
+  },
+  {
+   "id": "amulet_2",
+   "out": "amulet_2",
+   "qty": 1,
+   "station": "workbench",
+   "skill": "crafting",
+   "level": 14,
+   "xp": 135,
+   "in": [
+    [
+     "gem_2",
+     1
+    ],
+    [
+     "fibre_2",
+     1
+    ]
+   ]
+  },
+  {
+   "id": "leather_cowl_3",
+   "out": "leather_cowl_3",
+   "qty": 1,
+   "station": "workbench",
+   "skill": "crafting",
+   "level": 21,
+   "xp": 150,
+   "in": [
+    [
+     "hide_3",
+     2
+    ]
+   ]
+  },
+  {
+   "id": "leather_jerkin_3",
+   "out": "leather_jerkin_3",
+   "qty": 1,
+   "station": "workbench",
+   "skill": "crafting",
+   "level": 23,
+   "xp": 300,
+   "in": [
+    [
+     "hide_3",
+     4
+    ]
+   ]
+  },
+  {
+   "id": "leather_chaps_3",
+   "out": "leather_chaps_3",
+   "qty": 1,
+   "station": "workbench",
+   "skill": "crafting",
+   "level": 22,
+   "xp": 225,
+   "in": [
+    [
+     "hide_3",
+     3
+    ]
+   ]
+  },
+  {
+   "id": "cloth_hood_3",
+   "out": "cloth_hood_3",
+   "qty": 1,
+   "station": "workbench",
+   "skill": "crafting",
+   "level": 21,
+   "xp": 150,
+   "in": [
+    [
+     "fibre_3",
+     2
+    ]
+   ]
+  },
+  {
+   "id": "cloth_robe_3",
+   "out": "cloth_robe_3",
+   "qty": 1,
+   "station": "workbench",
+   "skill": "crafting",
+   "level": 23,
+   "xp": 300,
+   "in": [
+    [
+     "fibre_3",
+     4
+    ]
+   ]
+  },
+  {
+   "id": "cloth_skirt_3",
+   "out": "cloth_skirt_3",
+   "qty": 1,
+   "station": "workbench",
+   "skill": "crafting",
+   "level": 22,
+   "xp": 225,
+   "in": [
+    [
+     "fibre_3",
+     3
+    ]
+   ]
+  },
+  {
+   "id": "mithril_bar",
+   "out": "mithril_bar",
+   "qty": 1,
+   "station": "furnace",
+   "skill": "smithing",
+   "level": 20,
+   "xp": 75,
+   "in": [
+    [
+     "mithril_ore",
+     2
+    ]
+   ]
+  },
+  {
+   "id": "mithril_pickaxe",
+   "out": "mithril_pickaxe",
+   "qty": 1,
+   "station": "anvil",
+   "skill": "smithing",
+   "level": 20,
+   "xp": 150,
+   "in": [
+    [
+     "mithril_bar",
+     2
+    ],
+    [
+     "oak_log",
+     1
+    ]
+   ]
+  },
+  {
+   "id": "mithril_axe",
+   "out": "mithril_axe",
+   "qty": 1,
+   "station": "anvil",
+   "skill": "smithing",
+   "level": 20,
+   "xp": 150,
+   "in": [
+    [
+     "mithril_bar",
+     2
+    ],
+    [
+     "oak_log",
+     1
+    ]
+   ]
+  },
+  {
+   "id": "mithril_sword",
+   "out": "mithril_sword",
+   "qty": 1,
+   "station": "anvil",
+   "skill": "smithing",
+   "level": 21,
+   "xp": 150,
+   "in": [
+    [
+     "mithril_bar",
+     3
+    ],
+    [
+     "oak_log",
+     1
+    ]
+   ]
+  },
+  {
+   "id": "mithril_arrowhead",
+   "out": "mithril_arrowhead",
+   "qty": 15,
+   "station": "anvil",
+   "skill": "smithing",
+   "level": 21,
+   "xp": 75,
+   "in": [
+    [
+     "mithril_bar",
+     1
+    ]
+   ]
+  },
+  {
+   "id": "mithril_helm",
+   "out": "mithril_helm",
+   "qty": 1,
+   "station": "anvil",
+   "skill": "smithing",
+   "level": 22,
+   "xp": 225,
+   "in": [
+    [
+     "mithril_bar",
+     3
+    ]
+   ]
+  },
+  {
+   "id": "mithril_greaves",
+   "out": "mithril_greaves",
+   "qty": 1,
+   "station": "anvil",
+   "skill": "smithing",
+   "level": 23,
+   "xp": 300,
+   "in": [
+    [
+     "mithril_bar",
+     4
+    ]
+   ]
+  },
+  {
+   "id": "mithril_plate",
+   "out": "mithril_plate",
+   "qty": 1,
+   "station": "anvil",
+   "skill": "smithing",
+   "level": 24,
+   "xp": 375,
+   "in": [
+    [
+     "mithril_bar",
+     5
+    ]
+   ]
+  },
+  {
+   "id": "oak_shaft",
+   "out": "oak_shaft",
+   "qty": 15,
+   "station": "workbench",
+   "skill": "crafting",
+   "level": 20,
+   "xp": 45,
+   "in": [
+    [
+     "oak_log",
+     1
+    ]
+   ]
+  },
+  {
+   "id": "mithril_arrow",
+   "out": "mithril_arrow",
+   "qty": 15,
+   "station": "workbench",
+   "skill": "crafting",
+   "level": 20,
+   "xp": 45,
+   "in": [
+    [
+     "mithril_arrowhead",
+     15
+    ],
+    [
+     "oak_shaft",
+     15
+    ]
+   ]
+  },
+  {
+   "id": "oak_bow",
+   "out": "oak_bow",
+   "qty": 1,
+   "station": "workbench",
+   "skill": "crafting",
+   "level": 21,
+   "xp": 150,
+   "in": [
+    [
+     "oak_log",
+     3
+    ],
+    [
+     "fibre_3",
+     1
+    ]
+   ]
+  },
+  {
+   "id": "oak_staff",
+   "out": "oak_staff",
+   "qty": 1,
+   "station": "workbench",
+   "skill": "crafting",
+   "level": 21,
+   "xp": 150,
+   "in": [
+    [
+     "oak_log",
+     3
+    ],
+    [
+     "essence",
+     10
+    ]
+   ]
+  },
+  {
+   "id": "amulet_3",
+   "out": "amulet_3",
+   "qty": 1,
+   "station": "workbench",
+   "skill": "crafting",
+   "level": 24,
+   "xp": 225,
+   "in": [
+    [
+     "gem_3",
+     1
+    ],
+    [
+     "fibre_3",
+     1
+    ]
+   ]
+  },
+  {
+   "id": "leather_cowl_4",
+   "out": "leather_cowl_4",
+   "qty": 1,
+   "station": "workbench",
+   "skill": "crafting",
+   "level": 31,
+   "xp": 240,
+   "in": [
+    [
+     "hide_4",
+     2
+    ]
+   ]
+  },
+  {
+   "id": "leather_jerkin_4",
+   "out": "leather_jerkin_4",
+   "qty": 1,
+   "station": "workbench",
+   "skill": "crafting",
+   "level": 33,
+   "xp": 480,
+   "in": [
+    [
+     "hide_4",
+     4
+    ]
+   ]
+  },
+  {
+   "id": "leather_chaps_4",
+   "out": "leather_chaps_4",
+   "qty": 1,
+   "station": "workbench",
+   "skill": "crafting",
+   "level": 32,
+   "xp": 360,
+   "in": [
+    [
+     "hide_4",
+     3
+    ]
+   ]
+  },
+  {
+   "id": "cloth_hood_4",
+   "out": "cloth_hood_4",
+   "qty": 1,
+   "station": "workbench",
+   "skill": "crafting",
+   "level": 31,
+   "xp": 240,
+   "in": [
+    [
+     "fibre_4",
+     2
+    ]
+   ]
+  },
+  {
+   "id": "cloth_robe_4",
+   "out": "cloth_robe_4",
+   "qty": 1,
+   "station": "workbench",
+   "skill": "crafting",
+   "level": 33,
+   "xp": 480,
+   "in": [
+    [
+     "fibre_4",
+     4
+    ]
+   ]
+  },
+  {
+   "id": "cloth_skirt_4",
+   "out": "cloth_skirt_4",
+   "qty": 1,
+   "station": "workbench",
+   "skill": "crafting",
+   "level": 32,
+   "xp": 360,
+   "in": [
+    [
+     "fibre_4",
+     3
+    ]
+   ]
+  },
+  {
+   "id": "cobalt_bar",
+   "out": "cobalt_bar",
+   "qty": 1,
+   "station": "furnace",
+   "skill": "smithing",
+   "level": 30,
+   "xp": 120,
+   "in": [
+    [
+     "cobalt_ore",
+     2
+    ]
+   ]
+  },
+  {
+   "id": "cobalt_pickaxe",
+   "out": "cobalt_pickaxe",
+   "qty": 1,
+   "station": "anvil",
+   "skill": "smithing",
+   "level": 30,
+   "xp": 240,
+   "in": [
+    [
+     "cobalt_bar",
+     2
+    ],
+    [
+     "maple_log",
+     1
+    ]
+   ]
+  },
+  {
+   "id": "cobalt_axe",
+   "out": "cobalt_axe",
+   "qty": 1,
+   "station": "anvil",
+   "skill": "smithing",
+   "level": 30,
+   "xp": 240,
+   "in": [
+    [
+     "cobalt_bar",
+     2
+    ],
+    [
+     "maple_log",
+     1
+    ]
+   ]
+  },
+  {
+   "id": "cobalt_sword",
+   "out": "cobalt_sword",
+   "qty": 1,
+   "station": "anvil",
+   "skill": "smithing",
+   "level": 31,
+   "xp": 240,
+   "in": [
+    [
+     "cobalt_bar",
+     3
+    ],
+    [
+     "maple_log",
+     1
+    ]
+   ]
+  },
+  {
+   "id": "cobalt_arrowhead",
+   "out": "cobalt_arrowhead",
+   "qty": 15,
+   "station": "anvil",
+   "skill": "smithing",
+   "level": 31,
+   "xp": 120,
+   "in": [
+    [
+     "cobalt_bar",
+     1
+    ]
+   ]
+  },
+  {
+   "id": "cobalt_helm",
+   "out": "cobalt_helm",
+   "qty": 1,
+   "station": "anvil",
+   "skill": "smithing",
+   "level": 32,
+   "xp": 360,
+   "in": [
+    [
+     "cobalt_bar",
+     3
+    ]
+   ]
+  },
+  {
+   "id": "cobalt_greaves",
+   "out": "cobalt_greaves",
+   "qty": 1,
+   "station": "anvil",
+   "skill": "smithing",
+   "level": 33,
+   "xp": 480,
+   "in": [
+    [
+     "cobalt_bar",
+     4
+    ]
+   ]
+  },
+  {
+   "id": "cobalt_plate",
+   "out": "cobalt_plate",
+   "qty": 1,
+   "station": "anvil",
+   "skill": "smithing",
+   "level": 34,
+   "xp": 600,
+   "in": [
+    [
+     "cobalt_bar",
+     5
+    ]
+   ]
+  },
+  {
+   "id": "maple_shaft",
+   "out": "maple_shaft",
+   "qty": 15,
+   "station": "workbench",
+   "skill": "crafting",
+   "level": 30,
+   "xp": 72,
+   "in": [
+    [
+     "maple_log",
+     1
+    ]
+   ]
+  },
+  {
+   "id": "cobalt_arrow",
+   "out": "cobalt_arrow",
+   "qty": 15,
+   "station": "workbench",
+   "skill": "crafting",
+   "level": 30,
+   "xp": 72,
+   "in": [
+    [
+     "cobalt_arrowhead",
+     15
+    ],
+    [
+     "maple_shaft",
+     15
+    ]
+   ]
+  },
+  {
+   "id": "maple_bow",
+   "out": "maple_bow",
+   "qty": 1,
+   "station": "workbench",
+   "skill": "crafting",
+   "level": 31,
+   "xp": 240,
+   "in": [
+    [
+     "maple_log",
+     3
+    ],
+    [
+     "fibre_4",
+     1
+    ]
+   ]
+  },
+  {
+   "id": "maple_staff",
+   "out": "maple_staff",
+   "qty": 1,
+   "station": "workbench",
+   "skill": "crafting",
+   "level": 31,
+   "xp": 240,
+   "in": [
+    [
+     "maple_log",
+     3
+    ],
+    [
+     "essence",
+     10
+    ]
+   ]
+  },
+  {
+   "id": "amulet_4",
+   "out": "amulet_4",
+   "qty": 1,
+   "station": "workbench",
+   "skill": "crafting",
+   "level": 34,
+   "xp": 360,
+   "in": [
+    [
+     "gem_4",
+     1
+    ],
+    [
+     "fibre_4",
+     1
+    ]
+   ]
+  },
+  {
+   "id": "leather_cowl_5",
+   "out": "leather_cowl_5",
+   "qty": 1,
+   "station": "workbench",
+   "skill": "crafting",
+   "level": 41,
+   "xp": 360,
+   "in": [
+    [
+     "hide_5",
+     2
+    ]
+   ]
+  },
+  {
+   "id": "leather_jerkin_5",
+   "out": "leather_jerkin_5",
+   "qty": 1,
+   "station": "workbench",
+   "skill": "crafting",
+   "level": 43,
+   "xp": 720,
+   "in": [
+    [
+     "hide_5",
+     4
+    ]
+   ]
+  },
+  {
+   "id": "leather_chaps_5",
+   "out": "leather_chaps_5",
+   "qty": 1,
+   "station": "workbench",
+   "skill": "crafting",
+   "level": 42,
+   "xp": 540,
+   "in": [
+    [
+     "hide_5",
+     3
+    ]
+   ]
+  },
+  {
+   "id": "cloth_hood_5",
+   "out": "cloth_hood_5",
+   "qty": 1,
+   "station": "workbench",
+   "skill": "crafting",
+   "level": 41,
+   "xp": 360,
+   "in": [
+    [
+     "fibre_5",
+     2
+    ]
+   ]
+  },
+  {
+   "id": "cloth_robe_5",
+   "out": "cloth_robe_5",
+   "qty": 1,
+   "station": "workbench",
+   "skill": "crafting",
+   "level": 43,
+   "xp": 720,
+   "in": [
+    [
+     "fibre_5",
+     4
+    ]
+   ]
+  },
+  {
+   "id": "cloth_skirt_5",
+   "out": "cloth_skirt_5",
+   "qty": 1,
+   "station": "workbench",
+   "skill": "crafting",
+   "level": 42,
+   "xp": 540,
+   "in": [
+    [
+     "fibre_5",
+     3
+    ]
+   ]
+  },
+  {
+   "id": "adamantite_bar",
+   "out": "adamantite_bar",
+   "qty": 1,
+   "station": "furnace",
+   "skill": "smithing",
+   "level": 40,
+   "xp": 180,
+   "in": [
+    [
+     "adamantite_ore",
+     2
+    ]
+   ]
+  },
+  {
+   "id": "adamantite_pickaxe",
+   "out": "adamantite_pickaxe",
+   "qty": 1,
+   "station": "anvil",
+   "skill": "smithing",
+   "level": 40,
+   "xp": 360,
+   "in": [
+    [
+     "adamantite_bar",
+     2
+    ],
+    [
+     "ebony_log",
+     1
+    ]
+   ]
+  },
+  {
+   "id": "adamantite_axe",
+   "out": "adamantite_axe",
+   "qty": 1,
+   "station": "anvil",
+   "skill": "smithing",
+   "level": 40,
+   "xp": 360,
+   "in": [
+    [
+     "adamantite_bar",
+     2
+    ],
+    [
+     "ebony_log",
+     1
+    ]
+   ]
+  },
+  {
+   "id": "adamantite_sword",
+   "out": "adamantite_sword",
+   "qty": 1,
+   "station": "anvil",
+   "skill": "smithing",
+   "level": 41,
+   "xp": 360,
+   "in": [
+    [
+     "adamantite_bar",
+     3
+    ],
+    [
+     "ebony_log",
+     1
+    ]
+   ]
+  },
+  {
+   "id": "adamantite_arrowhead",
+   "out": "adamantite_arrowhead",
+   "qty": 15,
+   "station": "anvil",
+   "skill": "smithing",
+   "level": 41,
+   "xp": 180,
+   "in": [
+    [
+     "adamantite_bar",
+     1
+    ]
+   ]
+  },
+  {
+   "id": "adamantite_helm",
+   "out": "adamantite_helm",
+   "qty": 1,
+   "station": "anvil",
+   "skill": "smithing",
+   "level": 42,
+   "xp": 540,
+   "in": [
+    [
+     "adamantite_bar",
+     3
+    ]
+   ]
+  },
+  {
+   "id": "adamantite_greaves",
+   "out": "adamantite_greaves",
+   "qty": 1,
+   "station": "anvil",
+   "skill": "smithing",
+   "level": 43,
+   "xp": 720,
+   "in": [
+    [
+     "adamantite_bar",
+     4
+    ]
+   ]
+  },
+  {
+   "id": "adamantite_plate",
+   "out": "adamantite_plate",
+   "qty": 1,
+   "station": "anvil",
+   "skill": "smithing",
+   "level": 44,
+   "xp": 900,
+   "in": [
+    [
+     "adamantite_bar",
+     5
+    ]
+   ]
+  },
+  {
+   "id": "ebony_shaft",
+   "out": "ebony_shaft",
+   "qty": 15,
+   "station": "workbench",
+   "skill": "crafting",
+   "level": 40,
+   "xp": 108,
+   "in": [
+    [
+     "ebony_log",
+     1
+    ]
+   ]
+  },
+  {
+   "id": "adamantite_arrow",
+   "out": "adamantite_arrow",
+   "qty": 15,
+   "station": "workbench",
+   "skill": "crafting",
+   "level": 40,
+   "xp": 108,
+   "in": [
+    [
+     "adamantite_arrowhead",
+     15
+    ],
+    [
+     "ebony_shaft",
+     15
+    ]
+   ]
+  },
+  {
+   "id": "ebony_bow",
+   "out": "ebony_bow",
+   "qty": 1,
+   "station": "workbench",
+   "skill": "crafting",
+   "level": 41,
+   "xp": 360,
+   "in": [
+    [
+     "ebony_log",
+     3
+    ],
+    [
+     "fibre_5",
+     1
+    ]
+   ]
+  },
+  {
+   "id": "ebony_staff",
+   "out": "ebony_staff",
+   "qty": 1,
+   "station": "workbench",
+   "skill": "crafting",
+   "level": 41,
+   "xp": 360,
+   "in": [
+    [
+     "ebony_log",
+     3
+    ],
+    [
+     "essence",
+     10
+    ]
+   ]
+  },
+  {
+   "id": "amulet_5",
+   "out": "amulet_5",
+   "qty": 1,
+   "station": "workbench",
+   "skill": "crafting",
+   "level": 44,
+   "xp": 540,
+   "in": [
+    [
+     "gem_5",
+     1
+    ],
+    [
+     "fibre_5",
+     1
+    ]
+   ]
+  }
+ ],
+ "nodes": [
+  {
+   "id": "rock_1",
+   "name": "Copper rock",
+   "kind": "rock",
+   "tier": 1,
+   "skill": "mining",
+   "level": 1,
+   "xp": 25,
+   "item": "copper_ore",
+   "tool": "pickaxe",
+   "respawn": 8,
+   "deplete": 0.5,
+   "color": "#e07f3c"
+  },
+  {
+   "id": "tree_1",
+   "name": "Ash tree",
+   "kind": "tree",
+   "tier": 1,
+   "skill": "woodcutting",
+   "level": 1,
+   "xp": 25,
+   "item": "ash_log",
+   "tool": "axe",
+   "respawn": 11,
+   "deplete": 0.25,
+   "color": "#d8b47c"
+  },
+  {
+   "id": "plant_1",
+   "name": "Flax",
+   "kind": "plant",
+   "tier": 1,
+   "skill": "crafting",
+   "level": 1,
+   "xp": 10,
+   "item": "fibre_1",
+   "respawn": 9,
+   "deplete": 0.6,
+   "color": "#d7c98f"
+  },
+  {
+   "id": "rock_2",
+   "name": "Iron rock",
+   "kind": "rock",
+   "tier": 2,
+   "skill": "mining",
+   "level": 10,
+   "xp": 45,
+   "item": "iron_ore",
+   "tool": "pickaxe",
+   "respawn": 12,
+   "deplete": 0.5,
+   "color": "#b4bcc8"
+  },
+  {
+   "id": "tree_2",
+   "name": "Pine tree",
+   "kind": "tree",
+   "tier": 2,
+   "skill": "woodcutting",
+   "level": 10,
+   "xp": 45,
+   "item": "pine_log",
+   "tool": "axe",
+   "respawn": 16,
+   "deplete": 0.25,
+   "color": "#b87a48"
+  },
+  {
+   "id": "plant_2",
+   "name": "Silkgrass",
+   "kind": "plant",
+   "tier": 2,
+   "skill": "crafting",
+   "level": 10,
+   "xp": 18,
+   "item": "fibre_2",
+   "respawn": 12,
+   "deplete": 0.6,
+   "color": "#a8c27a"
+  },
+  {
+   "id": "rock_3",
+   "name": "Mithril rock",
+   "kind": "rock",
+   "tier": 3,
+   "skill": "mining",
+   "level": 20,
+   "xp": 75,
+   "item": "mithril_ore",
+   "tool": "pickaxe",
+   "respawn": 16,
+   "deplete": 0.5,
+   "color": "#7fb0f0"
+  },
+  {
+   "id": "tree_3",
+   "name": "Oak tree",
+   "kind": "tree",
+   "tier": 3,
+   "skill": "woodcutting",
+   "level": 20,
+   "xp": 75,
+   "item": "oak_log",
+   "tool": "axe",
+   "respawn": 21,
+   "deplete": 0.25,
+   "color": "#8f5c38"
+  },
+  {
+   "id": "plant_3",
+   "name": "Moonreed",
+   "kind": "plant",
+   "tier": 3,
+   "skill": "crafting",
+   "level": 20,
+   "xp": 30,
+   "item": "fibre_3",
+   "respawn": 15,
+   "deplete": 0.6,
+   "color": "#a9b6d6"
+  },
+  {
+   "id": "rock_4",
+   "name": "Cobalt rock",
+   "kind": "rock",
+   "tier": 4,
+   "skill": "mining",
+   "level": 30,
+   "xp": 120,
+   "item": "cobalt_ore",
+   "tool": "pickaxe",
+   "respawn": 20,
+   "deplete": 0.5,
+   "color": "#2f62c8"
+  },
+  {
+   "id": "tree_4",
+   "name": "Maple tree",
+   "kind": "tree",
+   "tier": 4,
+   "skill": "woodcutting",
+   "level": 30,
+   "xp": 120,
+   "item": "maple_log",
+   "tool": "axe",
+   "respawn": 26,
+   "deplete": 0.25,
+   "color": "#b04a38"
+  },
+  {
+   "id": "plant_4",
+   "name": "Frostvine",
+   "kind": "plant",
+   "tier": 4,
+   "skill": "crafting",
+   "level": 30,
+   "xp": 48,
+   "item": "fibre_4",
+   "respawn": 18,
+   "deplete": 0.6,
+   "color": "#8fc7cf"
+  },
+  {
+   "id": "rock_5",
+   "name": "Adamantite rock",
+   "kind": "rock",
+   "tier": 5,
+   "skill": "mining",
+   "level": 40,
+   "xp": 180,
+   "item": "adamantite_ore",
+   "tool": "pickaxe",
+   "respawn": 24,
+   "deplete": 0.5,
+   "color": "#2fb58a"
+  },
+  {
+   "id": "tree_5",
+   "name": "Ebony tree",
+   "kind": "tree",
+   "tier": 5,
+   "skill": "woodcutting",
+   "level": 40,
+   "xp": 180,
+   "item": "ebony_log",
+   "tool": "axe",
+   "respawn": 31,
+   "deplete": 0.25,
+   "color": "#4a3454"
+  },
+  {
+   "id": "plant_5",
+   "name": "Nightbloom",
+   "kind": "plant",
+   "tier": 5,
+   "skill": "crafting",
+   "level": 40,
+   "xp": 72,
+   "item": "fibre_5",
+   "respawn": 21,
+   "deplete": 0.6,
+   "color": "#8a6cae"
+  },
+  {
+   "id": "essence_rock",
+   "name": "Essence rock",
+   "kind": "rock",
+   "tier": 1,
+   "skill": "mining",
+   "level": 1,
+   "xp": 15,
+   "item": "essence",
+   "tool": "pickaxe",
+   "respawn": 8,
+   "deplete": 0.1,
+   "color": "#8fb8d8"
+  },
+  {
+   "id": "berry_bush",
+   "name": "Berry bush",
+   "kind": "plant",
+   "tier": 1,
+   "skill": null,
+   "level": 1,
+   "xp": 0,
+   "item": "berries",
+   "respawn": 12,
+   "deplete": 0.4,
+   "color": "#a8485e"
+  }
+ ],
+ "monsters": [
+  {
+   "acc": 1,
+   "power": 0.9,
+   "armour": 0.6,
+   "speed": 5,
+   "range": 1,
+   "respawn": 15,
+   "size": 1,
+   "id": "boar",
+   "name": "Meadow boar",
+   "style": "melee",
+   "level": 1,
+   "hp": 12,
+   "aggro": 0,
+   "color": "#8d6a4c",
+   "shape": "beast",
+   "loot": {
+    "always": [
+     [
+      "hide_1",
+      1,
+      1
+     ],
+     [
+      "meat",
+      1,
+      1
+     ]
+    ]
+   }
+  },
+  {
+   "acc": 3,
+   "power": 2.7,
+   "armour": 1.7999999999999998,
+   "speed": 5,
+   "range": 5,
+   "respawn": 15,
+   "size": 1,
+   "id": "spitter",
+   "name": "Thorn spitter",
+   "style": "ranged",
+   "level": 3,
+   "hp": 14,
+   "aggro": 0,
+   "color": "#6e9a58",
+   "shape": "plant",
+   "loot": {
+    "always": [
+     [
+      "fibre_1",
+      1,
+      2
+     ]
+    ],
+    "rare": [
+     [
+      "gem_1",
+      1,
+      0.1
+     ]
+    ]
+   }
+  },
+  {
+   "acc": 5,
+   "power": 4.5,
+   "armour": 3,
+   "speed": 5,
+   "range": 5,
+   "respawn": 15,
+   "size": 1,
+   "id": "wisp",
+   "name": "Pale wisp",
+   "style": "magic",
+   "level": 5,
+   "hp": 18,
+   "aggro": 0,
+   "color": "#a9c4d8",
+   "shape": "wisp",
+   "loot": {
+    "always": [
+     [
+      "essence",
+      3,
+      8
+     ]
+    ],
+    "rare": [
+     [
+      "gem_1",
+      1,
+      0.15
+     ]
+    ]
+   }
+  },
+  {
+   "acc": 12,
+   "power": 10.8,
+   "armour": 7.199999999999999,
+   "speed": 5,
+   "range": 1,
+   "respawn": 15,
+   "size": 1,
+   "id": "wolf",
+   "name": "Ridge wolf",
+   "style": "melee",
+   "level": 12,
+   "hp": 38,
+   "aggro": 4,
+   "color": "#6f7680",
+   "shape": "beast",
+   "loot": {
+    "always": [
+     [
+      "hide_2",
+      1,
+      1
+     ],
+     [
+      "meat",
+      1,
+      2
+     ]
+    ],
+    "rare": [
+     [
+      "gem_2",
+      1,
+      0.05
+     ]
+    ]
+   }
+  },
+  {
+   "acc": 15,
+   "power": 13.5,
+   "armour": 9,
+   "speed": 5,
+   "range": 5,
+   "respawn": 15,
+   "size": 1,
+   "id": "marshwisp",
+   "name": "Marsh wisp",
+   "style": "magic",
+   "level": 15,
+   "hp": 42,
+   "aggro": 0,
+   "color": "#8fc7a0",
+   "shape": "wisp",
+   "loot": {
+    "always": [
+     [
+      "essence",
+      8,
+      16
+     ]
+    ],
+    "rare": [
+     [
+      "gem_2",
+      1,
+      0.15
+     ]
+    ]
+   }
+  },
+  {
+   "acc": 22,
+   "power": 19.8,
+   "armour": 13.2,
+   "speed": 5,
+   "range": 5,
+   "respawn": 15,
+   "size": 1,
+   "id": "thornback",
+   "name": "Thornback",
+   "style": "ranged",
+   "level": 22,
+   "hp": 65,
+   "aggro": 4,
+   "color": "#6e7b4a",
+   "shape": "beast",
+   "loot": {
+    "always": [
+     [
+      "hide_3",
+      1,
+      2
+     ],
+     [
+      "meat",
+      1,
+      2
+     ]
+    ],
+    "rare": [
+     [
+      "gem_3",
+      1,
+      0.05
+     ]
+    ]
+   }
+  },
+  {
+   "acc": 26,
+   "power": 23.400000000000002,
+   "armour": 15.6,
+   "speed": 5,
+   "range": 1,
+   "respawn": 15,
+   "size": 1,
+   "id": "golem",
+   "name": "Stone golem",
+   "style": "melee",
+   "level": 26,
+   "hp": 85,
+   "aggro": 0,
+   "color": "#85827a",
+   "shape": "golem",
+   "loot": {
+    "common": [
+     [
+      "mithril_ore",
+      1,
+      3
+     ],
+     [
+      "iron_bar",
+      1,
+      2
+     ]
+    ],
+    "rare": [
+     [
+      "gem_3",
+      1,
+      0.15
+     ]
+    ]
+   }
+  },
+  {
+   "acc": 32,
+   "power": 28.8,
+   "armour": 19.2,
+   "speed": 5,
+   "range": 5,
+   "respawn": 15,
+   "size": 1,
+   "id": "drake",
+   "name": "Storm drake",
+   "style": "magic",
+   "level": 32,
+   "hp": 110,
+   "aggro": 5,
+   "color": "#5c6f8c",
+   "shape": "beast",
+   "loot": {
+    "always": [
+     [
+      "hide_4",
+      1,
+      2
+     ]
+    ],
+    "common": [
+     [
+      "essence",
+      10,
+      25
+     ],
+     [
+      "meat",
+      1,
+      3
+     ]
+    ],
+    "rare": [
+     [
+      "gem_4",
+      1,
+      0.08
+     ]
+    ]
+   }
+  },
+  {
+   "acc": 36,
+   "power": 32.4,
+   "armour": 21.599999999999998,
+   "speed": 5,
+   "range": 5,
+   "respawn": 15,
+   "size": 1,
+   "id": "stalker",
+   "name": "Cragstalker",
+   "style": "ranged",
+   "level": 36,
+   "hp": 125,
+   "aggro": 5,
+   "color": "#a8573a",
+   "shape": "plant",
+   "loot": {
+    "common": [
+     [
+      "cobalt_arrow",
+      8,
+      20
+     ],
+     [
+      "fibre_4",
+      1,
+      3
+     ]
+    ],
+    "rare": [
+     [
+      "gem_4",
+      1,
+      0.15
+     ]
+    ]
+   }
+  },
+  {
+   "acc": 42,
+   "power": 37.800000000000004,
+   "armour": 25.2,
+   "speed": 5,
+   "range": 1,
+   "respawn": 15,
+   "size": 1,
+   "id": "stag",
+   "name": "Dread stag",
+   "style": "melee",
+   "level": 42,
+   "hp": 160,
+   "aggro": 5,
+   "color": "#6b4456",
+   "shape": "beast",
+   "loot": {
+    "always": [
+     [
+      "hide_5",
+      1,
+      2
+     ],
+     [
+      "meat",
+      1,
+      3
+     ]
+    ],
+    "rare": [
+     [
+      "gem_5",
+      1,
+      0.06
+     ]
+    ]
+   }
+  },
+  {
+   "acc": 46,
+   "power": 41.4,
+   "armour": 27.599999999999998,
+   "speed": 5,
+   "range": 5,
+   "respawn": 15,
+   "size": 1,
+   "id": "seer",
+   "name": "Hollow seer",
+   "style": "magic",
+   "level": 46,
+   "hp": 180,
+   "aggro": 5,
+   "color": "#8a6cae",
+   "shape": "wisp",
+   "loot": {
+    "always": [
+     [
+      "essence",
+      15,
+      30
+     ]
+    ],
+    "rare": [
+     [
+      "gem_5",
+      1,
+      0.15
+     ]
+    ]
+   }
+  },
+  {
+   "acc": 8,
+   "power": 7.2,
+   "armour": 4.8,
+   "speed": 5,
+   "range": 1,
+   "respawn": 60,
+   "size": 2,
+   "id": "gnashclaw",
+   "name": "Old Gnashclaw",
+   "style": "melee",
+   "level": 8,
+   "hp": 90,
+   "aggro": 0,
+   "color": "#b5604a",
+   "shape": "crab",
+   "loot": {
+    "always": [
+     [
+      "rudder",
+      1,
+      1
+     ]
+    ],
+    "common": [
+     [
+      "copper_bar",
+      2,
+      5
+     ],
+     [
+      "essence",
+      15,
+      30
+     ],
+     [
+      "iron_ore",
+      2,
+      4
+     ]
+    ],
+    "rare": [
+     [
+      "gem_1",
+      1,
+      0.3
+     ],
+     [
+      "gem_2",
+      1,
+      0.1
+     ]
+    ],
+    "unique": [
+     [
+      "barnacle_charm",
+      0.08333333333333333
+     ]
+    ]
+   },
+   "boss": {
+    "baseHp": 90,
+    "arena": 9,
+    "world": false,
+    "attacks": [
+     {
+      "id": "melee",
+      "name": "Claw",
+      "weight": 4,
+      "windup": 3,
+      "execute": 1,
+      "damage": [
+       3,
+       6
+      ]
+     },
+     {
+      "id": "boulder",
+      "name": "Hurled stone",
+      "weight": 3,
+      "windup": 5,
+      "execute": 2,
+      "damage": [
+       9,
+       14
+      ],
+      "count": 1
+     },
+     {
+      "id": "vines",
+      "name": "Grasping kelp",
+      "weight": 2,
+      "windup": 6,
+      "execute": 2,
+      "damage": [
+       4,
+       7
+      ],
+      "root": 4,
+      "count": 1
+     }
+    ]
+   }
+  },
+  {
+   "acc": 45,
+   "power": 40.5,
+   "armour": 27,
+   "speed": 5,
+   "range": 1,
+   "respawn": 600,
+   "size": 3,
+   "id": "colossus",
+   "name": "Orrumax, the Rooted",
+   "style": "melee",
+   "level": 45,
+   "hp": 900,
+   "aggro": 0,
+   "color": "#5d6b45",
+   "shape": "treant",
+   "loot": {
+    "always": [
+     [
+      "essence",
+      40,
+      80
+     ],
+     [
+      "feast",
+      1,
+      3
+     ]
+    ],
+    "common": [
+     [
+      "adamantite_bar",
+      2,
+      5
+     ],
+     [
+      "ebony_log",
+      4,
+      8
+     ],
+     [
+      "cobalt_bar",
+      4,
+      8
+     ],
+     [
+      "hide_5",
+      2,
+      5
+     ]
+    ],
+    "rare": [
+     [
+      "gem_5",
+      1,
+      0.25
+     ],
+     [
+      "amulet_5",
+      1,
+      0.05
+     ]
+    ],
+    "unique": [
+     [
+      "rootcleaver",
+      0.025
+     ],
+     [
+      "briarstring",
+      0.025
+     ],
+     [
+      "heartwood",
+      0.025
+     ]
+    ]
+   },
+   "boss": {
+    "baseHp": 900,
+    "arena": 12,
+    "world": true,
+    "attacks": [
+     {
+      "id": "melee",
+      "name": "Crushing limb",
+      "weight": 3,
+      "windup": 2,
+      "execute": 1,
+      "damage": [
+       14,
+       24
+      ]
+     },
+     {
+      "id": "boulder",
+      "name": "Falling boulder",
+      "weight": 4,
+      "windup": 5,
+      "execute": 2,
+      "damage": [
+       28,
+       42
+      ],
+      "count": 5
+     },
+     {
+      "id": "vines",
+      "name": "Creeping vines",
+      "weight": 3,
+      "windup": 6,
+      "execute": 2,
+      "damage": [
+       8,
+       14
+      ],
+      "root": 5,
+      "count": 5
+     },
+     {
+      "id": "quake",
+      "name": "Root quake",
+      "weight": 2,
+      "windup": 4,
+      "execute": 2,
+      "damage": [
+       24,
+       36
+      ]
+     }
+    ]
+   }
+  }
+ ],
+ "boatParts": [
+  {
+   "id": "hull",
+   "name": "Ash hull",
+   "item": "ash_log",
+   "qty": 20
+  },
+  {
+   "id": "fittings",
+   "name": "Copper fittings",
+   "item": "copper_bar",
+   "qty": 8
+  },
+  {
+   "id": "sail",
+   "name": "Flax sail",
+   "item": "fibre_1",
+   "qty": 12
+  },
+  {
+   "id": "rudder",
+   "name": "Rudder",
+   "item": "rudder",
+   "qty": 1
+  }
+ ],
+ "metals": [
+  "",
+  "copper",
+  "iron",
+  "mithril",
+  "cobalt",
+  "adamantite"
+ ],
+ "haircuts": [
+  {
+   "id": "quiff",
+   "name": "Quiff"
+  },
+  {
+   "id": "crop",
+   "name": "Textured crop"
+  },
+  {
+   "id": "sidepart",
+   "name": "Side part"
+  },
+  {
+   "id": "curls",
+   "name": "Curly top"
+  }
+ ],
+ "hairColors": [
+  {
+   "name": "Brown",
+   "color": "#7a5236"
+  },
+  {
+   "name": "Chestnut",
+   "color": "#9c6b40"
+  },
+  {
+   "name": "Dark brown",
+   "color": "#4a3a32"
+  },
+  {
+   "name": "Copper",
+   "color": "#a5603c"
+  },
+  {
+   "name": "Blond",
+   "color": "#c9a468"
+  },
+  {
+   "name": "Black",
+   "color": "#2c2a2e"
+  },
+  {
+   "name": "Ash",
+   "color": "#8f8a84"
+  },
+  {
+   "name": "Platinum",
+   "color": "#ddd3bf"
+  }
+ ]
+}
