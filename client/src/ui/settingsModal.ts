@@ -2,7 +2,7 @@
 import { send } from '../net/connection';
 import { state } from '../net/state';
 import { QUALITIES, QUALITY_LABEL, type Quality } from '../quality';
-import { changeSetting, type Settings, settings } from '../settings';
+import { changeSetting, type LabelMode, type Settings, settings } from '../settings';
 import { button, byId, h, uiRoot } from './dom';
 import { setBlocked } from './players';
 import { closeMenu, hideTooltip } from './popups';
@@ -17,6 +17,12 @@ const TOGGLES: { setting: Toggle; label: string; description: string }[] = [
   },
 ];
 
+const LABEL_MODES: { mode: LabelMode; label: string }[] = [
+  { mode: 'all', label: 'All' },
+  { mode: 'valuable', label: 'Valuable' },
+  { mode: 'none', label: 'None' },
+];
+
 function toggleRow({ setting, label, description }: (typeof TOGGLES)[number]): HTMLElement {
   const checkbox = h('input', {
     type: 'checkbox',
@@ -26,33 +32,43 @@ function toggleRow({ setting, label, description }: (typeof TOGGLES)[number]): H
   return h('label', { class: 'setting' }, h('span', {}, label, h('small', {}, description)), checkbox);
 }
 
-function qualityRow(): HTMLElement {
-  const choices = h('div', { class: 'choices', role: 'group', 'aria-label': 'Graphics quality' });
-  const setPressed = (level: Quality) => {
-    for (const child of choices.querySelectorAll('button')) {
-      const on = child.dataset.quality === level;
+function choiceGroup<T extends string>(
+  ariaLabel: string,
+  choices: { value: T; label: string }[],
+  current: T,
+  onChoose: (value: T) => void,
+  dataKey: string,
+): HTMLElement {
+  const group = h('div', { class: 'choices', role: 'group', 'aria-label': ariaLabel });
+  const setPressed = (value: T) => {
+    for (const child of group.querySelectorAll('button')) {
+      const on = child.dataset[dataKey] === value;
       child.classList.toggle('on', on);
       child.setAttribute('aria-pressed', String(on));
     }
   };
-  for (const level of QUALITIES) {
-    choices.append(
+  for (const { value, label } of choices) {
+    group.append(
       h(
         'button',
         {
           type: 'button',
-          class: settings().quality === level ? 'on' : '',
-          'aria-pressed': String(settings().quality === level),
-          'data-quality': level,
+          class: current === value ? 'on' : '',
+          'aria-pressed': String(current === value),
+          [`data-${dataKey}`]: value,
           onclick: () => {
-            changeSetting('quality', level);
-            setPressed(level);
+            onChoose(value);
+            setPressed(value);
           },
         },
-        QUALITY_LABEL[level],
+        label,
       ),
     );
   }
+  return group;
+}
+
+function qualityRow(): HTMLElement {
   return h(
     'div',
     { class: 'setting' },
@@ -62,7 +78,13 @@ function qualityRow(): HTMLElement {
       'Graphics quality',
       h('small', {}, 'Lower draws fewer pixels, turns soft shadows off, and scatters less clutter.'),
     ),
-    choices,
+    choiceGroup(
+      'Graphics quality',
+      QUALITIES.map(level => ({ value: level, label: QUALITY_LABEL[level] })),
+      settings().quality,
+      (level: Quality) => changeSetting('quality', level),
+      'quality',
+    ),
   );
 }
 
@@ -96,6 +118,52 @@ function passwordSection(): HTMLElement[] {
     form.dataset.awaiting = '1';
   });
   return [h('h2', { class: 'section' }, 'Password'), form];
+}
+
+function labelRows(): HTMLElement[] {
+  const threshold = h('input', {
+    type: 'number',
+    class: 'threshold',
+    min: '0',
+    step: '1',
+    value: String(settings().labelThreshold),
+    'aria-label': 'Valuable threshold in coins',
+    onchange: () => {
+      const n = Number((threshold as HTMLInputElement).value);
+      if (Number.isFinite(n) && n >= 0) changeSetting('labelThreshold', Math.floor(n));
+      else (threshold as HTMLInputElement).value = String(settings().labelThreshold);
+    },
+  });
+  return [
+    h(
+      'div',
+      { class: 'setting' },
+      h(
+        'span',
+        {},
+        'Ground labels',
+        h('small', {}, 'Names above items on the ground. Hold Alt to show every label.'),
+      ),
+      choiceGroup(
+        'Ground labels',
+        LABEL_MODES.map(({ mode, label }) => ({ value: mode, label })),
+        settings().labelMode,
+        (mode: LabelMode) => changeSetting('labelMode', mode),
+        'mode',
+      ),
+    ),
+    h(
+      'label',
+      { class: 'setting' },
+      h(
+        'span',
+        {},
+        'Valuable threshold',
+        h('small', {}, 'Shop value in coins. Uniques are always labelled.'),
+      ),
+      threshold,
+    ),
+  ];
 }
 
 function blockedPlayers(): HTMLElement[] {
@@ -153,6 +221,7 @@ export function openSettings() {
         'div',
         { class: 'body' },
         qualityRow(),
+        ...labelRows(),
         ...TOGGLES.map(toggleRow),
         ...passwordSection(),
         ...blockedPlayers(),
