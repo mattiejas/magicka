@@ -7,6 +7,7 @@ import type { Scene } from './scene/scene';
 import { focusChat } from './ui/chat';
 import { closePanel } from './ui/panels';
 import { closeMenu, hideTooltip, type MenuItem, showMenu, showTooltip } from './ui/popups';
+import { isSettingsOpen } from './ui/settingsModal';
 
 const MIDDLE_BUTTON = 1;
 const LEFT_BUTTON = 0;
@@ -121,7 +122,7 @@ function bindCameraDrag(canvas: HTMLCanvasElement, scene: Scene) {
 function bindKeys(scene: Scene): (dt: number) => void {
   const held = new Set<string>();
   addEventListener('keydown', event => {
-    if (event.target instanceof HTMLInputElement) return;
+    if (event.target instanceof HTMLInputElement || isSettingsOpen()) return;
     held.add(event.key);
     if (event.key === 'Escape') {
       closeMenu();

@@ -408,9 +408,9 @@ h2 {
 }
 #station {
   left: 16px;
-  top: 96px;
+  top: 136px;
   width: 420px;
-  max-height: calc(100vh - 290px);
+  max-height: calc(100vh - 330px);
   display: flex;
   flex-direction: column;
 }
@@ -588,4 +588,86 @@ h2 {
 }
 #side .tabs button {
   text-transform: capitalize;
+}
+
+#vitals h2 {
+  margin-bottom: 4px;
+}
+#vitals .btns {
+  margin-top: 8px;
+}
+#vitals .btns button {
+  flex: 1;
+  padding: 2px 4px;
+}
+#settings {
+  position: fixed;
+  width: min(400px, calc(100vw - 32px));
+  margin: auto;
+  padding: 0;
+  color: var(--text);
+}
+#settings::backdrop {
+  background: rgba(29, 36, 41, 0.55);
+}
+#settings header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 16px;
+  border-bottom: 1px solid var(--line);
+}
+#settings .body {
+  padding: 8px 16px 16px;
+}
+.setting {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  padding: 8px 0;
+  cursor: pointer;
+}
+.setting small {
+  display: block;
+  color: var(--mute);
+}
+/* A switch with square corners. */
+.setting input {
+  appearance: none;
+  flex: none;
+  position: relative;
+  width: 40px;
+  height: 20px;
+  padding: 0;
+  cursor: pointer;
+  transition: background 0.12s;
+}
+.setting input::after {
+  content: "";
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 14px;
+  height: 14px;
+  background: var(--mute);
+  transition: left 0.12s;
+}
+.setting input:checked {
+  background: var(--bg3);
+  border-color: var(--accent);
+}
+.setting input:checked::after {
+  left: 22px;
+  background: var(--accent);
+}
+#fps {
+  position: fixed;
+  top: 16px;
+  right: 240px;
+  padding: 4px 8px;
+  min-width: 72px;
+  text-align: right;
+  font-size: 13px;
+  pointer-events: none;
 }

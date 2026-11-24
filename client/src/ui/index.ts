@@ -4,6 +4,7 @@ import { hasSession, onClosed, onMessage, resume } from '../net/connection';
 import { updateBosses } from './bosses';
 import { chatBox, showChat, showInfo } from './chat';
 import { h, uiRoot } from './dom';
+import { fpsCounter } from './fpsCounter';
 import { updateHint } from './hints';
 import { isLoginShown, loginError, showLogin, showLoginError, takeJustRegistered } from './login';
 import { drawMinimap, minimapPanel } from './minimap';
@@ -22,8 +23,10 @@ export function initUi(): (now: number) => void {
   onClosed(handleClosed);
   showLogin();
   if (hasSession()) resume();
+  const updateFps = fpsCounter();
   let drawnAt = 0;
   return now => {
+    updateFps(now);
     if (now - drawnAt < REDRAW_MS) return;
     drawnAt = now;
     drawMinimap();
