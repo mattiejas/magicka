@@ -61,14 +61,7 @@ var (
 )
 
 func (c *Char) renameItems() {
-	lists := [][]*Stack{c.Inv, c.Bank, c.Kept}
-	for _, s := range c.Equip {
-		lists = append(lists, []*Stack{s})
-	}
-	if c.Grave != nil {
-		lists = append(lists, c.Grave.Items)
-	}
-	for _, list := range lists {
+	for _, list := range c.everywhere() {
 		for _, s := range list {
 			if s != nil && renamedItems[s.ID] != "" {
 				s.ID = renamedItems[s.ID]

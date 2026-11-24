@@ -7,6 +7,7 @@ import (
 	"errors"
 	"fmt"
 	"log"
+	"maps"
 	"strings"
 	"sync"
 	"time"
@@ -37,6 +38,30 @@ var migrations = []string{
 		saved INTEGER NOT NULL
 	);`,
 	`CREATE TABLE totals(name TEXT PRIMARY KEY, value INTEGER NOT NULL);`,
+	`CREATE TABLE sanctions(
+		account INTEGER NOT NULL REFERENCES accounts(id),
+		kind TEXT NOT NULL,
+		until INTEGER NOT NULL,
+		reason TEXT NOT NULL,
+		PRIMARY KEY(account, kind)
+	);
+	CREATE TABLE moderator_log(
+		id INTEGER PRIMARY KEY,
+		moderator TEXT NOT NULL,
+		action TEXT NOT NULL,
+		target TEXT NOT NULL,
+		detail TEXT NOT NULL,
+		created INTEGER NOT NULL
+	);
+	CREATE TABLE reports(
+		id INTEGER PRIMARY KEY,
+		reporter TEXT NOT NULL,
+		target TEXT NOT NULL,
+		reason TEXT NOT NULL,
+		quotes TEXT NOT NULL,
+		created INTEGER NOT NULL,
+		resolved_by TEXT
+	);`,
 }
 
 const options = "?_pragma=journal_mode(WAL)&_pragma=foreign_keys(1)" +
@@ -186,14 +211,14 @@ func (s *Store) Update(account int64, change func(*game.Char)) error {
 	if err != nil {
 		return err
 	}
-	s.Save(account, data)
+	s.Save(map[int64][]byte{account: data})
 	return nil
 }
 
-// Save keeps a character to be written soon.
-func (s *Store) Save(account int64, data []byte) {
+// Save keeps characters to be written soon, all of them at once.
+func (s *Store) Save(batch map[int64][]byte) {
 	s.mu.Lock()
-	s.pending[account] = data
+	maps.Copy(s.pending, batch)
 	s.mu.Unlock()
 	s.wakeWriter()
 }

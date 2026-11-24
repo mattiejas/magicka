@@ -14,6 +14,9 @@ type stats struct {
 // armourSlots are the slots whose numbers count. Ammunition counts when it is used.
 var armourSlots = []string{"weapon", "head", "body", "legs", "neck"}
 
+// shownSlots are what others see a player wear.
+var shownSlots = []string{"weapon", "head", "body", "legs", "cape"}
+
 func (p *Player) stats() stats {
 	s := stats{style: melee, speed: defaultAttackSpeed, reach: defaultAttackReach}
 	if wp := p.C.Equip["weapon"]; wp != nil {

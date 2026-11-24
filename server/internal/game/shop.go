@@ -43,7 +43,7 @@ func (w *World) sell(p *Player, item *content.Item, qty int) {
 	if n == 0 {
 		return
 	}
-	if item.Basic || item.ID == coin {
+	if !item.Tradable() || item.ID == coin {
 		w.tell(p, "The shop does not buy that.")
 		return
 	}

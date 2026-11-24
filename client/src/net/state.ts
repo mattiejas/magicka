@@ -1,5 +1,12 @@
 // Everything the client knows about the world. Only connection.ts writes to it.
-import { type Entity, MONSTERS, type SelfState, TICK_MS, type TilePos } from '@driftwake/shared';
+import {
+  type Entity,
+  MONSTERS,
+  type SelfState,
+  TICK_MS,
+  type TilePos,
+  type TradeView,
+} from '@driftwake/shared';
 
 /** An entity together with the walk it is currently showing. */
 export interface Track {
@@ -19,6 +26,7 @@ export const state = {
   boss: { alive: false, nextTicks: 0, contribution: 0, online: 0, receivedAt: 0 },
   /** Coins taken by graves and the reaper from everyone, once the reaper has been asked. */
   feesTaken: null as number | null,
+  trade: null as TradeView | null,
   connected: false,
 };
 

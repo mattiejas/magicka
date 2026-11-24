@@ -80,6 +80,7 @@ function receive(msg: ServerMsg) {
     case 'welcome':
       state.me = msg.id;
       state.connected = true;
+      state.trade = null;
       state.entities.clear();
       token = msg.token;
       sessionStorage.setItem(TOKEN_KEY, token);
@@ -96,6 +97,9 @@ function receive(msg: ServerMsg) {
       break;
     case 'boss':
       state.boss = { ...msg, receivedAt: performance.now() };
+      break;
+    case 'trade':
+      state.trade = msg.trade;
       break;
     case 'fees':
       state.feesTaken = msg.taken;

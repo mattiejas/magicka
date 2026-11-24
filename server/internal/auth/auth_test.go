@@ -49,7 +49,7 @@ func TestAccounts(t *testing.T) {
 	for i := range 50 { // a read right after a save must see it
 		c.HP = i
 		b, _ := json.Marshal(c)
-		db.Save(s.Account, b)
+		db.Save(map[int64][]byte{s.Account: b})
 		if got, err := db.Load(s.Account); err != nil || got.HP != i {
 			t.Fatal(got, err)
 		}

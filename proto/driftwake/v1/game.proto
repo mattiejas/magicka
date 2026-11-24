@@ -3,7 +3,9 @@ syntax = "proto3";
 package driftwake.v1;
 option go_package = "driftwake/server/internal/pb;pb";
 
-enum Slot { SLOT_UNSPECIFIED = 0; SLOT_WEAPON = 1; SLOT_HEAD = 2; SLOT_BODY = 3; SLOT_LEGS = 4; SLOT_NECK = 5; SLOT_AMMO = 6; }
+enum Slot { SLOT_UNSPECIFIED = 0; SLOT_WEAPON = 1; SLOT_HEAD = 2; SLOT_BODY = 3; SLOT_LEGS = 4; SLOT_NECK = 5; SLOT_AMMO = 6; SLOT_CAPE = 7; }
+enum TradeAction { TRADE_ACTION_UNSPECIFIED = 0; TRADE_ACTION_OFFER = 1; TRADE_ACTION_TAKE_BACK = 2; TRADE_ACTION_ACCEPT = 3; TRADE_ACTION_DECLINE = 4; }
+enum ReportReason { REPORT_REASON_UNSPECIFIED = 0; REPORT_REASON_LANGUAGE = 1; REPORT_REASON_SCAM = 2; REPORT_REASON_CHEATING = 3; REPORT_REASON_OTHER = 4; }
 enum MapId { MAP_ID_UNSPECIFIED = 0; MAP_ID_ISLAND = 1; MAP_ID_MAINLAND = 2; }
 enum EntityKind { ENTITY_KIND_UNSPECIFIED = 0; ENTITY_KIND_PLAYER = 1; ENTITY_KIND_MONSTER = 2; ENTITY_KIND_NODE = 3; ENTITY_KIND_DROP = 4; ENTITY_KIND_GRAVE = 5; ENTITY_KIND_STATION = 6; }
 enum BossState { BOSS_STATE_UNSPECIFIED = 0; BOSS_STATE_CHOOSE = 1; BOSS_STATE_WINDUP = 2; BOSS_STATE_EXECUTE = 3; }
@@ -16,6 +18,8 @@ message ClientMessage {
     Tile move = 5; uint32 gather = 6; uint32 station = 7; uint32 attack = 8; uint32 pickup = 9; Empty grave = 10; Claim claim = 11;
     Craft craft = 12; uint32 equip_slot = 13; Slot unequip = 14; uint32 eat_slot = 15; uint32 drop_slot = 16; Swap swap = 17;
     Bank bank = 18; Empty deposit_all = 19; Boat boat = 20; Look look = 21; string chat = 22; Shop shop = 23; Empty ask_fees = 24;
+    // Asks a player to trade, or agrees to.
+    uint32 trade = 25; TradeStep trade_step = 26; Block block = 27; Report report = 28;
   }
 }
 message Empty {}
@@ -28,6 +32,9 @@ message Boat { bool sail = 1; }
 // Takes back what was lost by dying: one kind of item, or everything affordable when left empty.
 message Claim { string item = 1; }
 message Shop { bool buy = 1; string item = 2; uint32 qty = 3; }
+message TradeStep { TradeAction action = 1; string item = 2; uint32 qty = 3; }
+message Block { string name = 1; bool on = 2; }
+message Report { string name = 1; ReportReason reason = 2; }
 message Look { uint32 cut = 1; uint32 color = 2; }
 
 // --- server to browser
@@ -37,9 +44,17 @@ message ServerMessage {
     Chat chat = 6; Info info = 7; Xp xp = 8; string open_station = 9; BossStatus boss = 10;
     // Everything the reaper and graves have ever taken, from everyone.
     uint64 fees_taken = 11;
+    TradeRequest trade_request = 12; TradeView trade = 13;
   }
 }
 message Welcome { string token = 1; uint32 id = 2; }
+message TradeRequest { uint32 player = 1; string name = 2; }
+// What both sides offer. Sent with open unset when the trade ends.
+message TradeView {
+  bool open = 1; string partner = 2; repeated Stack mine = 3; repeated Stack theirs = 4; bool i_accepted = 5; bool they_accepted = 6;
+  // Tick from which the offers can be accepted, so that nothing changes at the last moment.
+  uint32 ready_at = 7;
+}
 message Chat { string from = 1; string text = 2; }
 message Info { string text = 1; InfoKind kind = 2; }
 message Xp { string skill = 1; uint32 amount = 2; }
@@ -52,6 +67,8 @@ message Self {
   repeated Stack bank = 7; map<string, uint32> boat = 8; bool boat_done = 9; Look look = 11;
   // What the reaper holds: lost by dying, and uniques nobody picked up.
   repeated Stack reaper = 10; repeated Stack kept = 12;
+  // Names of players whose chat and trade requests are hidden.
+  repeated string blocked = 13;
 }
 // `entities` hold only what changed, except for entities the browser did not know yet.
 message Snapshot { uint32 tick = 1; MapId map = 2; bool reset = 3; repeated Entity entities = 4; repeated uint32 gone = 5; repeated Event events = 6; }
@@ -69,7 +86,7 @@ message Entity {
   // Nodes are only reported while they are depleted or glowing.
   optional bool glowing = 19;
 }
-message Gear { string weapon = 1; string head = 2; string body = 3; string legs = 4; }
+message Gear { string weapon = 1; string head = 2; string body = 3; string legs = 4; string cape = 5; }
 message BossView { BossState state = 1; string attack = 2; repeated uint32 tiles = 3; uint32 start = 4; uint32 end = 5; uint32 target = 6; }
 message Event { oneof event { Hit hit = 1; Impact impact = 2; uint32 death = 3; } }
 message Hit { uint32 from = 1; uint32 to = 2; uint32 damage = 3; string style = 4; }

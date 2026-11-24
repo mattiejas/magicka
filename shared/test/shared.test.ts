@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
   BOAT_PARTS,
+  ECONOMY,
   gatherChance,
   hitChance,
   ITEMS,
@@ -10,6 +11,7 @@ import {
   MONSTERS,
   NODES,
   RECIPES,
+  SKILLS,
   styleModifier,
   xpForLevel,
 } from '../src';
@@ -52,7 +54,8 @@ describe('content graph', () => {
     const maps = Object.values(MAPS);
     const gathered = maps.flatMap(map => map.nodes.map(node => NODES[node.type].item));
     const looted = maps.flatMap(map => map.spawns.flatMap(spawn => lootItems(MONSTERS[spawn.type].loot)));
-    const have = new Set(['worn_pickaxe', 'worn_axe', 'worn_sword', ...gathered, ...looted]);
+    const capes = SKILLS.map(skill => `cape_${skill}`);
+    const have = new Set([...ECONOMY.shopStock, ...capes, ...gathered, ...looted]);
     const craftable = () => RECIPES.filter(r => !have.has(r.out) && r.in.every(([item]) => have.has(item)));
     for (let next = craftable(); next.length; next = craftable())
       for (const recipe of next) have.add(recipe.out);

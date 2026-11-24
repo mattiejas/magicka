@@ -26,6 +26,10 @@ func (w *World) goal(p *Player) (g goal, ok bool) {
 		if d := w.findDrop(a.id); d != nil && d.Map == m && d.visibleTo(p.ID, w.Tick) {
 			return goal{tile(d.X, d.Y), 0}, true
 		}
+	case actTrade:
+		if o := w.players[a.id]; o != nil && o != p && o.C.Map == p.C.Map {
+			return goal{tile(o.C.X, o.C.Y), tradeReach}, true
+		}
 	case actGrave:
 		if g := p.C.Grave; g != nil && g.Map == p.C.Map {
 			return goal{tile(g.X, g.Y), 1}, true
@@ -72,8 +76,8 @@ func (w *World) reachGoal(p *Player) bool {
 		if p.isRooted(w.Tick) {
 			return false
 		}
-		// Monsters move, so the way to one is found anew every tick.
-		if len(p.path) == 0 || p.act.typ == actAttack {
+		// Monsters and players move, so the way to one is found anew every tick.
+		if len(p.path) == 0 || p.act.typ == actAttack || p.act.typ == actTrade {
 			p.path = w.finder.find(w.mapOf(p), p.C.X, p.C.Y, g.at, g.reach)
 		}
 		if len(p.path) == 0 {
@@ -102,6 +106,8 @@ func (w *World) performAction(p *Player) {
 	case actGrave:
 		w.stop(p)
 		w.open(p, "grave")
+	case actTrade:
+		w.askToTrade(p, w.players[id])
 	case actPickup:
 		w.pickup(p, w.findDrop(id))
 	}

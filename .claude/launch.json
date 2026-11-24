@@ -1,6 +1,15 @@
 {
   "version": "0.0.1",
   "configurations": [
-    { "name": "dev", "runtimeExecutable": "npm", "runtimeArgs": ["run", "dev"], "port": 5173 }
+    { "name": "dev", "runtimeExecutable": "npm", "runtimeArgs": ["run", "dev"], "port": 5173 },
+    {
+      "name": "throwaway",
+      "runtimeExecutable": "sh",
+      "runtimeArgs": [
+        "-c",
+        "npm run build && PORT=3997 DB_PATH=$(mktemp -d)/test.db DRIFTWAKE_DEV=1 MODERATORS=Warden ./bin/server"
+      ],
+      "port": 3997
+    }
   ]
 }

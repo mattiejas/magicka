@@ -7,6 +7,9 @@ import (
 
 // handle carries out what a player asked for. Anything that takes time becomes the player's action.
 func (w *World) handle(p *Player, msg *pb.ClientMessage) {
+	if p.trade != nil && interruptsTrade(msg) {
+		w.endTrade(p.trade, "The trade was declined.")
+	}
 	switch m := msg.Msg.(type) {
 	case *pb.ClientMessage_Move:
 		w.startWalk(p, int(m.Move.X), int(m.Move.Y))
@@ -50,9 +53,25 @@ func (w *World) handle(p *Player, msg *pb.ClientMessage) {
 		p.C.Look = &Look{Cut: int(m.Look.Cut), Color: int(m.Look.Color)}
 		p.dirty = true
 		w.save(p)
+	case *pb.ClientMessage_Trade:
+		p.begin(action{typ: actTrade, id: m.Trade})
+	case *pb.ClientMessage_TradeStep:
+		w.stepTrade(p, m.TradeStep)
+	case *pb.ClientMessage_Block:
+		w.block(p, m.Block)
 	case *pb.ClientMessage_Chat:
 		w.chat(p, m.Chat)
 	}
+}
+
+// interruptsTrade is false for what a trading player can do without ending the trade.
+func interruptsTrade(msg *pb.ClientMessage) bool {
+	switch msg.Msg.(type) {
+	case *pb.ClientMessage_TradeStep, *pb.ClientMessage_Chat, *pb.ClientMessage_Block, *pb.ClientMessage_Look,
+		*pb.ClientMessage_Swap:
+		return false
+	}
+	return true
 }
 
 // begin replaces what the player was doing.
@@ -68,7 +87,7 @@ func (w *World) tellIf(p *Player, why string) {
 }
 
 func slotName(s pb.Slot) string {
-	return [...]string{"", "weapon", "head", "body", "legs", "neck", "ammo"}[s]
+	return [...]string{"", "weapon", "head", "body", "legs", "neck", "ammo", "cape"}[s]
 }
 
 func (w *World) startWalk(p *Player, x, y int) {
@@ -105,6 +124,10 @@ func (p *Player) isEating(tick int) bool { return p.doing == eating && p.nextAct
 func (w *World) dropSlot(p *Player, slot int) {
 	s := p.C.Inv[slot]
 	if s == nil {
+		return
+	}
+	if content.Items[s.ID].Trophy {
+		w.tell(p, "You cannot drop a trophy.")
 		return
 	}
 	p.C.Inv[slot] = nil
@@ -167,5 +190,10 @@ func (w *World) chat(p *Player, text string) {
 		w.devCommand(p, text[1:])
 		return
 	}
-	w.broadcast(&pb.ServerMessage{Msg: &pb.ServerMessage_Chat{Chat: &pb.Chat{From: p.Name, Text: text}}})
+	line := &pb.ServerMessage{Msg: &pb.ServerMessage_Chat{Chat: &pb.Chat{From: p.Name, Text: text}}}
+	for _, o := range w.order {
+		if !o.C.hasBlocked(p.Name) {
+			w.send(o, line)
+		}
+	}
 }

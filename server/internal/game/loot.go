@@ -57,10 +57,11 @@ func (w *World) drop(m *content.Map, at Point, item string, qty int, owner uint3
 			Qty:      each,
 			Owner:    owner,
 			kept:     content.Items[item].Unique,
+			personal: content.Items[item].Unique || times.public == 0,
 			publicAt: w.Tick + Ticks(times.private),
 			expires:  w.Tick + Ticks(times.private+times.public),
 		}
-		if d.kept { // never public, so its time is up when the private time is
+		if d.personal { // its time is up when the private time is
 			d.expires = d.publicAt
 		}
 		w.drops = append(w.drops, d)
@@ -68,7 +69,7 @@ func (w *World) drop(m *content.Map, at Point, item string, qty int, owner uint3
 }
 
 func (d *Drop) visibleTo(player uint32, tick int) bool {
-	return d.Owner == player || (!d.kept && d.publicAt <= tick)
+	return d.Owner == player || (!d.personal && d.publicAt <= tick)
 }
 
 // keepForOwner hands an unclaimed unique to the reaper, whether or not its owner is here.

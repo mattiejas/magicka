@@ -9,6 +9,7 @@ import { dockPanel } from './dock';
 import { hairPanel } from './hair';
 import { gravePanel, reaperPanel } from './reclaim';
 import { shopPanel } from './shop';
+import { tradePanel } from './trade';
 
 export { clickQuantity } from './quantity';
 
@@ -16,10 +17,11 @@ export interface Panel {
   title: string;
   render: (self: SelfState, refresh: () => void) => (Node | string)[];
   onOpen?: () => void;
+  onClose?: () => void;
   /** When given, the panel is only redrawn when this changes, so updates never swallow a click or the focus. */
   key?: (self: SelfState) => string;
 }
-export type PanelId = StationType | 'grave' | 'hair';
+export type PanelId = StationType | 'grave' | 'hair' | 'trade';
 
 const PANELS: Record<PanelId, Panel> = {
   bank: bankPanel,
@@ -31,6 +33,7 @@ const PANELS: Record<PanelId, Panel> = {
   grave: gravePanel,
   dock: dockPanel,
   hair: hairPanel,
+  trade: tradePanel,
 };
 /** How far a player may walk from a station before its panel closes. */
 const STATION_REACH = 2;
@@ -53,10 +56,20 @@ export function togglePanel(id: PanelId) {
 }
 
 export function closePanel() {
+  const closed = openPanelId && PANELS[openPanelId];
   openPanelId = null;
   drawnKey = null;
   element()?.remove();
   hideTooltip();
+  closed?.onClose?.();
+}
+
+/** Shows the trade window while there is a trade. */
+export function showTrade() {
+  if (!state.trade) {
+    if (isPanelOpen('trade')) closePanel();
+  } else if (isPanelOpen('trade')) updatePanel();
+  else openPanel('trade');
 }
 
 const element = () => byId('station');
@@ -91,7 +104,7 @@ const openStation = (map: MapId) => MAPS[map].stations.find(s => s.type === open
 
 export function closePanelWhenFar() {
   const me = myTrack()?.entity;
-  if (!openPanelId || openPanelId === 'hair' || !state.self || !me) return;
+  if (!openPanelId || openPanelId === 'hair' || openPanelId === 'trade' || !state.self || !me) return;
   const place = openPanelId === 'grave' ? state.entities.get('grave')?.entity : openStation(state.self.map);
   if (!place || Math.max(Math.abs(me.x - place.x), Math.abs(me.y - place.y)) > STATION_REACH) closePanel();
 }

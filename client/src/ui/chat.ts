@@ -1,7 +1,9 @@
 // The chat box, which also shows messages from the game.
 import type { InfoKind } from '@driftwake/shared';
 import { send } from '../net/connection';
-import { byId, h } from './dom';
+import { button, byId, h } from './dom';
+import { playerInSight, playerMenu } from './players';
+import { showMenu } from './popups';
 
 const MAX_LINES = 120;
 const MAX_LENGTH = 160;
@@ -30,7 +32,22 @@ function handleKey(event: KeyboardEvent, input: HTMLInputElement) {
 export const focusChat = () => byId('chat-in')?.focus();
 
 export function showChat(from: string, text: string) {
-  addLine('chat', h('b', {}, `${from}: `), text);
+  addLine('chat', nameLabel(from), text);
+}
+
+/** Right-clicking a name offers to trade with, block or report its player. */
+function nameLabel(name: string): HTMLElement {
+  const oncontextmenu = (event: MouseEvent) => {
+    event.preventDefault();
+    const { clientX: x, clientY: y } = event;
+    showMenu(x, y, playerMenu(name, playerInSight(name), { x, y }));
+  };
+  return h('b', { oncontextmenu }, `${name}: `);
+}
+
+export function showTradeRequest(id: string, name: string) {
+  const answer = button('Trade', () => send({ type: 'trade', id }));
+  addLine('unique', `${name} wants to trade with you. `, answer);
 }
 
 export function showInfo(text: string, kind: InfoKind | 'info' = 'info') {

@@ -24,6 +24,7 @@ func (w *World) Step() {
 		w.regenerate()
 	}
 	w.logOutIdle()
+	w.endBrokenTrades()
 	w.removeGone()
 	if w.Tick%saveInterval == 0 {
 		for _, p := range w.order {

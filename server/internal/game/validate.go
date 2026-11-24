@@ -48,11 +48,22 @@ func Decode(b []byte) (*pb.ClientMessage, bool) {
 	case *pb.ClientMessage_Swap:
 		ok = slot(m.Swap.GetA()) && slot(m.Swap.GetB())
 	case *pb.ClientMessage_Unequip:
-		ok = m.Unequip >= pb.Slot_SLOT_WEAPON && m.Unequip <= pb.Slot_SLOT_AMMO
+		ok = m.Unequip >= pb.Slot_SLOT_WEAPON && m.Unequip <= pb.Slot_SLOT_CAPE
 	case *pb.ClientMessage_Bank:
 		ok = qty(m.Bank.GetQty(), 1_000_000)
 	case *pb.ClientMessage_Shop:
 		ok = qty(m.Shop.GetQty(), 1_000_000)
+	case *pb.ClientMessage_TradeStep:
+		a := m.TradeStep.GetAction()
+		moves := a == pb.TradeAction_TRADE_ACTION_OFFER || a == pb.TradeAction_TRADE_ACTION_TAKE_BACK
+		ok = a >= pb.TradeAction_TRADE_ACTION_OFFER && a <= pb.TradeAction_TRADE_ACTION_DECLINE &&
+			(!moves || qty(m.TradeStep.GetQty(), 1_000_000))
+	case *pb.ClientMessage_Block:
+		ok = nameRE.MatchString(m.Block.GetName())
+	case *pb.ClientMessage_Report:
+		r := m.Report.GetReason()
+		ok = nameRE.MatchString(m.Report.GetName()) &&
+			r >= pb.ReportReason_REPORT_REASON_LANGUAGE && r <= pb.ReportReason_REPORT_REASON_OTHER
 	case *pb.ClientMessage_Look:
 		ok = m.Look.GetCut() < uint32(content.Haircuts) && m.Look.GetColor() < uint32(content.HairColors)
 	case *pb.ClientMessage_Chat:

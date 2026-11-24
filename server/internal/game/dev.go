@@ -19,6 +19,7 @@ func (w *World) devCommand(p *Player, line string) {
 	case "level":
 		for _, s := range content.Skills {
 			if s == first || first == "all" {
+				defer w.grantCapes(p)
 				p.C.XP[s] = xpTable[max(1, min(MaxLevel, devNumber(second)))]
 			}
 		}

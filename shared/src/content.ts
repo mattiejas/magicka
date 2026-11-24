@@ -14,7 +14,7 @@ export const SKILLS = [
 ] as const;
 export type Skill = (typeof SKILLS)[number];
 export type Style = 'melee' | 'ranged' | 'magic';
-export const SLOTS = ['weapon', 'head', 'body', 'legs', 'neck', 'ammo'] as const;
+export const SLOTS = ['weapon', 'head', 'body', 'legs', 'neck', 'ammo', 'cape'] as const;
 export type Slot = (typeof SLOTS)[number];
 export const INV_SIZE = 24;
 export const METAL_COLORS = ['#94887c', '#e07f3c', '#b4bcc8', '#7fb0f0', '#2f62c8', '#2fb58a'];
@@ -40,8 +40,10 @@ export interface Item {
   unique?: boolean;
   /** What it is worth, in coins. */
   value: number;
-  /** Sold in every shop, and worth nothing to anyone else. */
+  /** Sold in every shop, and never bought back. */
   basic?: boolean;
+  /** Can never be traded, sold or dropped. */
+  trophy?: boolean;
 }
 export interface Recipe {
   id: string;
@@ -123,12 +125,12 @@ export interface Look {
   cut: number;
   color: number;
 }
-/** Percentages are of an item's shop value. */
 /** Methods beyond the basic one. */
 export interface Methods {
   /** Skill level from which they work. */
   level: number;
 }
+/** Percentages are of an item's shop value. */
 export interface Economy {
   shopStock: string[];
   sellPercent: number;

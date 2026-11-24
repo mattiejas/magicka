@@ -32,6 +32,7 @@ func (w *World) self(p *Player) *pb.Self {
 		Boat:     map[string]uint32{},
 		BoatDone: c.BoatDone,
 		Bank:     pbStacks(c.Bank),
+		Blocked:  c.Blocked,
 		Look:     &pb.Look{Cut: uint32(l.Cut), Color: uint32(l.Color)},
 	}
 	for skill, xp := range c.XP {
@@ -45,7 +46,7 @@ func (w *World) self(p *Player) *pb.Self {
 			s.Inventory = append(s.Inventory, &pb.InvSlot{Index: uint32(i), Stack: pbStack(stack)})
 		}
 	}
-	for slot := pb.Slot_SLOT_WEAPON; slot <= pb.Slot_SLOT_AMMO; slot++ {
+	for slot := pb.Slot_SLOT_WEAPON; slot <= pb.Slot_SLOT_CAPE; slot++ {
 		if e := c.Equip[slotName(slot)]; e != nil {
 			s.Equipment = append(s.Equipment, &pb.EquipSlot{Slot: slot, Stack: pbStack(e)})
 		}

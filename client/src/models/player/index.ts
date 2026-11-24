@@ -5,6 +5,7 @@ import { merge } from '../../geo';
 import { heldGeo } from '../held';
 import { type Model, mesh, pivot } from '../model';
 import { addArm } from './arms';
+import { capeParts } from './cape';
 import { headJoint } from './head';
 import { addLeg } from './legs';
 import { outfitOf } from './outfit';
@@ -32,8 +33,15 @@ export function playerModel(name: string, gear: (string | null)[], look: Look = 
   addLeg(parts, root, 'll', 1, outfit);
   addLeg(parts, root, 'rl', -1, outfit);
   root.add(upper);
+  if (outfit.cape) addCape(parts, outfit.cape);
   if (outfit.weapon) parts.weapon = addWeapon(parts, outfit.weapon);
   return { root, parts, height: 1.85, kind: 'player', key: modelKey(gear, look) };
+}
+
+function addCape(parts: Model['parts'], item: Item) {
+  const { cloth, collar } = capeParts(item);
+  parts.cape = cloth;
+  parts.upper.add(cloth, collar);
 }
 
 function addWeapon(parts: Model['parts'], { icon, color, unique }: Item): THREE.Mesh {

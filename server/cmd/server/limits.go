@@ -7,21 +7,25 @@ import (
 
 // budget limits how many messages a connection may send: a burst, refilled steadily.
 type budget struct {
-	left float64
-	last time.Time
+	burst, perSecond, left float64
+	last                   time.Time
 }
 
 const (
 	messageBurst      = 30
 	messagesPerSecond = 15
+	chatBurst         = 5
+	chatPerSecond     = 0.7
 )
 
-func newBudget() *budget { return &budget{messageBurst, time.Now()} }
+func newBudget(burst, perSecond float64) *budget {
+	return &budget{burst: burst, perSecond: perSecond, left: burst, last: time.Now()}
+}
 
 // spend reports whether there was room for one more message.
 func (b *budget) spend() bool {
 	now := time.Now()
-	b.left = min(messageBurst, b.left+now.Sub(b.last).Seconds()*messagesPerSecond)
+	b.left = min(b.burst, b.left+now.Sub(b.last).Seconds()*b.perSecond)
 	b.last = now
 	if b.left < 1 {
 		return false

@@ -17,17 +17,19 @@ const shortQuantity = (qty: number) => (qty >= 10_000 ? `${Math.floor(qty / 1000
 
 export const coins = (amount: number) => `${amount.toLocaleString('en')} ${amount === 1 ? 'coin' : 'coins'}`;
 
-export const isSellable = (itemId: string) => !ITEMS[itemId].basic && itemId !== 'coin';
+export const isTradable = (itemId: string) => !ITEMS[itemId].basic && !ITEMS[itemId].trophy;
+
+export const isSellable = (itemId: string) => isTradable(itemId) && itemId !== 'coin';
 
 function worth(itemId: string): string | false {
-  if (itemId === 'coin') return false;
+  if (itemId === 'coin' || ITEMS[itemId].trophy) return false;
   const { value } = ITEMS[itemId];
   const sold = sellPrice(value, 1, ECONOMY.sellPercent);
   return `Value ${coins(value)}${isSellable(itemId) ? `, sells for ${coins(sold)}` : ', not bought by shops'}`;
 }
 
 export function describe(itemId: string): string {
-  const { name, style, acc, power, armour, heal, req, unique } = ITEMS[itemId];
+  const { name, style, acc, power, armour, heal, req, unique, trophy } = ITEMS[itemId];
   const stats = [
     style,
     acc && `accuracy ${acc}`,
@@ -38,7 +40,13 @@ export function describe(itemId: string): string {
   const requirements = Object.entries(req ?? {})
     .filter(([, needed]) => needed > 1)
     .map(([skill, needed]) => `Requires ${skill} ${needed}`);
-  return [name, stats.join(', '), ...requirements, unique && 'Unique', worth(itemId)]
+  return [
+    name,
+    stats.join(', '),
+    ...requirements,
+    trophy ? 'Trophy, cannot be traded' : unique && 'Unique',
+    worth(itemId),
+  ]
     .filter(Boolean)
     .join('\n');
 }

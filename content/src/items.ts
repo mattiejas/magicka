@@ -13,7 +13,7 @@ export const SKILLS = [
 ] as const;
 export type Skill = (typeof SKILLS)[number];
 export type Style = 'melee' | 'ranged' | 'magic';
-export const SLOTS = ['weapon', 'head', 'body', 'legs', 'neck', 'ammo'] as const;
+export const SLOTS = ['weapon', 'head', 'body', 'legs', 'neck', 'ammo', 'cape'] as const;
 export type Slot = (typeof SLOTS)[number];
 export const INV_SIZE = 24;
 export const TIER_LEVEL = [1, 1, 10, 20, 30, 40];
@@ -50,8 +50,10 @@ export interface Item {
   unique?: boolean;
   /** What it is worth, in coins. */
   value: number;
-  /** Sold in every shop, and worth nothing to anyone else. */
+  /** Sold in every shop, and never bought back. */
   basic?: boolean;
+  /** Can never be traded, sold or dropped. */
+  trophy?: boolean;
 }
 export const ITEMS: Record<string, Item> = {};
 /** Items that are made get their value from what goes into them; see valueCraftedItems. */
@@ -435,6 +437,43 @@ add({
   req: { magic: 40 },
   value: WORLD_UNIQUE_VALUE,
   unique: true,
+});
+
+// Trophies
+const CAPE_COLORS: Record<Skill, string> = {
+  mining: '#8c8478',
+  smithing: '#c0643c',
+  woodcutting: '#5f8a4a',
+  crafting: '#b08a4e',
+  melee: '#a8413c',
+  ranged: '#3f7d62',
+  magic: '#4a62b0',
+  defence: '#6d7f94',
+  vitality: '#b0577f',
+};
+/** Worn for show by whoever has mastered a skill. */
+for (const skill of SKILLS)
+  add({
+    id: `cape_${skill}`,
+    name: `${cap(skill)} cape`,
+    icon: 'cape',
+    color: CAPE_COLORS[skill],
+    tier: 5,
+    slot: 'cape',
+    req: { [skill]: 50 },
+    value: 1,
+    trophy: true,
+  });
+add({
+  id: 'rooted_mantle',
+  name: 'Rooted mantle',
+  icon: 'cape',
+  color: '#6f9048',
+  tier: 5,
+  slot: 'cape',
+  value: 1,
+  unique: true,
+  trophy: true,
 });
 
 // Resource nodes
@@ -846,7 +885,7 @@ mon({
       ['gem_1', 1, 0.3],
       ['gem_2', 1, 0.1],
     ],
-    unique: [['barnacle_charm', 1 / 12]],
+    unique: [['barnacle_charm', 1 / 50]],
   },
   boss: {
     baseHp: 90,
@@ -901,6 +940,7 @@ mon({
       ['rootcleaver', 1 / 400],
       ['briarstring', 1 / 400],
       ['heartwood', 1 / 400],
+      ['rooted_mantle', 1 / 1000],
     ],
   },
   boss: {

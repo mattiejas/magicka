@@ -26,10 +26,14 @@ type Item struct {
 	Tier, Speed, Range, Heal          int
 	Acc, Power, Armour                float64
 	Stack, Unique                     bool
+	Trophy                            bool // can never be traded, sold or dropped
 	Basic                             bool // sold in every shop, and never bought back
 	Value                             int  // in coins
 	Req                               map[string]int
 }
+
+// Tradable items can change hands between players.
+func (i *Item) Tradable() bool { return !i.Basic && !i.Trophy }
 
 // Amount is a quantity of one item, written as ["id", n] in the data.
 type Amount struct {

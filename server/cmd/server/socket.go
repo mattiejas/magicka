@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"net/url"
 	"slices"
+	"strings"
 	"sync/atomic"
 	"time"
 
@@ -59,7 +60,7 @@ func (s *server) handleSocket(w http.ResponseWriter, r *http.Request) {
 	go c.write(ctx)
 
 	address, _, _ := net.SplitHostPort(r.RemoteAddr)
-	sess := &session{server: s, conn: c, address: address}
+	sess := &session{server: s, conn: c, address: address, chat: newBudget(chatBurst, chatPerSecond)}
 	defer sess.end()
 	timeout := time.AfterFunc(signInTimeout, func() {
 		if !sess.signedIn.Load() {
@@ -77,7 +78,8 @@ type session struct {
 	address  string
 	signedIn atomic.Bool
 	player   uint32
-	token    string
+	account  auth.Session
+	chat     *budget
 }
 
 func (s *session) end() {
@@ -87,7 +89,7 @@ func (s *session) end() {
 }
 
 func (s *session) read(ctx context.Context) {
-	budget := newBudget()
+	budget := newBudget(messageBurst, messagesPerSecond)
 	for {
 		kind, data, err := s.conn.ws.Read(ctx)
 		if err != nil {
@@ -123,7 +125,7 @@ func (s *session) receive(msg *pb.ClientMessage) (done bool) {
 		if !s.inCharge() {
 			return false
 		}
-		if err := s.server.auth.Revoke(s.token); err != nil {
+		if err := s.server.auth.Revoke(s.account.Token); err != nil {
 			log.Print(err)
 		}
 		return true
@@ -132,10 +134,48 @@ func (s *session) receive(msg *pb.ClientMessage) (done bool) {
 			log.Print("<- ", protojson.Format(msg))
 		}
 		if s.inCharge() {
-			s.server.world.Enqueue(s.player, msg)
+			s.forward(msg)
 		}
 	}
 	return false
+}
+
+// forward passes a message on to the game, unless it is about moderation.
+func (s *session) forward(msg *pb.ClientMessage) {
+	moderation, name := s.server.moderation, s.account.Name
+	switch m := msg.Msg.(type) {
+	case *pb.ClientMessage_Report:
+		s.tell(moderation.Report(name, m.Report.Name, reportReasons[m.Report.Reason]))
+		return
+	case *pb.ClientMessage_Chat:
+		if reply, handled := moderation.Command(name, m.Chat); handled {
+			s.tell(reply)
+			return
+		}
+		if !s.chat.spend() {
+			s.tell("You are talking too fast.")
+			return
+		}
+		if refusal := moderation.Say(s.account.Account, name, m.Chat); refusal != "" {
+			s.tell(refusal)
+			return
+		}
+	}
+	s.server.world.Enqueue(s.player, msg)
+}
+
+var reportReasons = map[pb.ReportReason]string{
+	pb.ReportReason_REPORT_REASON_LANGUAGE: "offensive language",
+	pb.ReportReason_REPORT_REASON_SCAM:     "scamming",
+	pb.ReportReason_REPORT_REASON_CHEATING: "cheating",
+	pb.ReportReason_REPORT_REASON_OTHER:    "something else",
+}
+
+// tell shows lines of text to the player.
+func (s *session) tell(text string) {
+	for _, line := range strings.Split(text, "\n") {
+		s.conn.Send(&pb.ServerMessage{Msg: &pb.ServerMessage_Info{Info: &pb.Info{Text: line}}})
+	}
 }
 
 // inCharge is false once the player has signed in somewhere else.
@@ -154,6 +194,16 @@ func (s *session) signIn(attempt func(*auth.Auth) (*auth.Session, error)) {
 		s.conn.fail(signInError(err))
 		return
 	}
+	refusal, err := s.server.moderation.SignIn(account.Account)
+	if err != nil {
+		log.Print(err)
+		s.conn.fail("Something went wrong.")
+		return
+	}
+	if refusal != "" {
+		s.conn.fail(refusal)
+		return
+	}
 	welcome := &pb.Welcome{Token: account.Token, Id: game.PlayerID(account.Account)}
 	s.conn.Send(&pb.ServerMessage{Msg: &pb.ServerMessage_Welcome{Welcome: welcome}})
 	load := func() (*game.Char, error) { return s.server.store.Load(account.Account) }
@@ -163,13 +213,13 @@ func (s *session) signIn(attempt func(*auth.Auth) (*auth.Session, error)) {
 		s.conn.fail("Your character could not be loaded.")
 		return
 	}
-	s.player, s.token = player, account.Token
+	s.player, s.account = player, *account
 	s.signedIn.Store(true)
 }
 
 // signInError is what the player is told. Anything unexpected is logged instead.
 func signInError(err error) string {
-	for _, expected := range []error{auth.ErrTaken, auth.ErrWrong, auth.ErrExpired} {
+	for _, expected := range []error{auth.ErrTaken, auth.ErrName, auth.ErrWrong, auth.ErrExpired} {
 		if errors.Is(err, expected) {
 			return expected.Error()
 		}

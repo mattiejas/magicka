@@ -3,6 +3,7 @@ package game
 import (
 	"encoding/json"
 	"fmt"
+	"maps"
 	"reflect"
 	"slices"
 	"testing"
@@ -20,7 +21,7 @@ type memStore struct {
 
 func newStore() memStore { return memStore{map[int64][]byte{}, map[string]int64{}} }
 
-func (m memStore) Save(a int64, b []byte) { m.chars[a] = b }
+func (m memStore) Save(batch map[int64][]byte) { maps.Copy(m.chars, batch) }
 
 func (m memStore) Total(name string) int64 { return m.totals[name] }
 

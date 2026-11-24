@@ -218,6 +218,7 @@ export function posePlayer(model: Model, pose: Pose) {
   const base = pose.moving ? walking(pose) : standing(pose);
   const joints = { ...base, ...ACTIONS[pose.action ?? '']?.(pose, base) };
   applyJoints(model.parts, joints, pose.moving);
+  hangCape(model.parts, joints.lean, pose);
   holdTool(model.parts, pose);
 }
 
@@ -237,6 +238,13 @@ function applyJoints(parts: Model['parts'], j: PlayerJoints, moving: boolean) {
   parts.ll2.rotation.x = j.leftKnee;
   parts.rl2.rotation.x = j.rightKnee;
   parts.ll.position.y = parts.rl.position.y = hip;
+}
+
+/** Hangs straight down whatever the body does, and trails behind while walking. */
+function hangCape({ cape }: Model['parts'], lean: number, { moving, walk, time }: Pose) {
+  if (!cape) return;
+  const trail = moving ? 0.34 + Math.sin(walk * 2) * 0.07 : 0.06 + Math.sin(time / 900) * 0.02;
+  cape.rotation.x = trail - Math.min(0.3, lean);
 }
 
 const HAMMER = 'hammer';

@@ -12,9 +12,10 @@ import (
 // GameName is the working title. Keep it in step with GAME_NAME in shared/src/content.ts.
 const GameName = "Driftwake"
 
-// Store keeps characters. Save must not block for long.
+// Store keeps characters. Saving must not block for long.
 type Store interface {
-	Save(account int64, data []byte)
+	// Save keeps characters by account, all of them or none.
+	Save(batch map[int64][]byte)
 	// Update changes a saved character that is not in the world.
 	Update(account int64, change func(*Char)) error
 	// Totals are counts kept for the whole world.

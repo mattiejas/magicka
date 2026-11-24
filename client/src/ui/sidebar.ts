@@ -12,7 +12,7 @@ import {
 import { send } from '../net/connection';
 import { state } from '../net/state';
 import { bar, button, h } from './dom';
-import { ALL_ITEMS, isSellable, itemSlot, level } from './items';
+import { ALL_ITEMS, isSellable, isTradable, itemSlot, level } from './items';
 import { clickQuantity, isPanelOpen } from './panels';
 import type { MenuItem } from './popups';
 
@@ -65,11 +65,14 @@ function useItem({ id }: Stack, slot: number) {
   const item = ITEMS[id];
   if (isPanelOpen('bank')) send({ type: 'bank', op: 'deposit', item: id, qty: clickQuantity() });
   else if (isPanelOpen('shop')) sell(id, clickQuantity());
+  else if (isPanelOpen('trade')) offer(id, clickQuantity());
   else if (item.heal) send({ type: 'eat', slot });
   else if (item.slot) send({ type: 'equip', slot });
 }
 
 const sell = (item: string, qty: number) => send({ type: 'shop', op: 'sell', item, qty });
+
+const offer = (item: string, qty: number) => send({ type: 'tradeStep', action: 'offer', item, qty });
 
 function itemMenu({ id }: Stack, slot: number): MenuItem[] {
   const item = ITEMS[id];
@@ -79,7 +82,8 @@ function itemMenu({ id }: Stack, slot: number): MenuItem[] {
   if (isPanelOpen('bank'))
     entries.push(['Deposit all', () => send({ type: 'bank', op: 'deposit', item: id, qty: ALL_ITEMS })]);
   if (isPanelOpen('shop') && isSellable(id)) entries.push(['Sell all', () => sell(id, ALL_ITEMS)]);
-  entries.push([`Drop ${item.name}`, () => send({ type: 'drop', slot })]);
+  if (isPanelOpen('trade') && isTradable(id)) entries.push(['Offer all', () => offer(id, ALL_ITEMS)]);
+  if (!item.trophy) entries.push([`Drop ${item.name}`, () => send({ type: 'drop', slot })]);
   return entries;
 }
 

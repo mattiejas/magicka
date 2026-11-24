@@ -8,6 +8,7 @@ import {
   INV_SIZE,
   MAPS,
   type MapId,
+  REPORT_REASONS,
   type SelfState,
   type ServerMsg,
   SKILLS,
@@ -29,7 +30,9 @@ import {
   type Self as PbSelf,
   type Snapshot as PbSnapshot,
   type Stack as PbStack,
+  type TradeView as PbTradeView,
   ServerMessageSchema,
+  TradeAction,
 } from '../pb/driftwake/v1/game_pb';
 
 const logMessages = import.meta.env.DEV && new URLSearchParams(location.search).has('messages');
@@ -76,6 +79,12 @@ const INFO_KINDS = {
   [PbInfo.LEVEL]: 'level',
   [PbInfo.BAD]: 'bad',
 } as const;
+const TRADE_ACTIONS = {
+  offer: TradeAction.OFFER,
+  takeBack: TradeAction.TAKE_BACK,
+  accept: TradeAction.ACCEPT,
+  decline: TradeAction.DECLINE,
+};
 const mapId = (map: PbMap): MapId => (map === PbMap.MAINLAND ? 'mainland' : 'island');
 
 // --- client to server
@@ -119,6 +128,16 @@ function payload(msg: ClientMsg): { case: string; value: unknown } {
       return { case: 'claim', value: { item: msg.item ?? '' } };
     case 'shop':
       return { case: 'shop', value: { buy: msg.op === 'buy', item: msg.item, qty: msg.qty } };
+    case 'trade':
+      return { case: 'trade', value: Number(msg.id) };
+    case 'tradeStep': {
+      const { item, qty } = { item: '', qty: 0, ...msg };
+      return { case: 'tradeStep', value: { action: TRADE_ACTIONS[msg.action], item, qty } };
+    }
+    case 'block':
+      return { case: 'block', value: { name: msg.name, on: msg.on } };
+    case 'report':
+      return { case: 'report', value: { name: msg.name, reason: REPORT_REASONS.indexOf(msg.reason) + 1 } };
     case 'boat':
       return { case: 'boat', value: { sail: msg.op === 'sail' } };
     case 'look':
@@ -167,8 +186,8 @@ export function mergeEntity(known: Entity | undefined, delta: PbEntity): Entity 
   if (delta.tool !== undefined) entity.tool = delta.tool || undefined;
   if (delta.target !== undefined) entity.target = delta.target ? clientId(delta.target) : undefined;
   if (delta.gear) {
-    const { weapon, head, body, legs } = delta.gear;
-    entity.gear = [weapon, head, body, legs].map(item => item || null);
+    const { weapon, head, body, legs, cape } = delta.gear;
+    entity.gear = [weapon, head, body, legs, cape].map(item => item || null);
   }
   if (delta.look) entity.look = { cut: delta.look.cut, color: delta.look.color };
   if (delta.boss) entity.boss = bossView(delta.boss);
@@ -195,8 +214,14 @@ function selfState(self: PbSelf): SelfState {
     boatDone: self.boatDone,
     reaper: self.reaper.map(stack),
     kept: self.kept.map(stack),
+    blocked: self.blocked,
     look: { cut: self.look?.cut ?? 0, color: self.look?.color ?? 0 },
   };
+}
+
+function tradeView({ open, partner, mine, theirs, iAccepted, theyAccepted, readyAt }: PbTradeView) {
+  if (!open) return null;
+  return { partner, mine: mine.map(stack), theirs: theirs.map(stack), iAccepted, theyAccepted, readyAt };
 }
 
 function gameEvent({ event }: PbEvent): GameEvent[] {
@@ -251,6 +276,10 @@ export function decode(data: ArrayBuffer): ServerMsg | null {
       return { type: 'xp', skill: msg.value.skill as Skill, amount: msg.value.amount };
     case 'openStation':
       return { type: 'open', station: msg.value as StationType | 'grave' };
+    case 'tradeRequest':
+      return { type: 'tradeRequest', id: clientId(msg.value.player), name: msg.value.name };
+    case 'trade':
+      return { type: 'trade', trade: tradeView(msg.value) };
     case 'feesTaken':
       return { type: 'fees', taken: Number(msg.value) };
     case 'boss': {

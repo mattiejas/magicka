@@ -15,7 +15,7 @@ type fields struct {
 	x, y, hp, maxHP, level, qty int
 	name, typ, act, tool        string
 	target                      uint32
-	gear                        [4]string
+	gear                        [5]string
 	look                        Look
 	rooted                      bool
 	boss, glowing               bool
@@ -55,7 +55,7 @@ func (v *view) bossView() *pb.BossView {
 }
 
 func (f *fields) pbGear() *pb.Gear {
-	return &pb.Gear{Weapon: f.gear[0], Head: f.gear[1], Body: f.gear[2], Legs: f.gear[3]}
+	return &pb.Gear{Weapon: f.gear[0], Head: f.gear[1], Body: f.gear[2], Legs: f.gear[3], Cape: f.gear[4]}
 }
 
 func (f *fields) pbLook() *pb.Look {
@@ -190,7 +190,7 @@ func (w *World) playerView(p *Player) *view {
 	if p.act.hasTarget() {
 		f.target = p.act.id
 	}
-	for i, slot := range armourSlots[:4] {
+	for i, slot := range shownSlots {
 		if e := p.C.Equip[slot]; e != nil {
 			f.gear[i] = e.ID
 		}
@@ -200,7 +200,7 @@ func (w *World) playerView(p *Player) *view {
 
 func (a action) hasTarget() bool {
 	switch a.typ {
-	case actGather, actStation, actAttack, actPickup:
+	case actGather, actStation, actAttack, actPickup, actTrade:
 		return true
 	}
 	return false

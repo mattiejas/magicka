@@ -28,6 +28,7 @@ Production, one binary and one port:
 | `DB_PATH`         | `driftwake.db`   | SQLite file (`npm run dev` uses `server/driftwake.db`) |
 | `CLIENT_DIR`      | `client/dist`  | Built client                                         |
 | `ALLOWED_ORIGINS` | same host only | Comma-separated origins                              |
+| `MODERATORS`      | nobody         | Comma-separated names of registered players, who type `/mod` for help |
 
 Messages are binary. To read them in development, open `http://localhost:5173/?messages`, or start the server with `LOG_MESSAGES=1`.
 
@@ -36,6 +37,10 @@ Put a TLS proxy in front for public use. Login limits count the socket address, 
 ## Controls
 
 Click to walk, gather, attack, take and use. Right click for options. Arrow keys or middle drag turn the camera; wheel zooms. Enter chats. Drag items to rearrange them.
+
+## Moderating
+
+Start the server with `MODERATORS=name,name` for players who have already registered. In chat they type `/mod` for the list of commands: mute, kick, ban, reports and the log of what moderators did. Refused names are in `server/internal/moderation/names.txt`.
 
 ## Dev commands
 
@@ -47,9 +52,11 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) before changing code.
 
 - `content/` items, recipes, monsters, loot and maps. Edit `content/src`.
 - `proto/` the message schema.
-- `server/` the Go server: `internal/game` is the simulation, `internal/store` saves, `internal/auth` accounts, `cmd/server` sockets and ticks.
+- `server/` the Go server: `internal/game` is the simulation, `internal/store` saves, `internal/auth` accounts, `internal/moderation` safety, `cmd/server` sockets and ticks.
 - `shared/` data loading and formulas for the browser.
 - `client/` Three.js scene and DOM interface; `net/` the connection, `scene/` the 3D view, `models/`, `ui/`.
 - `docs/` agreed design and decisions; `GLOSSARY.md` terms.
 
-Model gallery while developing: `http://localhost:5173/gallery.html?set=people|hair|head|turn|swing|monsters|chicken|nodes|camp&t=600` (`t` freezes the animation at that millisecond).
+The `throwaway` entry in `.claude/launch.json` starts a server with an empty database on port 3997, for trying things out.
+
+Model gallery while developing: `http://localhost:5173/gallery.html?set=people|hair|head|turn|swing|monsters|chicken|capes|nodes|camp&t=600` (`t` freezes the animation at that millisecond).

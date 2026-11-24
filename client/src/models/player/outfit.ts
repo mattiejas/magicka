@@ -18,6 +18,7 @@ export interface Outfit {
   head: Item | null;
   body: Item | null;
   legs: Item | null;
+  cape: Item | null;
   bodyWear: BodyWear | null;
   legWear: LegWear | null;
 }
@@ -38,7 +39,7 @@ export const isHelm = (item: Item | null) => !!item?.id.endsWith('_helm');
 
 export function outfitOf(name: string, gear: (string | null)[], look: Look): Outfit {
   const seed = nameHash(name);
-  const [weapon, head, body, legs] = gear.map(id => (id ? ITEMS[id] : null));
+  const [weapon, head, body, legs, cape] = gear.map(id => (id ? ITEMS[id] : null));
   return {
     skin: SKIN_COLORS[seed % SKIN_COLORS.length],
     hair: HAIR_COLORS[look.color].color,
@@ -49,6 +50,7 @@ export function outfitOf(name: string, gear: (string | null)[], look: Look): Out
     head,
     body,
     legs,
+    cape: cape ?? null,
     bodyWear: bodyWearOf(body),
     legWear: legWearOf(legs),
   };

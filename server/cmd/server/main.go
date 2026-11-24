@@ -14,6 +14,7 @@ import (
 
 	"driftwake/server/internal/auth"
 	"driftwake/server/internal/game"
+	"driftwake/server/internal/moderation"
 	"driftwake/server/internal/store"
 )
 
@@ -28,6 +29,8 @@ type server struct {
 	auth   *auth.Auth
 	store  *store.Store
 	logins *loginLimiter
+
+	moderation *moderation.Moderation
 }
 
 func main() {
@@ -65,12 +68,14 @@ func newServer(c config, db *store.Store) *server {
 	if c.dev {
 		perMinute = devLoginsPerMinute
 	}
+	world := game.NewWorld(db, rand.Float64, c.dev, c.bossPeriod())
 	return &server{
-		config: c,
-		world:  game.NewWorld(db, rand.Float64, c.dev, c.bossPeriod()),
-		auth:   auth.New(db),
-		store:  db,
-		logins: newLoginLimiter(perMinute),
+		config:     c,
+		world:      world,
+		auth:       auth.New(db),
+		store:      db,
+		logins:     newLoginLimiter(perMinute),
+		moderation: moderation.New(db, world, c.moderators),
 	}
 }
 

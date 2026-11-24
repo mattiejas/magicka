@@ -23,9 +23,27 @@ export type ClientMsg =
   | { type: 'unequip'; slot: Slot }
   | { type: 'swap'; a: number; b: number }
   | { type: 'bank'; op: 'deposit' | 'withdraw'; item: string; qty: number }
+  | { type: 'trade'; id: string }
+  | { type: 'tradeStep'; action: 'accept' | 'decline' }
+  | { type: 'tradeStep'; action: 'offer' | 'takeBack'; item: string; qty: number }
+  | { type: 'block'; name: string; on: boolean }
+  | { type: 'report'; name: string; reason: ReportReason }
   | { type: 'boat'; op: 'build' | 'sail' }
   | { type: 'look'; look: Look }
   | { type: 'chat'; text: string };
+
+export const REPORT_REASONS = ['language', 'scam', 'cheating', 'other'] as const;
+export type ReportReason = (typeof REPORT_REASONS)[number];
+
+export interface TradeView {
+  partner: string;
+  mine: Stack[];
+  theirs: Stack[];
+  iAccepted: boolean;
+  theyAccepted: boolean;
+  /** Tick from which the offers can be accepted. */
+  readyAt: number;
+}
 
 export interface BossView {
   state: 'choose' | 'windup' | 'execute';
@@ -53,7 +71,7 @@ export interface Entity {
   maxHp?: number;
   action?: string;
   target?: string;
-  /** Weapon, head, body, legs. */
+  /** Weapon, head, body, legs, cape. */
   gear?: (string | null)[];
   look?: Look;
   level?: number;
@@ -84,6 +102,8 @@ export interface SelfState {
   reaper: Stack[];
   /** Uniques that were not picked up in time. */
   kept: Stack[];
+  /** Names, in lower case, of players not to hear from. */
+  blocked: string[];
   look: Look;
 }
 
@@ -112,4 +132,7 @@ export type ServerMsg =
   | { type: 'open'; station: StationType | 'grave' }
   /** Coins that graves and the reaper have taken from everyone, ever. */
   | { type: 'fees'; taken: number }
+  | { type: 'tradeRequest'; id: string; name: string }
+  /** Null when the trade has ended. */
+  | { type: 'trade'; trade: TradeView | null }
   | { type: 'boss'; alive: boolean; nextTicks: number; contribution: number; online: number };

@@ -14,6 +14,7 @@ type config struct {
 	port, dbPath, clientDir string
 	origins                 []string // allowed in browsers; nil means this host only
 	prod, dev               bool
+	moderators              []string // account names
 	logMessages, tickStats  bool
 }
 
@@ -33,12 +34,19 @@ func loadConfig() (config, error) {
 		return c, errors.New("DRIFTWAKE_DEV must not be set in production.")
 	}
 	c.logMessages = c.logMessages && c.dev
-	if list := os.Getenv("ALLOWED_ORIGINS"); list != "" {
-		for _, origin := range strings.Split(list, ",") {
-			c.origins = append(c.origins, strings.TrimSpace(origin))
+	c.origins = list(os.Getenv("ALLOWED_ORIGINS"))
+	c.moderators = list(os.Getenv("MODERATORS"))
+	return c, nil
+}
+
+// list splits at commas. Nothing gives nil.
+func list(text string) (out []string) {
+	for _, part := range strings.Split(text, ",") {
+		if part = strings.TrimSpace(part); part != "" {
+			out = append(out, part)
 		}
 	}
-	return c, nil
+	return
 }
 
 func env(key, fallback string) string {

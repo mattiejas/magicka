@@ -1614,6 +1614,134 @@
     "magic": 40
    },
    "unique": true
+  },
+  {
+   "value": 1,
+   "id": "cape_mining",
+   "name": "Mining cape",
+   "icon": "cape",
+   "color": "#8c8478",
+   "tier": 5,
+   "slot": "cape",
+   "req": {
+    "mining": 50
+   },
+   "trophy": true
+  },
+  {
+   "value": 1,
+   "id": "cape_smithing",
+   "name": "Smithing cape",
+   "icon": "cape",
+   "color": "#c0643c",
+   "tier": 5,
+   "slot": "cape",
+   "req": {
+    "smithing": 50
+   },
+   "trophy": true
+  },
+  {
+   "value": 1,
+   "id": "cape_woodcutting",
+   "name": "Woodcutting cape",
+   "icon": "cape",
+   "color": "#5f8a4a",
+   "tier": 5,
+   "slot": "cape",
+   "req": {
+    "woodcutting": 50
+   },
+   "trophy": true
+  },
+  {
+   "value": 1,
+   "id": "cape_crafting",
+   "name": "Crafting cape",
+   "icon": "cape",
+   "color": "#b08a4e",
+   "tier": 5,
+   "slot": "cape",
+   "req": {
+    "crafting": 50
+   },
+   "trophy": true
+  },
+  {
+   "value": 1,
+   "id": "cape_melee",
+   "name": "Melee cape",
+   "icon": "cape",
+   "color": "#a8413c",
+   "tier": 5,
+   "slot": "cape",
+   "req": {
+    "melee": 50
+   },
+   "trophy": true
+  },
+  {
+   "value": 1,
+   "id": "cape_ranged",
+   "name": "Ranged cape",
+   "icon": "cape",
+   "color": "#3f7d62",
+   "tier": 5,
+   "slot": "cape",
+   "req": {
+    "ranged": 50
+   },
+   "trophy": true
+  },
+  {
+   "value": 1,
+   "id": "cape_magic",
+   "name": "Magic cape",
+   "icon": "cape",
+   "color": "#4a62b0",
+   "tier": 5,
+   "slot": "cape",
+   "req": {
+    "magic": 50
+   },
+   "trophy": true
+  },
+  {
+   "value": 1,
+   "id": "cape_defence",
+   "name": "Defence cape",
+   "icon": "cape",
+   "color": "#6d7f94",
+   "tier": 5,
+   "slot": "cape",
+   "req": {
+    "defence": 50
+   },
+   "trophy": true
+  },
+  {
+   "value": 1,
+   "id": "cape_vitality",
+   "name": "Vitality cape",
+   "icon": "cape",
+   "color": "#b0577f",
+   "tier": 5,
+   "slot": "cape",
+   "req": {
+    "vitality": 50
+   },
+   "trophy": true
+  },
+  {
+   "value": 1,
+   "id": "rooted_mantle",
+   "name": "Rooted mantle",
+   "icon": "cape",
+   "color": "#6f9048",
+   "tier": 5,
+   "slot": "cape",
+   "unique": true,
+   "trophy": true
   }
  ],
  "recipes": [
@@ -4183,7 +4311,7 @@
     "unique": [
      [
       "barnacle_charm",
-      0.08333333333333333
+      0.02
      ]
     ]
    },
@@ -4312,6 +4440,10 @@
      [
       "heartwood",
       0.0025
+     ],
+     [
+      "rooted_mantle",
+      0.001
      ]
     ]
    },

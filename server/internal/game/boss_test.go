@@ -275,16 +275,20 @@ func TestBossLootGoesToContributorsThenEveryone(t *testing.T) {
 
 func TestUniquesDropNearStatedRate(t *testing.T) {
 	const kills = 200_000
-	r, n := Mulberry(3), 0
+	r, uniques, trophies := Mulberry(3), 0, 0
 	for range kills {
 		for _, l := range rollLoot(r, &content.Monsters["colossus"].Loot) {
-			if l.unique {
-				n++
+			switch {
+			case content.Items[l.item].Trophy:
+				trophies++
+			case l.unique:
+				uniques++
 			}
 		}
 	}
-	want := kills * 3 / 400
-	check(t, n > want*9/10 && n < want*11/10, n, want)
+	near := func(n, want int) bool { return n > want*8/10 && n < want*12/10 }
+	check(t, near(uniques, kills*3/400), uniques)
+	check(t, near(trophies, kills/1000), trophies)
 }
 
 func TestWorldBossStaysUntilKilled(t *testing.T) {

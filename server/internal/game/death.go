@@ -22,6 +22,9 @@ func (w *World) die(p *Player) {
 		c.Grave = &Grave{c.Map, c.X, c.Y, items}
 		text = "You died. Your carried items are safe at your grave or with the reaper."
 	}
+	if p.trade != nil {
+		w.endTrade(p.trade, p.Name+" died.")
+	}
 	w.emitDeath(w.mapOf(p), c.X, c.Y, p.ID)
 	spawn := w.mapOf(p).Spawn
 	c.X, c.Y, c.HP = spawn.X, spawn.Y, MaxHP(p.level("vitality"))

@@ -1,14 +1,15 @@
 // The interface: lays out the panels and keeps them in step with the server's messages.
 import type { ServerMsg } from '@driftwake/shared';
 import { hasSession, onClosed, onMessage, resume } from '../net/connection';
+import { state } from '../net/state';
 import { updateBosses } from './bosses';
-import { chatBox, showChat, showInfo } from './chat';
+import { chatBox, showChat, showInfo, showTradeRequest } from './chat';
 import { h, uiRoot } from './dom';
 import { fpsCounter } from './fpsCounter';
 import { updateHint } from './hints';
 import { isLoginShown, loginError, showLogin, showLoginError, takeJustRegistered } from './login';
 import { drawMinimap, minimapPanel } from './minimap';
-import { closePanel, closePanelWhenFar, openPanel, updatePanel } from './panels';
+import { closePanel, closePanelWhenFar, openPanel, showTrade, updatePanel } from './panels';
 import { sidebar, updateSidebar } from './sidebar';
 import { updateVitals } from './vitals';
 import { showXp } from './xpGains';
@@ -69,6 +70,7 @@ function handleMessage(msg: ServerMsg) {
       updateVitals();
       updateHint();
       updateBosses();
+      if (state.trade) showTrade();
       return closePanelWhenFar();
     case 'chat':
       return showChat(msg.from, msg.text);
@@ -76,6 +78,10 @@ function handleMessage(msg: ServerMsg) {
       return showInfo(msg.text, msg.kind);
     case 'xp':
       return showXp(msg.skill, msg.amount);
+    case 'tradeRequest':
+      return showTradeRequest(msg.id, msg.name);
+    case 'trade':
+      return showTrade();
     case 'fees':
       return updatePanel();
     case 'open':

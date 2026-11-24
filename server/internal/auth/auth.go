@@ -9,6 +9,7 @@ import (
 	"errors"
 	"time"
 
+	"driftwake/server/internal/moderation"
 	"driftwake/server/internal/store"
 
 	"golang.org/x/crypto/scrypt"
@@ -19,6 +20,7 @@ var (
 	ErrTaken   = errors.New("That name is taken.")
 	ErrWrong   = errors.New("Wrong name or password.")
 	ErrExpired = errors.New("Session expired.")
+	ErrName    = errors.New("That name is not allowed. Choose another one.")
 )
 
 type Auth struct {
@@ -53,6 +55,9 @@ func (a *Auth) issue(id int64, name string) (*Session, error) {
 }
 
 func (a *Auth) Register(name, pw string) (*Session, error) {
+	if !moderation.NameAllowed(name) {
+		return nil, ErrName
+	}
 	if old, err := a.db.FindAccount(name); err != nil || old != nil {
 		return nil, errors.Join(err, taken(old))
 	}

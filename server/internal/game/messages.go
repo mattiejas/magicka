@@ -78,6 +78,10 @@ func (w *World) addXP(p *Player, skill string, amount float64) {
 	}
 	title := strings.ToUpper(skill[:1]) + skill[1:]
 	w.info(p, title+" is now level "+strconv.Itoa(now)+".", pb.InfoKind_INFO_KIND_LEVEL)
+	if now == MaxLevel {
+		w.broadcast(infoMsg(p.Name+" has mastered "+skill+".", pb.InfoKind_INFO_KIND_LEVEL))
+		w.grantCapes(p)
+	}
 	if skill == "vitality" {
 		p.C.HP += MaxHP(now) - MaxHP(before)
 	}

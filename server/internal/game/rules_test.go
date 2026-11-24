@@ -104,7 +104,7 @@ func TestDecodeRefusesMalformed(t *testing.T) {
 		{}, move(256, 0), craftMsg("x", 0), craftMsg("x", 1000), equipMsg(24),
 		bankMsg(false, "a", 0), bankMsg(true, "a", 1_000_001), chatMsg("   "),
 		{Msg: &pb.ClientMessage_Unequip{Unequip: 0}},
-		{Msg: &pb.ClientMessage_Unequip{Unequip: 7}},
+		{Msg: &pb.ClientMessage_Unequip{Unequip: 8}},
 		{Msg: &pb.ClientMessage_ResumeToken{ResumeToken: "x"}},
 		{Msg: &pb.ClientMessage_Swap{Swap: &pb.Swap{A: 0, B: 24}}},
 		{Msg: &pb.ClientMessage_EatSlot{EatSlot: 99}},

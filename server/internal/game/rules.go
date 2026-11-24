@@ -6,8 +6,11 @@ const (
 	walkSpeed     = 2  // tiles per tick
 	craftInterval = 3  // to make one item
 	glowInterval  = 3  // to strike a glowing node
-	stationReach  = 2  // tiles from a station at which it can be used
-	eatDelay      = 2  // before acting or attacking again
+	tradeReach    = 2  // tiles between two players who trade
+	tradePause    = 3  // after a change, before offers can be accepted
+	maxBlocked    = 200
+	stationReach  = 2 // tiles from a station at which it can be used
+	eatDelay      = 2 // before acting or attacking again
 	regenInterval = 10
 
 	defaultAttackSpeed = 4
@@ -29,12 +32,13 @@ const (
 )
 
 var (
-	lingerTime   = Ticks(30) // a disconnected player stays at most this long
-	combatTime   = Ticks(10) // since the last blow, to count as in combat
-	fightMemory  = Ticks(20) // a fighter stays active this long without a blow
-	saveInterval = Ticks(30)
-	idleLimit    = Ticks(30 * 60) // without input, before being logged out
-	idleWarning  = idleLimit - Ticks(60)
+	lingerTime       = Ticks(30) // a disconnected player stays at most this long
+	combatTime       = Ticks(10) // since the last blow, to count as in combat
+	fightMemory      = Ticks(20) // a fighter stays active this long without a blow
+	saveInterval     = Ticks(30)
+	tradeRequestTime = Ticks(30)      // to answer
+	idleLimit        = Ticks(30 * 60) // without input, before being logged out
+	idleWarning      = idleLimit - Ticks(60)
 )
 
 // longAgo is a tick before any fight.
@@ -46,7 +50,7 @@ type lootTimes struct{ private, public float64 } // seconds
 var (
 	monsterLoot = lootTimes{60, 120}
 	bossLoot    = lootTimes{180, 300}
-	playerDrop  = lootTimes{60, 120}
+	playerDrop  = lootTimes{180, 0} // never public, so that dropping is no way to trade
 )
 
 // Styles and work, as clients know them.

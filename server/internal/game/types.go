@@ -61,6 +61,7 @@ type Char struct {
 	Grave    *Grave            `json:"grave"`
 	Kept     []*Stack          `json:"kept,omitempty"` // uniques nobody picked up, waiting with the reaper
 	Look     *Look             `json:"look"`
+	Blocked  []string          `json:"blocked,omitempty"` // names of players not to hear from
 }
 
 type actionType int
@@ -74,12 +75,13 @@ const (
 	actPickup
 	actGrave
 	actCraft
+	actTrade
 )
 
 // action is what a player is doing over several ticks.
 type action struct {
 	typ    actionType
-	id     uint32          // target of gather, station, attack and pickup
+	id     uint32          // target of gather, station, attack, pickup and trade
 	recipe *content.Recipe // of craft
 	left   int             // items still to craft
 }
@@ -104,6 +106,8 @@ type Player struct {
 	via        []Point // tiles walked this tick
 	nextAct    int     // tick of the next attempt at work
 	lastInput  int     // tick of the last message
+	trade      *trade  // open with someone
+	asked      request // to trade
 	lastGlow   glow    // the last one that gave its bonus
 	nextAttack int
 	rooted     int    // tick until which the player cannot walk
@@ -210,6 +214,7 @@ type Drop struct {
 	Qty               int
 	Owner             uint32
 	kept              bool // goes to the reaper instead of becoming public
+	personal          bool // never becomes public
 	publicAt, expires int
 }
 

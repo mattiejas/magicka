@@ -2,7 +2,7 @@
 //   set   one of the sets below
 //   t     milliseconds into the animation
 //   name  whose face and hair to show    color  hair colour    ry  how far heads are turned
-import { HAIRCUTS, MONSTERS, NODES } from '@driftwake/shared';
+import { HAIRCUTS, ITEMS, MONSTERS, NODES } from '@driftwake/shared';
 import * as THREE from 'three';
 import {
   boatGeo,
@@ -131,6 +131,20 @@ const SETS: Record<string, GallerySet> = {
         if (!boss) poseMonster(model, { ...STILL, time: time + 300, phase: 0 });
         return { object: model.root };
       }),
+  },
+  capes: {
+    columns: 5,
+    gap: 1.3,
+    exhibits: () =>
+      Object.values(ITEMS)
+        .filter(item => item.slot === 'cape')
+        .map(({ id }, i) => ({
+          object: person(
+            [null, null, i % 2 ? 'iron_plate' : null, null, id],
+            i % 3 === 1 ? { action: 'walk' } : {},
+          ),
+          turn: i % 5 === 4 ? 0.5 : Math.PI + 0.4,
+        })),
   },
   chicken: {
     columns: 3,

@@ -2,6 +2,8 @@ package game
 
 import (
 	"encoding/json"
+	"log"
+	"strings"
 
 	"driftwake/server/internal/pb"
 )
@@ -31,12 +33,16 @@ func (w *World) Join(account int64, name string, load func() (*Char, error), con
 		w.players[id] = p
 		w.order = append(w.order, p)
 	}
+	if p.trade != nil {
+		w.endTrade(p.trade, "The other player left.")
+	}
 	p.attach(conn)
 	p.lastInput = w.Tick
 	conn.Send(&pb.ServerMessage{Msg: &pb.ServerMessage_Self{Self: w.self(p)}})
 	if fresh {
 		w.info(p, "Welcome to "+GameName+". Click a copper rock or an ash tree to begin.", plain)
 	}
+	w.grantCapes(p)
 	w.sendBossStatus(p)
 	return id, nil
 }
@@ -87,10 +93,20 @@ func (w *World) Online() int {
 	return len(w.order)
 }
 
-func (w *World) save(p *Player) {
-	if b, err := json.Marshal(p.C); err == nil {
-		w.store.Save(p.Account, b)
+func (w *World) save(p *Player) { w.saveTogether(p) }
+
+// saveTogether saves players so that a crash cannot keep one change without the other.
+func (w *World) saveTogether(players ...*Player) {
+	batch := make(map[int64][]byte, len(players))
+	for _, p := range players {
+		b, err := json.Marshal(p.C)
+		if err != nil {
+			log.Printf("saving %s: %v", p.Name, err)
+			return
+		}
+		batch[p.Account] = b
 	}
+	w.store.Save(batch)
 }
 
 // attach makes conn the player's connection, which knows nothing of the world yet.
@@ -136,4 +152,35 @@ func (w *World) removeGone() {
 	}
 	clear(w.order[len(stay):])
 	w.order = stay
+}
+
+// Kick disconnects a player. They may come back at once; keeping them out is up to whoever signs players in.
+func (w *World) Kick(name, reason string) bool {
+	w.mu.Lock()
+	defer w.mu.Unlock()
+	p := w.playerNamed(name)
+	if p == nil {
+		return false
+	}
+	w.kick(p, reason)
+	return true
+}
+
+// Tell shows a player a line of text, if they are here.
+func (w *World) Tell(id uint32, text string) {
+	w.mu.Lock()
+	defer w.mu.Unlock()
+	if p := w.players[id]; p != nil {
+		w.tell(p, text)
+	}
+}
+
+// playerNamed finds someone who is connected.
+func (w *World) playerNamed(name string) *Player {
+	for _, p := range w.order {
+		if strings.EqualFold(p.Name, name) && p.conn != nil {
+			return p
+		}
+	}
+	return nil
 }

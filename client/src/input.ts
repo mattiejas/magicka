@@ -6,6 +6,7 @@ import type { Pick } from './scene/picking';
 import type { Scene } from './scene/scene';
 import { focusChat } from './ui/chat';
 import { closePanel } from './ui/panels';
+import { playerMenu } from './ui/players';
 import { closeMenu, hideTooltip, type MenuItem, showMenu, showTooltip } from './ui/popups';
 import { isSettingsOpen } from './ui/settingsModal';
 
@@ -73,7 +74,9 @@ function bindClicks(canvas: HTMLCanvasElement, scene: Scene) {
   canvas.addEventListener('contextmenu', event => {
     event.preventDefault();
     const { hits, tile } = scene.pick(event.clientX, event.clientY);
+    const place = { x: event.clientX, y: event.clientY };
     const items = hits.flatMap((pick): MenuItem[] => {
+      if (pick.entity?.kind === 'player') return playerMenu(pick.name, pick.id, place);
       const interaction = interactionWith(pick);
       return interaction ? [[`${interaction.verb} ${label(pick)}`, interaction.run]] : [];
     });

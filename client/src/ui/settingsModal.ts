@@ -1,6 +1,8 @@
 // The settings window. A native dialog, which keeps the focus inside and closes on Escape.
+import { state } from '../net/state';
 import { changeSetting, type Settings, settings } from '../settings';
 import { button, byId, h, uiRoot } from './dom';
+import { setBlocked } from './players';
 import { closeMenu, hideTooltip } from './popups';
 
 type Toggle = { [K in keyof Settings]: Settings[K] extends boolean ? K : never }[keyof Settings];
@@ -20,6 +22,21 @@ function toggleRow({ setting, label, description }: (typeof TOGGLES)[number]): H
     onchange: () => changeSetting(setting, checkbox.checked),
   }) as HTMLInputElement;
   return h('label', { class: 'setting' }, h('span', {}, label, h('small', {}, description)), checkbox);
+}
+
+function blockedPlayers(): HTMLElement[] {
+  const names = state.self?.blocked ?? [];
+  if (!names.length) return [];
+  const rows = names.map(name => {
+    const row = h('div', { class: 'setting' }, h('span', {}, name));
+    const unblock = () => {
+      setBlocked(name, false);
+      row.remove();
+    };
+    row.append(button('Unblock', unblock));
+    return row;
+  });
+  return [h('h2', { class: 'section' }, 'Blocked players'), ...rows];
 }
 
 export const isSettingsOpen = () => !!byId('settings');
@@ -46,7 +63,7 @@ export function openSettings() {
         h('h2', {}, 'Settings'),
         button('Close', () => dialog.close()),
       ),
-      h('div', { class: 'body' }, ...TOGGLES.map(toggleRow)),
+      h('div', { class: 'body' }, ...TOGGLES.map(toggleRow), ...blockedPlayers()),
     ),
   );
   uiRoot().append(dialog);
