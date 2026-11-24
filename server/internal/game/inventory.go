@@ -46,8 +46,38 @@ func (c *Char) fill() {
 	if c.Boat == nil {
 		c.Boat = n.Boat
 	}
+	c.renameItems()
 	if content.MapByID[c.Map] == nil {
 		c.Map, c.X, c.Y = n.Map, n.X, n.Y
+	}
+}
+
+// Items and boat parts that were renamed, for characters saved before.
+var (
+	renamedItems = map[string]string{"rudder": "ships_wheel"}
+	renamedParts = map[string]string{"rudder": "wheel"}
+)
+
+func (c *Char) renameItems() {
+	lists := [][]*Stack{c.Inv, c.Bank, c.Kept}
+	for _, s := range c.Equip {
+		lists = append(lists, []*Stack{s})
+	}
+	if c.Grave != nil {
+		lists = append(lists, c.Grave.Items)
+	}
+	for _, list := range lists {
+		for _, s := range list {
+			if s != nil && renamedItems[s.ID] != "" {
+				s.ID = renamedItems[s.ID]
+			}
+		}
+	}
+	for old, now := range renamedParts {
+		if n, ok := c.Boat[old]; ok {
+			c.Boat[now] += n
+			delete(c.Boat, old)
+		}
 	}
 }
 

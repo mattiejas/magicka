@@ -113,7 +113,7 @@ add({ id: 'berries', name: 'Berries', icon: 'berries', color: '#a8485e', tier: 1
 add({ id: 'meat', name: 'Raw meat', icon: 'meat', color: '#b0625a', tier: 1 });
 add({ id: 'ration', name: 'Trail ration', icon: 'ration', color: '#b58a58', tier: 1, heal: 12 });
 add({ id: 'feast', name: 'Hearty feast', icon: 'ration', color: '#d0a060', tier: 3, heal: 26 });
-add({ id: 'rudder', name: 'Swallowed rudder', icon: 'rudder', color: '#8d7a5e', tier: 1 });
+add({ id: 'ships_wheel', name: "Ship's wheel", icon: 'wheel', color: '#8d7a5e', tier: 1 });
 recipe('ration', 'workbench', 'crafting', 1, 12, [
   ['meat', 1],
   ['berries', 1],
@@ -516,6 +516,8 @@ export interface BossAttack {
 }
 export interface BossDef {
   baseHp: number;
+  /** Share of full health healed per second. */
+  regen: number;
   arena: number;
   world: boolean;
   attacks: BossAttack[];
@@ -711,9 +713,9 @@ mon({
   color: '#b5604a',
   shape: 'crab',
   loot: {
-    always: [['rudder', 1, 1]],
+    always: [['ships_wheel', 1, 1]],
     common: [
-      ['copper_bar', 2, 5],
+      ['meat', 2, 4],
       ['essence', 15, 30],
       ['iron_ore', 2, 4],
     ],
@@ -725,6 +727,7 @@ mon({
   },
   boss: {
     baseHp: 90,
+    regen: 0.002,
     arena: 9,
     world: false,
     attacks: [
@@ -755,28 +758,30 @@ mon({
   color: '#5d6b45',
   shape: 'treant',
   loot: {
+    // A tree gives wood and what grows on it.
     always: [
-      ['essence', 40, 80],
-      ['feast', 1, 3],
+      ['maple_log', 4, 8],
+      ['feast', 1, 2],
     ],
     common: [
-      ['adamantite_bar', 2, 5],
-      ['ebony_log', 4, 8],
-      ['cobalt_bar', 4, 8],
-      ['hide_5', 2, 5],
+      ['ebony_log', 3, 6],
+      ['fibre_5', 3, 6],
+      ['fibre_4', 5, 9],
+      ['ebony_shaft', 60, 120],
     ],
     rare: [
       ['gem_5', 1, 0.25],
       ['amulet_5', 1, 0.05],
     ],
     unique: [
-      ['rootcleaver', 1 / 40],
-      ['briarstring', 1 / 40],
-      ['heartwood', 1 / 40],
+      ['rootcleaver', 1 / 400],
+      ['briarstring', 1 / 400],
+      ['heartwood', 1 / 400],
     ],
   },
   boss: {
     baseHp: 900,
+    regen: 0.002,
     arena: 12,
     world: true,
     attacks: [
@@ -839,5 +844,5 @@ export const BOAT_PARTS: { id: string; name: string; item: string; qty: number }
   { id: 'hull', name: 'Ash hull', item: 'ash_log', qty: 20 },
   { id: 'fittings', name: 'Copper fittings', item: 'copper_bar', qty: 8 },
   { id: 'sail', name: 'Flax sail', item: 'fibre_1', qty: 12 },
-  { id: 'rudder', name: 'Rudder', item: 'rudder', qty: 1 },
+  { id: 'wheel', name: "Ship's wheel", item: 'ships_wheel', qty: 1 },
 ];

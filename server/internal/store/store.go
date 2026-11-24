@@ -169,6 +169,24 @@ func (s *Store) Load(account int64) (*game.Char, error) {
 	return &c, nil
 }
 
+// Update changes a saved character. Only for characters that are not in the world, which would overwrite it.
+func (s *Store) Update(account int64, change func(*game.Char)) error {
+	c, err := s.Load(account)
+	if err != nil {
+		return err
+	}
+	if c == nil {
+		return fmt.Errorf("account %d has no character", account)
+	}
+	change(c)
+	data, err := json.Marshal(c)
+	if err != nil {
+		return err
+	}
+	s.Save(account, data)
+	return nil
+}
+
 // Save keeps a character to be written soon.
 func (s *Store) Save(account int64, data []byte) {
 	s.mu.Lock()

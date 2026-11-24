@@ -55,7 +55,7 @@ func MaxHit(level int, power float64) int {
 }
 
 func BossMaxHP(base float64, players int) float64 {
-	return float64(round(base * (1 + 0.8*float64(max(1, players)-1))))
+	return float64(round(base * (1 + 0.5*float64(max(1, players)-1))))
 }
 
 func GatherChance(level, req, toolTier int) float64 {

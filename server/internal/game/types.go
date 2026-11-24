@@ -22,6 +22,8 @@ const (
 
 func entityID(kind uint32, n int) uint32 { return uint32(n)<<kindBits | kind }
 
+func accountOf(player uint32) int64 { return int64(player >> kindBits) }
+
 func PlayerID(account int64) uint32 { return entityID(kindPlayer, int(account)) }
 
 const graveID = kindGrave
@@ -56,6 +58,7 @@ type Char struct {
 	Boat     map[string]int    `json:"boat"`
 	BoatDone bool              `json:"boatDone"`
 	Grave    *Grave            `json:"grave"`
+	Kept     []*Stack          `json:"kept,omitempty"` // uniques nobody picked up, waiting with the reaper
 	Look     *Look             `json:"look"`
 }
 
@@ -130,6 +133,11 @@ type tally[V any] struct {
 	m   map[uint32]V
 }
 
+func (t *tally[V]) has(id uint32) bool {
+	_, ok := t.m[id]
+	return ok
+}
+
 func (t *tally[V]) get(id uint32) V { return t.m[id] }
 
 func (t *tally[V]) set(id uint32, v V) {
@@ -193,6 +201,7 @@ type Drop struct {
 	Item              string
 	Qty               int
 	Owner             uint32
+	kept              bool // goes to the reaper instead of becoming public
 	publicAt, expires int
 }
 

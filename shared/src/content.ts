@@ -101,6 +101,8 @@ export interface BossAttack {
 }
 export interface BossDef {
   baseHp: number;
+  /** Share of full health healed per second. */
+  regen: number;
   arena: number;
   world: boolean;
   attacks: BossAttack[];

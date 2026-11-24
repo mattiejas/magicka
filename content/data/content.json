@@ -71,9 +71,9 @@
    "heal": 26
   },
   {
-   "id": "rudder",
-   "name": "Swallowed rudder",
-   "icon": "rudder",
+   "id": "ships_wheel",
+   "name": "Ship's wheel",
+   "icon": "wheel",
    "color": "#8d7a5e",
    "tier": 1
   },
@@ -3728,16 +3728,16 @@
    "loot": {
     "always": [
      [
-      "rudder",
+      "ships_wheel",
       1,
       1
      ]
     ],
     "common": [
      [
-      "copper_bar",
+      "meat",
       2,
-      5
+      4
      ],
      [
       "essence",
@@ -3771,6 +3771,7 @@
    },
    "boss": {
     "baseHp": 90,
+    "regen": 0.002,
     "arena": 9,
     "world": false,
     "attacks": [
@@ -3832,36 +3833,36 @@
    "loot": {
     "always": [
      [
-      "essence",
-      40,
-      80
+      "maple_log",
+      4,
+      8
      ],
      [
       "feast",
       1,
-      3
+      2
      ]
     ],
     "common": [
      [
-      "adamantite_bar",
-      2,
-      5
-     ],
-     [
       "ebony_log",
-      4,
-      8
+      3,
+      6
      ],
      [
-      "cobalt_bar",
-      4,
-      8
+      "fibre_5",
+      3,
+      6
      ],
      [
-      "hide_5",
-      2,
-      5
+      "fibre_4",
+      5,
+      9
+     ],
+     [
+      "ebony_shaft",
+      60,
+      120
      ]
     ],
     "rare": [
@@ -3879,20 +3880,21 @@
     "unique": [
      [
       "rootcleaver",
-      0.025
+      0.0025
      ],
      [
       "briarstring",
-      0.025
+      0.0025
      ],
      [
       "heartwood",
-      0.025
+      0.0025
      ]
     ]
    },
    "boss": {
     "baseHp": 900,
+    "regen": 0.002,
     "arena": 12,
     "world": true,
     "attacks": [
@@ -3967,9 +3969,9 @@
    "qty": 12
   },
   {
-   "id": "rudder",
-   "name": "Rudder",
-   "item": "rudder",
+   "id": "wheel",
+   "name": "Ship's wheel",
+   "item": "ships_wheel",
    "qty": 1
   }
  ],

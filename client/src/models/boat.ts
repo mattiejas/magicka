@@ -1,6 +1,6 @@
 // The player's boat, which appears piece by piece as its parts are delivered.
 import * as THREE from 'three';
-import { ball, cyl, merge, part, plate, rbox, shade, taper, torus, type V3 } from '../geo';
+import { ball, cyl, merge, part, rbox, shade, taper, torus, type V3 } from '../geo';
 import type { Geometry } from './model';
 
 const WOOD = '#b08a5a';
@@ -12,7 +12,7 @@ export function boatGeo(progress: (part: string) => number): Geometry {
   const parts: Geometry[] = [keel(), ...hull(progress('hull'))];
   if (progress('fittings') >= 1) parts.push(...fittings());
   if (progress('sail') > 0) parts.push(...sail(progress('sail')));
-  if (progress('rudder') >= 1) parts.push(rudder());
+  if (progress('wheel') >= 1) parts.push(...helm());
   return merge(parts);
 }
 
@@ -80,16 +80,19 @@ function billow(cloth: THREE.BufferGeometry, depth: (x: number, y: number, z: nu
   cloth.computeVertexNormals();
 }
 
-const rudder = () =>
-  part(
-    plate(q => {
-      q.moveTo(0, 0.5);
-      q.lineTo(0.1, 0.5);
-      q.lineTo(0.34, -0.15);
-      q.quadraticCurveTo(0.2, -0.35, 0, -0.3);
-      q.closePath();
-    }, 0.06),
-    shade(WOOD, 0.75),
-    [0, 0.05, 1.45],
-    [0, -Math.PI / 2, 0],
+const SPOKES = 4;
+
+/** The ship's wheel on its post, behind the mast. */
+function helm(): Geometry[] {
+  const z = 0.85;
+  const y = 0.82;
+  const spokes = Array.from({ length: SPOKES }, (_, i) =>
+    part(rbox(0.05, 0.66, 0.05), shade(WOOD, 0.75), [0, y, z], [0, 0, (i / SPOKES) * Math.PI]),
   );
+  return [
+    part(rbox(0.12, 0.75, 0.12), shade(WOOD, 0.8), [0, 0.4, z - 0.1]),
+    part(torus(0.23, 0.04), shade(WOOD, 0.95), [0, y, z]),
+    part(cyl(0.07, 0.07, 0.12), COPPER, [0, y, z], [Math.PI / 2, 0, 0]),
+    ...spokes,
+  ];
+}

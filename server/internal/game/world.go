@@ -15,6 +15,8 @@ const GameName = "Magicka"
 // Store keeps characters. Save must not block for long.
 type Store interface {
 	Save(account int64, data []byte)
+	// Update changes a saved character that is not in the world.
+	Update(account int64, change func(*Char)) error
 }
 
 // spot is a tile of a map.

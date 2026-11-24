@@ -18,7 +18,8 @@ const (
 	wanderRange        = 4  // tiles from home at which a monster turns back
 	leashRange         = 10 // tiles from home at which a monster gives up
 
-	lootShare       = 0.02 // contribution a boss's loot requires
+	lootShare       = 0.02 // contribution above which a player earns loot and makes a boss tougher
+	deathKeeps      = 0.5  // share of contribution left after dying
 	approachRange   = 4    // tiles at which an idle boss notices someone
 	bossBarInterval = 5
 )

@@ -1,6 +1,7 @@
 package game
 
 import (
+	"log"
 	"math"
 
 	"driftwake/content"
@@ -47,7 +48,7 @@ func (w *World) drop(m *content.Map, at Point, item string, qty int, owner uint3
 	}
 	for range count {
 		w.dropSeq++
-		w.drops = append(w.drops, &Drop{
+		d := &Drop{
 			ID:       entityID(kindDrop, w.dropSeq),
 			Map:      m,
 			X:        at.X,
@@ -55,10 +56,35 @@ func (w *World) drop(m *content.Map, at Point, item string, qty int, owner uint3
 			Item:     item,
 			Qty:      each,
 			Owner:    owner,
+			kept:     content.Items[item].Unique,
 			publicAt: w.Tick + Ticks(times.private),
 			expires:  w.Tick + Ticks(times.private+times.public),
-		})
+		}
+		if d.kept { // never public, so its time is up when the private time is
+			d.expires = d.publicAt
+		}
+		w.drops = append(w.drops, d)
 	}
+}
+
+func (d *Drop) visibleTo(player uint32, tick int) bool {
+	return d.Owner == player || (!d.kept && d.publicAt <= tick)
+}
+
+// keepForOwner hands an unclaimed unique to the reaper, whether or not its owner is here.
+func (w *World) keepForOwner(d *Drop) {
+	keep := func(c *Char) { c.Kept = addTo(c.Kept, d.Item, d.Qty) }
+	p := w.players[d.Owner]
+	if p == nil {
+		if err := w.store.Update(accountOf(d.Owner), keep); err != nil {
+			log.Printf("keeping %s for account %d: %v", d.Item, accountOf(d.Owner), err)
+		}
+		return
+	}
+	keep(p.C)
+	p.dirty = true
+	w.info(p, "The reaper is keeping your "+content.Items[d.Item].Name+".", pb.InfoKind_INFO_KIND_UNIQUE)
+	w.save(p)
 }
 
 // dropLoot rolls a dead monster's loot for one winner.
@@ -101,8 +127,11 @@ func (w *World) pickup(p *Player, d *Drop) {
 func (w *World) removeExpiredDrops() {
 	keep := w.drops[:0]
 	for _, d := range w.drops {
-		if d.expires > w.Tick {
+		switch {
+		case d.expires > w.Tick:
 			keep = append(keep, d)
+		case d.kept:
+			w.keepForOwner(d)
 		}
 	}
 	clear(w.drops[len(keep):])

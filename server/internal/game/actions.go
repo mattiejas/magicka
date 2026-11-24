@@ -27,7 +27,7 @@ func (w *World) goal(p *Player) (g goal, ok bool) {
 			return goal{o.rect(), p.stats().reach}, true
 		}
 	case actPickup:
-		if d := w.findDrop(a.id); d != nil && d.Map == m && d.visibleTo(p, w.Tick) {
+		if d := w.findDrop(a.id); d != nil && d.Map == m && d.visibleTo(p.ID, w.Tick) {
 			return goal{tile(d.X, d.Y), 0}, true
 		}
 	case actGrave:
@@ -37,8 +37,6 @@ func (w *World) goal(p *Player) (g goal, ok bool) {
 	}
 	return
 }
-
-func (d *Drop) visibleTo(p *Player, tick int) bool { return d.Owner == p.ID || d.publicAt <= tick }
 
 // actPlayer continues a player's action for one tick.
 func (w *World) actPlayer(p *Player) {

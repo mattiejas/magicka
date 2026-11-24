@@ -70,19 +70,39 @@ func (w *World) challengers(m *Monster) (out []*Player) {
 	return
 }
 
-// rescale fits a boss's health to the number of active fighters, keeping its percentage.
+// rescale fits a boss's health to the players who are really fighting it, keeping its percentage.
+// Whoever has not contributed enough for loot does not count, so joining never hurts the others.
 func (w *World) rescale(m *Monster) {
+	fighters := 0
 	for _, id := range append([]uint32(nil), m.active.ids...) {
 		p := w.players[id]
 		if p == nil || p.C.Map != m.Map.ID || w.Tick-m.active.get(id) > fightMemory {
 			m.active.del(id)
+		} else if m.damage.get(id) > lootShare {
+			fighters++
 		}
 	}
-	if m.active.len() == 0 {
+	if hp := BossMaxHP(m.Def.Boss.BaseHP, fighters); hp != m.MaxHP {
+		m.HP, m.MaxHP = m.HP/m.MaxHP*hp, hp
+	}
+}
+
+// heal restores some health every tick, in a fight or not. Healing undoes everyone's damage in proportion.
+func (m *Monster) heal() {
+	missing := m.MaxHP - m.HP
+	amount := min(missing, m.MaxHP*m.Def.Boss.Regen*TickMS/1000)
+	if amount <= 0 {
 		return
 	}
-	if hp := BossMaxHP(m.Def.Boss.BaseHP, m.active.len()); hp != m.MaxHP {
-		m.HP, m.MaxHP = m.HP/m.MaxHP*hp, hp
+	m.HP += amount
+	if amount == missing {
+		m.HP = m.MaxHP
+		m.damage.clear()
+		return
+	}
+	left := 1 - amount/missing
+	for _, id := range m.damage.ids {
+		m.damage.set(id, m.damage.get(id)*left)
 	}
 }
 
@@ -92,6 +112,7 @@ func (w *World) rescale(m *Monster) {
 func (w *World) bossAI(m *Monster) {
 	players := w.challengers(m)
 	w.rescale(m)
+	m.heal()
 	b := m.boss
 	switch {
 	case b.st == choose:
@@ -105,12 +126,6 @@ func (w *World) bossAI(m *Monster) {
 }
 
 func (w *World) bossChoose(m *Monster, players []*Player) {
-	if len(players) == 0 {
-		if m.damage.len() > 0 && m.active.len() == 0 {
-			resetBoss(m)
-		}
-		return
-	}
 	var close []*Player // in reach of melee
 	noticed := m.active.len() > 0
 	for _, p := range players {
@@ -120,7 +135,7 @@ func (w *World) bossChoose(m *Monster, players []*Player) {
 			close = append(close, p)
 		}
 	}
-	if !noticed {
+	if len(players) == 0 || !noticed {
 		return
 	}
 	a := w.pickAttack(m, len(close) > 0)

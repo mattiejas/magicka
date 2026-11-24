@@ -62,7 +62,7 @@ describe('content graph', () => {
     const m = MAPS.island;
     const types = new Set(m.nodes.map(n => n.type));
     expect(types.has('tree_1') && types.has('rock_1') && types.has('plant_1')).toBe(true);
-    expect(m.spawns.some(s => MONSTERS[s.type].loot.always?.some(l => l[0] === 'rudder'))).toBe(true);
+    expect(m.spawns.some(s => MONSTERS[s.type].loot.always?.some(l => l[0] === 'ships_wheel'))).toBe(true);
     expect(BOAT_PARTS).toHaveLength(4);
   });
 });

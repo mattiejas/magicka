@@ -50,6 +50,7 @@ func (w *World) self(p *Player) *pb.Self {
 			s.Equipment = append(s.Equipment, &pb.EquipSlot{Slot: slot, Stack: pbStack(e)})
 		}
 	}
+	s.Kept = pbStacks(c.Kept)
 	if c.Grave != nil {
 		s.Reaper = pbStacks(c.Grave.Items)
 	}

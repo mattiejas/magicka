@@ -64,10 +64,16 @@ func (w *World) Enqueue(id uint32, m *pb.ClientMessage) {
 	w.mu.Unlock()
 }
 
-// SaveAll saves every player, for shutting down.
+// SaveAll saves everything that must survive, for shutting down.
 func (w *World) SaveAll() {
 	w.mu.Lock()
 	defer w.mu.Unlock()
+	for _, d := range w.drops { // the ground is not saved
+		if d.kept {
+			w.keepForOwner(d)
+		}
+	}
+	w.drops = nil
 	for _, p := range w.order {
 		w.save(p)
 	}

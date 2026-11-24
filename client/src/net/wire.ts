@@ -190,6 +190,7 @@ function selfState(self: PbSelf): SelfState {
     boat: { ...self.boat },
     boatDone: self.boatDone,
     reaper: self.reaper.map(stack),
+    kept: self.kept.map(stack),
     look: { cut: self.look?.cut ?? 0, color: self.look?.color ?? 0 },
   };
 }

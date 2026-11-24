@@ -159,7 +159,7 @@ func (w *World) views() (out []*view) {
 	}
 	for _, d := range w.drops {
 		v := &view{id: d.ID, m: d.Map, f: fields{x: d.X, y: d.Y, typ: d.Item, qty: d.Qty}}
-		if d.publicAt > w.Tick {
+		if !d.visibleTo(0, w.Tick) {
 			v.owner = d.Owner
 		}
 		out = append(out, v)

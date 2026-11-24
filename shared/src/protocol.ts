@@ -76,7 +76,10 @@ export interface SelfState {
   bank: Stack[];
   boat: Record<string, number>;
   boatDone: boolean;
+  /** Lost by dying. */
   reaper: Stack[];
+  /** Uniques that were not picked up in time. */
+  kept: Stack[];
   look: Look;
 }
 

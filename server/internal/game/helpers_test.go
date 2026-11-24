@@ -1,6 +1,7 @@
 package game
 
 import (
+	"encoding/json"
 	"fmt"
 	"reflect"
 	"slices"
@@ -15,6 +16,17 @@ import (
 type memStore map[int64][]byte
 
 func (m memStore) Save(a int64, b []byte) { m[a] = b }
+
+func (m memStore) Update(a int64, change func(*Char)) error {
+	var c Char
+	if err := json.Unmarshal(m[a], &c); err != nil {
+		return err
+	}
+	change(&c)
+	b, err := json.Marshal(&c)
+	m[a] = b
+	return err
+}
 
 // client decodes what a player is sent, keeping entities the way the browser does.
 type client struct {

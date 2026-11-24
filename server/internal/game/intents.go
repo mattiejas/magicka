@@ -22,7 +22,7 @@ func (w *World) handle(p *Player, msg *pb.ClientMessage) {
 		p.begin(action{typ: actGrave})
 	case *pb.ClientMessage_Claim:
 		if w.nearStation(p, "reaper") {
-			w.claimGrave(p)
+			w.claimFromReaper(p)
 		}
 	case *pb.ClientMessage_Craft:
 		w.startCraft(p, m.Craft)
@@ -63,6 +63,17 @@ func (w *World) tellIf(p *Player, why string) {
 	if why != "" {
 		w.tell(p, why)
 	}
+}
+
+// claimFromReaper takes kept uniques first, so a full grave cannot crowd them out.
+func (w *World) claimFromReaper(p *Player) {
+	if len(p.C.Kept) > 0 {
+		w.claimKept(p)
+		if p.C.Grave == nil {
+			return
+		}
+	}
+	w.claimGrave(p)
 }
 
 func slotName(s pb.Slot) string {

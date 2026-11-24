@@ -27,7 +27,7 @@ export function hitChance(
 }
 export const maxHit = (level: number, power: number) => Math.floor(2 + level * 0.22 + power * 0.35);
 export const bossMaxHp = (base: number, players: number) =>
-  Math.round(base * (1 + 0.8 * (Math.max(1, players) - 1)));
+  Math.round(base * (1 + 0.5 * (Math.max(1, players) - 1)));
 /** Chance per attempt of a successful gather. */
 export const gatherChance = (level: number, req: number, toolTier: number) =>
   Math.min(0.95, 0.3 + (level - req) * 0.015 + toolTier * 0.08);

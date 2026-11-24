@@ -93,6 +93,7 @@ type Attack struct {
 
 type Boss struct {
 	BaseHP  float64
+	Regen   float64 // share of full health healed per second
 	Arena   int
 	World   bool
 	Attacks []Attack

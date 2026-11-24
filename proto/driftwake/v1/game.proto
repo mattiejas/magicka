@@ -44,7 +44,9 @@ message InvSlot { uint32 index = 1; Stack stack = 2; }
 message EquipSlot { Slot slot = 1; Stack stack = 2; }
 message Self {
   uint32 id = 1; string name = 2; MapId map = 3; map<string, uint32> xp = 4; repeated InvSlot inventory = 5; repeated EquipSlot equipment = 6;
-  repeated Stack bank = 7; map<string, uint32> boat = 8; bool boat_done = 9; repeated Stack reaper = 10; Look look = 11;
+  repeated Stack bank = 7; map<string, uint32> boat = 8; bool boat_done = 9; Look look = 11;
+  // What the reaper holds: lost by dying, and uniques nobody picked up.
+  repeated Stack reaper = 10; repeated Stack kept = 12;
 }
 // `entities` hold only what changed, except for entities the browser did not know yet.
 message Snapshot { uint32 tick = 1; MapId map = 2; bool reset = 3; repeated Entity entities = 4; repeated uint32 gone = 5; repeated Event events = 6; }

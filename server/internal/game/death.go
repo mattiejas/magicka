@@ -35,22 +35,45 @@ func (w *World) die(p *Player) {
 	w.save(p)
 }
 
+// forget stops fighting a player who died. It costs them part of their contribution to a boss.
 func (m *Monster) forget(p *Player) {
 	if m.target == p.ID {
 		m.target = 0
 	}
 	m.active.del(p.ID)
+	if m.Def.Boss != nil && m.damage.has(p.ID) {
+		m.damage.set(p.ID, m.damage.get(p.ID)*deathKeeps)
+	}
 }
 
-// claimGrave gives back as much as fits.
+// claimGrave gives back as much as fits of what the player lost by dying.
 func (w *World) claimGrave(p *Player) {
 	g := p.C.Grave
 	if g == nil {
 		w.tell(p, "The reaper holds nothing of yours.")
 		return
 	}
-	var left []*Stack
-	for _, s := range g.Items {
+	if g.Items = p.giveAll(g.Items); len(g.Items) == 0 {
+		p.C.Grave = nil
+	} else {
+		w.tell(p, "Your inventory is full. The rest is kept for you.")
+	}
+	p.dirty = true
+	w.save(p)
+}
+
+// claimKept gives back as much as fits of the uniques the reaper is keeping.
+func (w *World) claimKept(p *Player) {
+	if p.C.Kept = p.giveAll(p.C.Kept); len(p.C.Kept) > 0 {
+		w.tell(p, "Your inventory is full. The rest is kept for you.")
+	}
+	p.dirty = true
+	w.save(p)
+}
+
+// giveAll returns what did not fit.
+func (p *Player) giveAll(items []*Stack) (left []*Stack) {
+	for _, s := range items {
 		if content.Items[s.ID].Stack || p.emptySlot() >= 0 {
 			s.Qty -= p.give(s.ID, s.Qty)
 		}
@@ -58,11 +81,5 @@ func (w *World) claimGrave(p *Player) {
 			left = append(left, s)
 		}
 	}
-	if g.Items = left; len(left) == 0 {
-		p.C.Grave = nil
-	} else {
-		w.tell(p, "Your inventory is full. The rest is kept for you.")
-	}
-	p.dirty = true
-	w.save(p)
+	return
 }

@@ -1748,18 +1748,20 @@ func (x *EquipSlot) GetStack() *Stack {
 }
 
 type Self struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Id            uint32                 `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
-	Name          string                 `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`
-	Map           MapId                  `protobuf:"varint,3,opt,name=map,proto3,enum=driftwake.v1.MapId" json:"map,omitempty"`
-	Xp            map[string]uint32      `protobuf:"bytes,4,rep,name=xp,proto3" json:"xp,omitempty" protobuf_key:"bytes,1,opt,name=key" protobuf_val:"varint,2,opt,name=value"`
-	Inventory     []*InvSlot             `protobuf:"bytes,5,rep,name=inventory,proto3" json:"inventory,omitempty"`
-	Equipment     []*EquipSlot           `protobuf:"bytes,6,rep,name=equipment,proto3" json:"equipment,omitempty"`
-	Bank          []*Stack               `protobuf:"bytes,7,rep,name=bank,proto3" json:"bank,omitempty"`
-	Boat          map[string]uint32      `protobuf:"bytes,8,rep,name=boat,proto3" json:"boat,omitempty" protobuf_key:"bytes,1,opt,name=key" protobuf_val:"varint,2,opt,name=value"`
-	BoatDone      bool                   `protobuf:"varint,9,opt,name=boat_done,json=boatDone,proto3" json:"boat_done,omitempty"`
-	Reaper        []*Stack               `protobuf:"bytes,10,rep,name=reaper,proto3" json:"reaper,omitempty"`
-	Look          *Look                  `protobuf:"bytes,11,opt,name=look,proto3" json:"look,omitempty"`
+	state     protoimpl.MessageState `protogen:"open.v1"`
+	Id        uint32                 `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
+	Name      string                 `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`
+	Map       MapId                  `protobuf:"varint,3,opt,name=map,proto3,enum=driftwake.v1.MapId" json:"map,omitempty"`
+	Xp        map[string]uint32      `protobuf:"bytes,4,rep,name=xp,proto3" json:"xp,omitempty" protobuf_key:"bytes,1,opt,name=key" protobuf_val:"varint,2,opt,name=value"`
+	Inventory []*InvSlot             `protobuf:"bytes,5,rep,name=inventory,proto3" json:"inventory,omitempty"`
+	Equipment []*EquipSlot           `protobuf:"bytes,6,rep,name=equipment,proto3" json:"equipment,omitempty"`
+	Bank      []*Stack               `protobuf:"bytes,7,rep,name=bank,proto3" json:"bank,omitempty"`
+	Boat      map[string]uint32      `protobuf:"bytes,8,rep,name=boat,proto3" json:"boat,omitempty" protobuf_key:"bytes,1,opt,name=key" protobuf_val:"varint,2,opt,name=value"`
+	BoatDone  bool                   `protobuf:"varint,9,opt,name=boat_done,json=boatDone,proto3" json:"boat_done,omitempty"`
+	Look      *Look                  `protobuf:"bytes,11,opt,name=look,proto3" json:"look,omitempty"`
+	// What the reaper holds: lost by dying, and uniques nobody picked up.
+	Reaper        []*Stack `protobuf:"bytes,10,rep,name=reaper,proto3" json:"reaper,omitempty"`
+	Kept          []*Stack `protobuf:"bytes,12,rep,name=kept,proto3" json:"kept,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -1857,6 +1859,13 @@ func (x *Self) GetBoatDone() bool {
 	return false
 }
 
+func (x *Self) GetLook() *Look {
+	if x != nil {
+		return x.Look
+	}
+	return nil
+}
+
 func (x *Self) GetReaper() []*Stack {
 	if x != nil {
 		return x.Reaper
@@ -1864,9 +1873,9 @@ func (x *Self) GetReaper() []*Stack {
 	return nil
 }
 
-func (x *Self) GetLook() *Look {
+func (x *Self) GetKept() []*Stack {
 	if x != nil {
-		return x.Look
+		return x.Kept
 	}
 	return nil
 }
@@ -2611,7 +2620,7 @@ const file_driftwake_v1_game_proto_rawDesc = "" +
 	"\x05stack\x18\x02 \x01(\v2\x13.driftwake.v1.StackR\x05stack\"^\n" +
 	"\tEquipSlot\x12&\n" +
 	"\x04slot\x18\x01 \x01(\x0e2\x12.driftwake.v1.SlotR\x04slot\x12)\n" +
-	"\x05stack\x18\x02 \x01(\v2\x13.driftwake.v1.StackR\x05stack\"\xa6\x04\n" +
+	"\x05stack\x18\x02 \x01(\v2\x13.driftwake.v1.StackR\x05stack\"\xcf\x04\n" +
 	"\x04Self\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\rR\x02id\x12\x12\n" +
 	"\x04name\x18\x02 \x01(\tR\x04name\x12%\n" +
@@ -2621,10 +2630,11 @@ const file_driftwake_v1_game_proto_rawDesc = "" +
 	"\tequipment\x18\x06 \x03(\v2\x17.driftwake.v1.EquipSlotR\tequipment\x12'\n" +
 	"\x04bank\x18\a \x03(\v2\x13.driftwake.v1.StackR\x04bank\x120\n" +
 	"\x04boat\x18\b \x03(\v2\x1c.driftwake.v1.Self.BoatEntryR\x04boat\x12\x1b\n" +
-	"\tboat_done\x18\t \x01(\bR\bboatDone\x12+\n" +
+	"\tboat_done\x18\t \x01(\bR\bboatDone\x12&\n" +
+	"\x04look\x18\v \x01(\v2\x12.driftwake.v1.LookR\x04look\x12+\n" +
 	"\x06reaper\x18\n" +
-	" \x03(\v2\x13.driftwake.v1.StackR\x06reaper\x12&\n" +
-	"\x04look\x18\v \x01(\v2\x12.driftwake.v1.LookR\x04look\x1a5\n" +
+	" \x03(\v2\x13.driftwake.v1.StackR\x06reaper\x12'\n" +
+	"\x04kept\x18\f \x03(\v2\x13.driftwake.v1.StackR\x04kept\x1a5\n" +
 	"\aXpEntry\x12\x10\n" +
 	"\x03key\x18\x01 \x01(\tR\x03key\x12\x14\n" +
 	"\x05value\x18\x02 \x01(\rR\x05value:\x028\x01\x1a7\n" +
@@ -2810,22 +2820,23 @@ var file_driftwake_v1_game_proto_depIdxs = []int32{
 	22, // 27: driftwake.v1.Self.equipment:type_name -> driftwake.v1.EquipSlot
 	20, // 28: driftwake.v1.Self.bank:type_name -> driftwake.v1.Stack
 	32, // 29: driftwake.v1.Self.boat:type_name -> driftwake.v1.Self.BoatEntry
-	20, // 30: driftwake.v1.Self.reaper:type_name -> driftwake.v1.Stack
-	13, // 31: driftwake.v1.Self.look:type_name -> driftwake.v1.Look
-	1,  // 32: driftwake.v1.Snapshot.map:type_name -> driftwake.v1.MapId
-	25, // 33: driftwake.v1.Snapshot.entities:type_name -> driftwake.v1.Entity
-	28, // 34: driftwake.v1.Snapshot.events:type_name -> driftwake.v1.Event
-	26, // 35: driftwake.v1.Entity.gear:type_name -> driftwake.v1.Gear
-	13, // 36: driftwake.v1.Entity.look:type_name -> driftwake.v1.Look
-	27, // 37: driftwake.v1.Entity.boss:type_name -> driftwake.v1.BossView
-	3,  // 38: driftwake.v1.BossView.state:type_name -> driftwake.v1.BossState
-	29, // 39: driftwake.v1.Event.hit:type_name -> driftwake.v1.Hit
-	30, // 40: driftwake.v1.Event.impact:type_name -> driftwake.v1.Impact
-	41, // [41:41] is the sub-list for method output_type
-	41, // [41:41] is the sub-list for method input_type
-	41, // [41:41] is the sub-list for extension type_name
-	41, // [41:41] is the sub-list for extension extendee
-	0,  // [0:41] is the sub-list for field type_name
+	13, // 30: driftwake.v1.Self.look:type_name -> driftwake.v1.Look
+	20, // 31: driftwake.v1.Self.reaper:type_name -> driftwake.v1.Stack
+	20, // 32: driftwake.v1.Self.kept:type_name -> driftwake.v1.Stack
+	1,  // 33: driftwake.v1.Snapshot.map:type_name -> driftwake.v1.MapId
+	25, // 34: driftwake.v1.Snapshot.entities:type_name -> driftwake.v1.Entity
+	28, // 35: driftwake.v1.Snapshot.events:type_name -> driftwake.v1.Event
+	26, // 36: driftwake.v1.Entity.gear:type_name -> driftwake.v1.Gear
+	13, // 37: driftwake.v1.Entity.look:type_name -> driftwake.v1.Look
+	27, // 38: driftwake.v1.Entity.boss:type_name -> driftwake.v1.BossView
+	3,  // 39: driftwake.v1.BossView.state:type_name -> driftwake.v1.BossState
+	29, // 40: driftwake.v1.Event.hit:type_name -> driftwake.v1.Hit
+	30, // 41: driftwake.v1.Event.impact:type_name -> driftwake.v1.Impact
+	42, // [42:42] is the sub-list for method output_type
+	42, // [42:42] is the sub-list for method input_type
+	42, // [42:42] is the sub-list for extension type_name
+	42, // [42:42] is the sub-list for extension extendee
+	0,  // [0:42] is the sub-list for field type_name
 }
 
 func init() { file_driftwake_v1_game_proto_init() }

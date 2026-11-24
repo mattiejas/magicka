@@ -28,6 +28,10 @@ function isNearBoss(): boolean {
 
 const ANYWHERE: Hint[] = [
   {
+    applies: self => self.kept.length > 0,
+    text: 'The reaper in town is keeping something you earned.',
+  },
+  {
     applies: self => self.reaper.length > 0,
     text: 'Your items are safe. Return to your grave, or ask the reaper at camp.',
   },
@@ -64,12 +68,12 @@ const ON_THE_ISLAND: Hint[] = [
     text: 'Bring 20 ash logs to the shipwright at the south dock to start a boat.',
   },
   {
-    applies: self => !self.boat.rudder && !owns(self, 'rudder'),
-    text: 'Old Gnashclaw, on the eastern sand, swallowed the rudder. Bring food and watch the ground.',
+    applies: self => !self.boat.wheel && !owns(self, 'ships_wheel'),
+    text: "Old Gnashclaw, on the eastern sand, swallowed the ship's wheel. Bring food and watch the ground.",
   },
   {
     applies: () => true,
-    text: 'Finish the boat at the dock: copper bars for fittings, flax for the sail, and the rudder.',
+    text: "Finish the boat at the dock: copper bars for fittings, flax for the sail, and the ship's wheel.",
   },
 ];
 

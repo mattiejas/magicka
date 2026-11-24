@@ -88,3 +88,19 @@ func TestOldSavesStillLoad(t *testing.T) {
 	eq(t, p.level("mining"), 2)
 	check(t, p.C.Look == nil)
 }
+
+func TestRenamedItemsInOldSaves(t *testing.T) {
+	e := setup(t)
+	old := `{"map":"island","x":32,"y":35,"hp":23,"xp":{},"inv":[{"id":"rudder","qty":1}],"equip":{},
+		"bank":[{"id":"rudder","qty":2}],"boat":{"hull":20,"rudder":1},"boatDone":false,
+		"grave":{"map":"island","x":1,"y":1,"items":[{"id":"rudder","qty":1}]}}`
+	var c Char
+	check(t, json.Unmarshal([]byte(old), &c) == nil)
+	id, _ := e.w.Join(9, "Old", func() (*Char, error) { return &c, nil }, &client{})
+	e.run(2)
+	p := e.w.players[id]
+	eq(t, p.count("ships_wheel"), 1)
+	eq(t, p.C.Bank, []*Stack{{"ships_wheel", 2}})
+	eq(t, p.C.Grave.Items, []*Stack{{"ships_wheel", 1}})
+	eq(t, p.C.Boat, map[string]int{"hull": 20, "wheel": 1})
+}
