@@ -293,6 +293,12 @@
     "type": "dock",
     "x": 33,
     "y": 57
+   },
+   {
+    "id": "island:shop",
+    "type": "shop",
+    "x": 29,
+    "y": 39
    }
   ],
   "spawns": [
@@ -370,6 +376,31 @@
     "type": "gnashclaw",
     "x": 51,
     "y": 40
+   },
+   {
+    "type": "chicken",
+    "x": 38,
+    "y": 42
+   },
+   {
+    "type": "chicken",
+    "x": 36,
+    "y": 44
+   },
+   {
+    "type": "chicken",
+    "x": 42,
+    "y": 45
+   },
+   {
+    "type": "chicken",
+    "x": 41,
+    "y": 46
+   },
+   {
+    "type": "chicken",
+    "x": 37,
+    "y": 46
    }
   ],
   "spawn": {
@@ -1217,6 +1248,12 @@
     "type": "dock",
     "x": 49,
     "y": 89
+   },
+   {
+    "id": "mainland:shop",
+    "type": "shop",
+    "x": 52,
+    "y": 82
    }
   ],
   "spawns": [

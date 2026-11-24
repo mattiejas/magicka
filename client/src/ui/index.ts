@@ -76,6 +76,8 @@ function handleMessage(msg: ServerMsg) {
       return showInfo(msg.text, msg.kind);
     case 'xp':
       return showXp(msg.skill, msg.amount);
+    case 'fees':
+      return updatePanel();
     case 'open':
       return openPanel(msg.station);
   }

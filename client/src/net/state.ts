@@ -17,6 +17,8 @@ export const state = {
   tick: 0,
   tickAt: 0,
   boss: { alive: false, nextTicks: 0, contribution: 0, online: 0, receivedAt: 0 },
+  /** Coins taken by graves and the reaper from everyone, once the reaper has been asked. */
+  feesTaken: null as number | null,
   connected: false,
 };
 

@@ -1,5 +1,5 @@
 // The panel on the left: one station's window, or the hair picker.
-import { MAPS, type SelfState, type StationType } from '@driftwake/shared';
+import { MAPS, type MapId, type SelfState, type StationType } from '@driftwake/shared';
 import { myTrack, state } from '../../net/state';
 import { button, byId, h, uiRoot } from '../dom';
 import { hideTooltip } from '../popups';
@@ -7,9 +7,10 @@ import { bankPanel } from './bank';
 import { craftingPanel } from './crafting';
 import { dockPanel } from './dock';
 import { hairPanel } from './hair';
-import { reaperPanel } from './reaper';
+import { gravePanel, reaperPanel } from './reclaim';
+import { shopPanel } from './shop';
 
-export { bankQuantity } from './bank';
+export { clickQuantity } from './quantity';
 
 export interface Panel {
   title: string;
@@ -18,14 +19,16 @@ export interface Panel {
   /** When given, the panel is only redrawn when this changes, so updates never swallow a click or the focus. */
   key?: (self: SelfState) => string;
 }
-export type PanelId = StationType | 'hair';
+export type PanelId = StationType | 'grave' | 'hair';
 
 const PANELS: Record<PanelId, Panel> = {
   bank: bankPanel,
   furnace: craftingPanel('furnace', 'Furnace'),
   anvil: craftingPanel('anvil', 'Anvil'),
   workbench: craftingPanel('workbench', 'Workbench'),
+  shop: shopPanel,
   reaper: reaperPanel,
+  grave: gravePanel,
   dock: dockPanel,
   hair: hairPanel,
 };
@@ -84,10 +87,11 @@ export function updatePanel() {
   if (focused) drawn.querySelector<HTMLElement>(`[data-focus="${focused}"]`)?.focus();
 }
 
+const openStation = (map: MapId) => MAPS[map].stations.find(s => s.type === openPanelId);
+
 export function closePanelWhenFar() {
   const me = myTrack()?.entity;
   if (!openPanelId || openPanelId === 'hair' || !state.self || !me) return;
-  const station = MAPS[state.self.map].stations.find(s => s.type === openPanelId);
-  if (!station) return;
-  if (Math.max(Math.abs(me.x - station.x), Math.abs(me.y - station.y)) > STATION_REACH) closePanel();
+  const place = openPanelId === 'grave' ? state.entities.get('grave')?.entity : openStation(state.self.map);
+  if (!place || Math.max(Math.abs(me.x - place.x), Math.abs(me.y - place.y)) > STATION_REACH) closePanel();
 }

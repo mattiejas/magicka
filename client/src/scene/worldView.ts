@@ -11,7 +11,7 @@ import {
 } from '@driftwake/shared';
 import * as THREE from 'three';
 import { MAT } from '../geo';
-import { boatGeo, nodeGeo, stationGeo } from '../models';
+import { boatGeo, keeperOf, nodeGeo, stationGeo } from '../models';
 import { groundDetail } from './groundDetail';
 import { type Pick, pickBox } from './picking';
 import { terrain } from './terrain';
@@ -22,6 +22,7 @@ const STATION_NAMES: Record<StationType, string> = {
   anvil: 'Anvil',
   workbench: 'Workbench',
   reaper: 'Reaper',
+  shop: 'Shopkeeper',
   dock: 'Shipwright',
 };
 const HIDDEN = new THREE.Matrix4().makeScale(0, 0, 0);
@@ -101,6 +102,8 @@ export class WorldView {
     mesh.position.set(x + 0.5, 0, y + 0.5);
     mesh.castShadow = mesh.receiveShadow = true;
     this.group.add(mesh);
+    const keeper = keeperOf(type);
+    if (keeper) mesh.add(keeper);
     this.picks.push({ kind: 'station', id, name: STATION_NAMES[type], type, box: pickBox(x, y, 1, 1.5) });
   }
 

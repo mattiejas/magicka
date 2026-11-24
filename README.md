@@ -52,4 +52,4 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) before changing code.
 - `client/` Three.js scene and DOM interface; `net/` the connection, `scene/` the 3D view, `models/`, `ui/`.
 - `docs/` agreed design and decisions; `GLOSSARY.md` terms.
 
-Model gallery while developing: `http://localhost:5173/gallery.html?set=people|hair|head|turn|swing|monsters|nodes|camp&t=600` (`t` freezes the animation at that millisecond).
+Model gallery while developing: `http://localhost:5173/gallery.html?set=people|hair|head|turn|swing|monsters|chicken|nodes|camp&t=600` (`t` freezes the animation at that millisecond).

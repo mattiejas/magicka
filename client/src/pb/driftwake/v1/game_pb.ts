@@ -12,7 +12,7 @@ import type { Message } from "@bufbuild/protobuf";
  * Describes the file driftwake/v1/game.proto.
  */
 export const file_driftwake_v1_game: GenFile = /*@__PURE__*/
-  fileDesc("ChdkcmlmdHdha2UvdjEvZ2FtZS5wcm90bxIMZHJpZnR3YWtlLnYxIsEFCg1DbGllbnRNZXNzYWdlEi0KCHJlZ2lzdGVyGAEgASgLMhkuZHJpZnR3YWtlLnYxLkNyZWRlbnRpYWxzSAASKgoFbG9naW4YAiABKAsyGS5kcmlmdHdha2UudjEuQ3JlZGVudGlhbHNIABIWCgxyZXN1bWVfdG9rZW4YAyABKAlIABIlCgZsb2dvdXQYBCABKAsyEy5kcmlmdHdha2UudjEuRW1wdHlIABIiCgRtb3ZlGAUgASgLMhIuZHJpZnR3YWtlLnYxLlRpbGVIABIQCgZnYXRoZXIYBiABKA1IABIRCgdzdGF0aW9uGAcgASgNSAASEAoGYXR0YWNrGAggASgNSAASEAoGcGlja3VwGAkgASgNSAASJAoFZ3JhdmUYCiABKAsyEy5kcmlmdHdha2UudjEuRW1wdHlIABIkCgVjbGFpbRgLIAEoCzITLmRyaWZ0d2FrZS52MS5FbXB0eUgAEiQKBWNyYWZ0GAwgASgLMhMuZHJpZnR3YWtlLnYxLkNyYWZ0SAASFAoKZXF1aXBfc2xvdBgNIAEoDUgAEiUKB3VuZXF1aXAYDiABKA4yEi5kcmlmdHdha2UudjEuU2xvdEgAEhIKCGVhdF9zbG90GA8gASgNSAASEwoJZHJvcF9zbG90GBAgASgNSAASIgoEc3dhcBgRIAEoCzISLmRyaWZ0d2FrZS52MS5Td2FwSAASIgoEYmFuaxgSIAEoCzISLmRyaWZ0d2FrZS52MS5CYW5rSAASKgoLZGVwb3NpdF9hbGwYEyABKAsyEy5kcmlmdHdha2UudjEuRW1wdHlIABIiCgRib2F0GBQgASgLMhIuZHJpZnR3YWtlLnYxLkJvYXRIABIiCgRsb29rGBUgASgLMhIuZHJpZnR3YWtlLnYxLkxvb2tIABIOCgRjaGF0GBYgASgJSABCBQoDbXNnIgcKBUVtcHR5Ii0KC0NyZWRlbnRpYWxzEgwKBG5hbWUYASABKAkSEAoIcGFzc3dvcmQYAiABKAkiHAoEVGlsZRIJCgF4GAEgASgNEgkKAXkYAiABKA0iJAoFQ3JhZnQSDgoGcmVjaXBlGAEgASgJEgsKA3F0eRgCIAEoDSIcCgRTd2FwEgkKAWEYASABKA0SCQoBYhgCIAEo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djEuR2VhchIgCgRsb29rGA4gASgLMhIuZHJpZnR3YWtlLnYxLkxvb2sSEgoFbGV2ZWwYDyABKA1ICYgBARITCgZyb290ZWQYECABKAhICogBARIQCgNxdHkYESABKA1IC4gBARIkCgRib3NzGBIgASgLMhYuZHJpZnR3YWtlLnYxLkJvc3NWaWV3QgQKAl94QgQKAl95QgcKBV9uYW1lQgcKBV90eXBlQgUKA19ocEIJCgdfbWF4X2hwQgYKBF9hY3RCCQoHX3RhcmdldEIHCgVfdG9vbEIICgZfbGV2ZWxCCQoHX3Jvb3RlZEIGCgRfcXR5IkAKBEdlYXISDgoGd2VhcG9uGAEgASgJEgwKBGhlYWQYAiABKAkSDAoEYm9keRgDIAEoCRIMCgRsZWdzGAQgASgJIn0KCEJvc3NWaWV3EiYKBXN0YXRlGAEgASgOMhcuZHJpZnR3YWtlLnYxLkJvc3NTdGF0ZRIOCgZhdHRhY2sYAiABKAkSDQoFdGlsZXMYAyADKA0SDQoFc3RhcnQYBCABKA0SCwoDZW5kGAUgASgNEg4KBnRhcmdldBgGIAEoDSJrCgVFdmVudBIgCgNoaXQYASABKAsyES5kcmlmdHdha2UudjEuSGl0SAASJgoGaW1wYWN0GAIgASgLMhQuZHJpZnR3YWtlLnYxLkltcGFjdEgAEg8KBWRlYXRoGAMgASgNSABCBwoFZXZlbnQiPgoDSGl0EgwKBGZyb20YASABKA0SCgoCdG8YAiABKA0SDgoGZGFtYWdlGAMgASgNEg0KBXN0eWxlGAQgASgJIjUKBkltcGFjdBIMCgRib3NzGAEgASgNEg4KBmF0dGFjaxgCIAEoCRINCgV0aWxlcxgDIAMoDSp4CgRTbG90EhQKEFNMT1RfVU5TUEVDSUZJRUQQABIPCgtTTE9UX1dFQVBPThABEg0KCVNMT1RfSEVBRBACEg0KCVNMT1RfQk9EWRADEg0KCVNMT1RfTEVHUxAEEg0KCVNMT1RfTkVDSxAFEg0KCVNMT1RfQU1NTxAGKkcKBU1hcElkEhYKEk1BUF9JRF9VTlNQRUNJRklFRBAAEhEKDU1BUF9JRF9JU0xBTkQQARITCg9NQVBfSURfTUFJTkxBTkQQAiq2AQoKRW50aXR5S2luZBIbChdFTlRJVFlfS0lORF9VTlNQRUNJRklFRBAAEhYKEkVOVElUWV9LSU5EX1BMQVlFUhABEhcKE0VOVElUWV9LSU5EX01PTlNURVIQAhIUChBFTlRJVFlfS0lORF9OT0RFEAMSFAoQRU5USVRZX0tJTkRfRFJPUBAEEhUKEUVOVElUWV9LSU5EX0dSQVZFEAUSFwoTRU5USVRZX0tJTkRfU1RBVElPThAGKm0KCUJvc3NTdGF0ZRIaChZCT1NTX1NUQVRFX1VOU1BFQ0lGSUVEEAASFQoRQk9TU19TVEFURV9DSE9PU0UQARIVChFCT1NTX1NUQVRFX1dJTkRVUBACEhYKEkJPU1NfU1RBVEVfRVhFQ1VURRADKncKCEluZm9LaW5kEhkKFUlORk9fS0lORF9VTlNQRUNJRklFRBAAEhQKEElORk9fS0lORF9VTklRVUUQARISCg5JTkZPX0tJTkRfQk9TUxACEhMKD0lORk9fS0lORF9MRVZFTBADEhEKDUlORk9fS0lORF9CQUQQBEIhWh9kcmlmdHdha2Uvc2VydmVyL2ludGVybmFsL3BiO3BiYgZwcm90bzM");
+  fileDesc("ChdkcmlmdHdha2UvdjEvZ2FtZS5wcm90bxIMZHJpZnR3YWtlLnYxIo4GCg1DbGllbnRNZXNzYWdlEi0KCHJlZ2lzdGVyGAEgASgLMhkuZHJpZnR3YWtlLnYxLkNyZWRlbnRpYWxzSAASKgoFbG9naW4YAiABKAsyGS5kcmlmdHdha2UudjEuQ3JlZGVudGlhbHNIABIWCgxyZXN1bWVfdG9rZW4YAyABKAlIABIlCgZsb2dvdXQYBCABKAsyEy5kcmlmdHdha2UudjEuRW1wdHlIABIiCgRtb3ZlGAUgASgLMhIuZHJpZnR3YWtlLnYxLlRpbGVIABIQCgZnYXRoZXIYBiABKA1IABIRCgdzdGF0aW9uGAcgASgNSAASEAoGYXR0YWNrGAggASgNSAASEAoGcGlja3VwGAkgASgNSAASJAoFZ3JhdmUYCiABKAsyEy5kcmlmdHdha2UudjEuRW1wdHlIABIkCgVjbGFpbRgLIAEoCzITLmRyaWZ0d2FrZS52MS5DbGFpbUgAEiQKBWNyYWZ0GAwgASgLMhMuZHJpZnR3YWtlLnYxLkNyYWZ0SAASFAoKZXF1aXBfc2xvdBgNIAEoDUgAEiUKB3VuZXF1aXAYDiABKA4yEi5kcmlmdHdha2UudjEuU2xvdEgAEhIKCGVhdF9zbG90GA8gASgNSAASEwoJZHJvcF9zbG90GBAgASgNSAASIgoEc3dhcBgRIAEoCzISLmRyaWZ0d2FrZS52MS5Td2FwSAASIgoEYmFuaxgSIAEoCzISLmRyaWZ0d2FrZS52MS5CYW5rSAASKgoLZGVwb3NpdF9hbGwYEyABKAsyEy5kcmlmdHdha2UudjEuRW1wdHlIABIiCgRib2F0GBQgASgLMhIuZHJpZnR3YWtlLnYxLkJvYXRIABIiCgRsb29rGBUgASgLMhIuZHJpZnR3YWtlLnYxLkxvb2tIABIOCgRjaGF0GBYgASgJSAASIgoEc2hvcBgXIAEoCzISLmRyaWZ0d2FrZS52MS5TaG9wSAASJwoIYXNrX2ZlZXMYGCABKAsyEy5kcmlmdHdha2UudjEuRW1wdHlIAEIFCgNtc2ciBwoFRW1wdHkiLQoLQ3JlZGVudGlhbHMSDAoEbmFtZRgBIAEoCRIQCghwYXNzd29yZBgCIAEoCSIcCgRUaWxlEgkKAXgYASABKA0SCQoBeRgCIAEoDSIkCgVDcmFmdBIOCgZyZWNpcGUYASABKAkSCwoDcXR5GAIgASgNIhwKBFN3YXASCQoBYRgBIAEoDRIJCgFiGAIgASgNIjMKBEJhbmsSEAoId2l0aGRyYXcYASABKAgSDAoEaXRlbRgCIAEoCRILCgNxdHkYAyABKA0iFAoEQm9hdBIMCgRzYWlsGAEgASgIIhUKBUNsYWltEgwKBGl0ZW0YASABKAkiLgoEU2hvcBILCgNidXkYASABKAgSDAoEaXRlbRgCIAEoCRILCgNxdHkYAyABKA0iIgoETG9vaxILCgNjdXQYASABKA0SDQoFY29sb3IYAiABKA0i8wIKDVNlcnZlck1lc3NhZ2USKAoHd2VsY29tZRgBIAEoCzIVLmRyaWZ0d2FrZS52MS5XZWxjb21lSAASDwoFZXJyb3IYAiABKAlIABIQCgZraWNrZWQYAyABKAlIABIiCgRzZWxmGAQgASgLMhIuZHJpZnR3YWtlLnYxLlNlbGZIABIqCghzbmFwc2hvdBgFIAEoCzIWLmRyaWZ0d2FrZS52MS5TbmFwc2hvdEgAEiIKBGNoYXQYBiABKAsyEi5kcmlmdHdha2UudjEuQ2hhdEgAEiIKBGluZm8YByABKAsyEi5kcmlmdHdha2UudjEuSW5mb0gAEh4KAnhwGAggASgLMhAuZHJpZnR3YWtlLnYxLlhwSAASFgoMb3Blbl9zdGF0aW9uGAkgASgJSAASKAoEYm9zcxgKIAEoCzIYLmRyaWZ0d2FrZS52MS5Cb3NzU3RhdHVzSAASFAoKZmVlc190YWtlbhgLIAEoBEgAQgUKA21zZyIkCgdXZWxjb21lEg0KBXRva2VuGAEgASgJEgoKAmlkGAIgASgNIiIKBENoYXQSDAoEZnJvbRgBIAEoCRIMCgR0ZXh0GAIgASgJIjoKBEluZm8SDAoEdGV4dBgBIAEoCRIkCgRraW5kGAIgASgOMhYuZHJpZnR3YWtlLnYxLkluZm9LaW5kIiMKAlhwEg0KBXNraWxsGAEgASgJEg4KBmFtb3VudBgCIAEoDSJVCgpCb3NzU3RhdHVzEg0KBWFsaXZlGAEgASgIEhIKCm5leHRfdGlja3MYAiABKA0SFAoMY29udHJpYnV0aW9uGAMgASgCEg4KBm9ubGluZRgEIAEoDSIiCgVTdGFjaxIMCgRpdGVtGAEgASgJEgsKA3F0eRgCIAEoDSI8CgdJbnZTbG90Eg0KBWluZGV4GAEgASgNEiIKBXN0YWNrGAIgASgLMhMuZHJpZnR3YWtlLnYxLlN0YWNrIlEKCUVxdWlwU2xvdBIgCgRzbG90GAEgASgOMhIuZHJpZnR3YWtlLnYxLlNsb3QSIgoFc3RhY2sYAiABKAsyEy5kcmlmdHdha2UudjEuU3RhY2si5AMKBFNlbGYSCgoCaWQYASABKA0SDAoEbmFtZRgCIAEoCRIgCgNtYXAYAyABKA4yEy5kcmlmdHdha2UudjEuTWFwSWQSJgoCeHAYBCADKAsyGi5kcmlmdHdha2UudjEuU2VsZi5YcEVudHJ5EigKCWludmVudG9yeRgFIAMoCzIVLmRyaWZ0d2FrZS52MS5JbnZTbG90EioKCWVxdWlwbWVudBgGIAMoCzIXLmRyaWZ0d2FrZS52MS5FcXVpcFNsb3QSIQoEYmFuaxgHIAMoCzITLmRyaWZ0d2FrZS52MS5TdGFjaxIqCgRib2F0GAggAygLMhwuZHJpZnR3YWtlLnYxLlNlbGYuQm9hdEVudHJ5EhEKCWJvYXRfZG9uZRgJIAEoCBIgCgRsb29rGAsgASgLMhIuZHJpZnR3YWtlLnYxLkxvb2sSIwoGcmVhcGVyGAogAygLMhMuZHJpZnR3YWtlLnYxLlN0YWNrEiEKBGtlcHQYDCADKAsyEy5kcmlmdHdha2UudjEuU3RhY2saKQoHWHBFbnRyeRILCgNrZXkYASABKAkSDQoFdmFsdWUYAiABKA06AjgBGisKCUJvYXRFbnRyeRILCgNrZXkYASABKAkSDQoFdmFsdWUYAiABKA06AjgBIqQBCghTbmFwc2hvdBIMCgR0aWNrGAEgASgNEiAKA21hcBgCIAEoDjITLmRyaWZ0d2FrZS52MS5NYXBJZBINCgVyZXNldBgDIAEoCBImCghlbnRpdGllcxgEIAMoCzIULmRyaWZ0d2FrZS52MS5FbnRpdHkSDAoEZ29uZRgFIAMoDRIjCgZldmVudHMYBiADKAsyEy5kcmlmdHdha2UudjEuRXZlbnQi4wMKBkVudGl0eRIKCgJpZBgBIAEoDRIMCgRmdWxsGAIgASgIEg4KAXgYAyABKA1IAIgBARIOCgF5GAQgASgNSAGIAQESCwoDdmlhGAUgAygNEhEKBG5hbWUYBiABKAlIAogBARIRCgR0eXBlGAcgASgJSAOIAQESDwoCaHAYCCABKA1IBIgBARITCgZtYXhfaHAYCSABKA1IBYgBARIQCgNhY3QYCiABKAlIBogBARITCgZ0YXJnZXQYCyABKA1IB4gBARIRCgR0b29sGAwgASgJSAiIAQESIAoEZ2VhchgNIAEoCzISLmRyaWZ0d2FrZS52MS5HZWFyEiAKBGxvb2sYDiABKAsyEi5kcmlmdHdha2UudjEuTG9vaxISCgVsZXZlbBgPIAEoDUgJiAEBEhMKBnJvb3RlZBgQIAEoCEgKiAEBEhAKA3F0eRgRIAEoDUgLiAEBEiQKBGJvc3MYEiABKAsyFi5kcmlmdHdha2UudjEuQm9zc1ZpZXdCBAoCX3hCBAoCX3lCBwoFX25hbWVCBwoFX3R5cGVCBQoDX2hwQgkKB19tYXhfaHBCBgoEX2FjdEIJCgdfdGFyZ2V0QgcKBV90b29sQggKBl9sZXZlbEIJCgdfcm9vdGVkQgYKBF9xdHkiQAoER2VhchIOCgZ3ZWFwb24YASABKAkSDAoEaGVhZBgCIAEoCRIMCgRib2R5GAMgASgJEgwKBGxlZ3MYBCABKAkifQoIQm9zc1ZpZXcSJgoFc3RhdGUYASABKA4yFy5kcmlmdHdha2UudjEuQm9zc1N0YXRlEg4KBmF0dGFjaxgCIAEoCRINCgV0aWxlcxgDIAMoDRINCgVzdGFydBgEIAEoDRILCgNlbmQYBSABKA0SDgoGdGFyZ2V0GAYgASgNImsKBUV2ZW50EiAKA2hpdBgBIAEoCzIRLmRyaWZ0d2FrZS52MS5IaXRIABImCgZpbXBhY3QYAiABKAsyFC5kcmlmdHdha2UudjEuSW1wYWN0SAASDwoFZGVhdGgYAyABKA1IAEIHCgVldmVudCI+CgNIaXQSDAoEZnJvbRgBIAEoDRIKCgJ0bxgCIAEoDRIOCgZkYW1hZ2UYAyABKA0SDQoFc3R5bGUYBCABKAkiNQoGSW1wYWN0EgwKBGJvc3MYASABKA0SDgoGYXR0YWNrGAIgASgJEg0KBXRpbGVzGAMgAygNKngKBFNsb3QSFAoQU0xPVF9VTlNQRUNJRklFRBAAEg8KC1NMT1RfV0VBUE9OEAESDQoJU0xPVF9IRUFEEAISDQoJU0xPVF9CT0RZEAMSDQoJU0xPVF9MRUdTEAQSDQoJU0xPVF9ORUNLEAUSDQoJU0xPVF9BTU1PEAYqRwoFTWFwSWQSFgoSTUFQX0lEX1VOU1BFQ0lGSUVEEAASEQoNTUFQX0lEX0lTTEFORBABEhMKD01BUF9JRF9NQUlOTEFORBACKrYBCgpFbnRpdHlLaW5kEhsKF0VOVElUWV9LSU5EX1VOU1BFQ0lGSUVEEAASFgoSRU5USVRZX0tJTkRfUExBWUVSEAESFwoTRU5USVRZX0tJTkRfTU9OU1RFUhACEhQKEEVOVElUWV9LSU5EX05PREUQAxIUChBFTlRJVFlfS0lORF9EUk9QEAQSFQoRRU5USVRZX0tJTkRfR1JBVkUQBRIXChNFTlRJVFlfS0lORF9TVEFUSU9OEAYqbQoJQm9zc1N0YXRlEhoKFkJPU1NfU1RBVEVfVU5TUEVDSUZJRUQQABIVChFCT1NTX1NUQVRFX0NIT09TRRABEhUKEUJPU1NfU1RBVEVfV0lORFVQEAISFgoSQk9TU19TVEFURV9FWEVDVVRFEAMqdwoISW5mb0tpbmQSGQoVSU5GT19LSU5EX1VOU1BFQ0lGSUVEEAASFAoQSU5GT19LSU5EX1VOSVFVRRABEhIKDklORk9fS0lORF9CT1NTEAISEwoPSU5GT19LSU5EX0xFVkVMEAMSEQoNSU5GT19LSU5EX0JBRBAEQiFaH2RyaWZ0d2FrZS9zZXJ2ZXIvaW50ZXJuYWwvcGI7cGJiBnByb3RvMw");
 
 /**
  * --- browser to server
@@ -85,9 +85,9 @@ export type ClientMessage = Message<"driftwake.v1.ClientMessage"> & {
     case: "grave";
   } | {
     /**
-     * @generated from field: driftwake.v1.Empty claim = 11;
+     * @generated from field: driftwake.v1.Claim claim = 11;
      */
-    value: Empty;
+    value: Claim;
     case: "claim";
   } | {
     /**
@@ -155,6 +155,18 @@ export type ClientMessage = Message<"driftwake.v1.ClientMessage"> & {
      */
     value: string;
     case: "chat";
+  } | {
+    /**
+     * @generated from field: driftwake.v1.Shop shop = 23;
+     */
+    value: Shop;
+    case: "shop";
+  } | {
+    /**
+     * @generated from field: driftwake.v1.Empty ask_fees = 24;
+     */
+    value: Empty;
+    case: "askFees";
   } | { case: undefined; value?: undefined };
 };
 
@@ -311,6 +323,52 @@ export const BoatSchema: GenMessage<Boat> = /*@__PURE__*/
   messageDesc(file_driftwake_v1_game, 7);
 
 /**
+ * Takes back what was lost by dying: one kind of item, or everything affordable when left empty.
+ *
+ * @generated from message driftwake.v1.Claim
+ */
+export type Claim = Message<"driftwake.v1.Claim"> & {
+  /**
+   * @generated from field: string item = 1;
+   */
+  item: string;
+};
+
+/**
+ * Describes the message driftwake.v1.Claim.
+ * Use `create(ClaimSchema)` to create a new message.
+ */
+export const ClaimSchema: GenMessage<Claim> = /*@__PURE__*/
+  messageDesc(file_driftwake_v1_game, 8);
+
+/**
+ * @generated from message driftwake.v1.Shop
+ */
+export type Shop = Message<"driftwake.v1.Shop"> & {
+  /**
+   * @generated from field: bool buy = 1;
+   */
+  buy: boolean;
+
+  /**
+   * @generated from field: string item = 2;
+   */
+  item: string;
+
+  /**
+   * @generated from field: uint32 qty = 3;
+   */
+  qty: number;
+};
+
+/**
+ * Describes the message driftwake.v1.Shop.
+ * Use `create(ShopSchema)` to create a new message.
+ */
+export const ShopSchema: GenMessage<Shop> = /*@__PURE__*/
+  messageDesc(file_driftwake_v1_game, 9);
+
+/**
  * @generated from message driftwake.v1.Look
  */
 export type Look = Message<"driftwake.v1.Look"> & {
@@ -330,7 +388,7 @@ export type Look = Message<"driftwake.v1.Look"> & {
  * Use `create(LookSchema)` to create a new message.
  */
 export const LookSchema: GenMessage<Look> = /*@__PURE__*/
-  messageDesc(file_driftwake_v1_game, 8);
+  messageDesc(file_driftwake_v1_game, 10);
 
 /**
  * --- server to browser
@@ -401,6 +459,14 @@ export type ServerMessage = Message<"driftwake.v1.ServerMessage"> & {
      */
     value: BossStatus;
     case: "boss";
+  } | {
+    /**
+     * Everything the reaper and graves have ever taken, from everyone.
+     *
+     * @generated from field: uint64 fees_taken = 11;
+     */
+    value: bigint;
+    case: "feesTaken";
   } | { case: undefined; value?: undefined };
 };
 
@@ -409,7 +475,7 @@ export type ServerMessage = Message<"driftwake.v1.ServerMessage"> & {
  * Use `create(ServerMessageSchema)` to create a new message.
  */
 export const ServerMessageSchema: GenMessage<ServerMessage> = /*@__PURE__*/
-  messageDesc(file_driftwake_v1_game, 9);
+  messageDesc(file_driftwake_v1_game, 11);
 
 /**
  * @generated from message driftwake.v1.Welcome
@@ -431,7 +497,7 @@ export type Welcome = Message<"driftwake.v1.Welcome"> & {
  * Use `create(WelcomeSchema)` to create a new message.
  */
 export const WelcomeSchema: GenMessage<Welcome> = /*@__PURE__*/
-  messageDesc(file_driftwake_v1_game, 10);
+  messageDesc(file_driftwake_v1_game, 12);
 
 /**
  * @generated from message driftwake.v1.Chat
@@ -453,7 +519,7 @@ export type Chat = Message<"driftwake.v1.Chat"> & {
  * Use `create(ChatSchema)` to create a new message.
  */
 export const ChatSchema: GenMessage<Chat> = /*@__PURE__*/
-  messageDesc(file_driftwake_v1_game, 11);
+  messageDesc(file_driftwake_v1_game, 13);
 
 /**
  * @generated from message driftwake.v1.Info
@@ -475,7 +541,7 @@ export type Info = Message<"driftwake.v1.Info"> & {
  * Use `create(InfoSchema)` to create a new message.
  */
 export const InfoSchema: GenMessage<Info> = /*@__PURE__*/
-  messageDesc(file_driftwake_v1_game, 12);
+  messageDesc(file_driftwake_v1_game, 14);
 
 /**
  * @generated from message driftwake.v1.Xp
@@ -497,7 +563,7 @@ export type Xp = Message<"driftwake.v1.Xp"> & {
  * Use `create(XpSchema)` to create a new message.
  */
 export const XpSchema: GenMessage<Xp> = /*@__PURE__*/
-  messageDesc(file_driftwake_v1_game, 13);
+  messageDesc(file_driftwake_v1_game, 15);
 
 /**
  * @generated from message driftwake.v1.BossStatus
@@ -529,7 +595,7 @@ export type BossStatus = Message<"driftwake.v1.BossStatus"> & {
  * Use `create(BossStatusSchema)` to create a new message.
  */
 export const BossStatusSchema: GenMessage<BossStatus> = /*@__PURE__*/
-  messageDesc(file_driftwake_v1_game, 14);
+  messageDesc(file_driftwake_v1_game, 16);
 
 /**
  * @generated from message driftwake.v1.Stack
@@ -551,7 +617,7 @@ export type Stack = Message<"driftwake.v1.Stack"> & {
  * Use `create(StackSchema)` to create a new message.
  */
 export const StackSchema: GenMessage<Stack> = /*@__PURE__*/
-  messageDesc(file_driftwake_v1_game, 15);
+  messageDesc(file_driftwake_v1_game, 17);
 
 /**
  * @generated from message driftwake.v1.InvSlot
@@ -573,7 +639,7 @@ export type InvSlot = Message<"driftwake.v1.InvSlot"> & {
  * Use `create(InvSlotSchema)` to create a new message.
  */
 export const InvSlotSchema: GenMessage<InvSlot> = /*@__PURE__*/
-  messageDesc(file_driftwake_v1_game, 16);
+  messageDesc(file_driftwake_v1_game, 18);
 
 /**
  * @generated from message driftwake.v1.EquipSlot
@@ -595,7 +661,7 @@ export type EquipSlot = Message<"driftwake.v1.EquipSlot"> & {
  * Use `create(EquipSlotSchema)` to create a new message.
  */
 export const EquipSlotSchema: GenMessage<EquipSlot> = /*@__PURE__*/
-  messageDesc(file_driftwake_v1_game, 17);
+  messageDesc(file_driftwake_v1_game, 19);
 
 /**
  * @generated from message driftwake.v1.Self
@@ -669,7 +735,7 @@ export type Self = Message<"driftwake.v1.Self"> & {
  * Use `create(SelfSchema)` to create a new message.
  */
 export const SelfSchema: GenMessage<Self> = /*@__PURE__*/
-  messageDesc(file_driftwake_v1_game, 18);
+  messageDesc(file_driftwake_v1_game, 20);
 
 /**
  * `entities` hold only what changed, except for entities the browser did not know yet.
@@ -713,7 +779,7 @@ export type Snapshot = Message<"driftwake.v1.Snapshot"> & {
  * Use `create(SnapshotSchema)` to create a new message.
  */
 export const SnapshotSchema: GenMessage<Snapshot> = /*@__PURE__*/
-  messageDesc(file_driftwake_v1_game, 19);
+  messageDesc(file_driftwake_v1_game, 21);
 
 /**
  * @generated from message driftwake.v1.Entity
@@ -821,7 +887,7 @@ export type Entity = Message<"driftwake.v1.Entity"> & {
  * Use `create(EntitySchema)` to create a new message.
  */
 export const EntitySchema: GenMessage<Entity> = /*@__PURE__*/
-  messageDesc(file_driftwake_v1_game, 20);
+  messageDesc(file_driftwake_v1_game, 22);
 
 /**
  * @generated from message driftwake.v1.Gear
@@ -853,7 +919,7 @@ export type Gear = Message<"driftwake.v1.Gear"> & {
  * Use `create(GearSchema)` to create a new message.
  */
 export const GearSchema: GenMessage<Gear> = /*@__PURE__*/
-  messageDesc(file_driftwake_v1_game, 21);
+  messageDesc(file_driftwake_v1_game, 23);
 
 /**
  * @generated from message driftwake.v1.BossView
@@ -895,7 +961,7 @@ export type BossView = Message<"driftwake.v1.BossView"> & {
  * Use `create(BossViewSchema)` to create a new message.
  */
 export const BossViewSchema: GenMessage<BossView> = /*@__PURE__*/
-  messageDesc(file_driftwake_v1_game, 22);
+  messageDesc(file_driftwake_v1_game, 24);
 
 /**
  * @generated from message driftwake.v1.Event
@@ -930,7 +996,7 @@ export type Event = Message<"driftwake.v1.Event"> & {
  * Use `create(EventSchema)` to create a new message.
  */
 export const EventSchema: GenMessage<Event> = /*@__PURE__*/
-  messageDesc(file_driftwake_v1_game, 23);
+  messageDesc(file_driftwake_v1_game, 25);
 
 /**
  * @generated from message driftwake.v1.Hit
@@ -962,7 +1028,7 @@ export type Hit = Message<"driftwake.v1.Hit"> & {
  * Use `create(HitSchema)` to create a new message.
  */
 export const HitSchema: GenMessage<Hit> = /*@__PURE__*/
-  messageDesc(file_driftwake_v1_game, 24);
+  messageDesc(file_driftwake_v1_game, 26);
 
 /**
  * @generated from message driftwake.v1.Impact
@@ -989,7 +1055,7 @@ export type Impact = Message<"driftwake.v1.Impact"> & {
  * Use `create(ImpactSchema)` to create a new message.
  */
 export const ImpactSchema: GenMessage<Impact> = /*@__PURE__*/
-  messageDesc(file_driftwake_v1_game, 25);
+  messageDesc(file_driftwake_v1_game, 27);
 
 /**
  * @generated from enum driftwake.v1.Slot

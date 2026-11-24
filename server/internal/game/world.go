@@ -17,6 +17,9 @@ type Store interface {
 	Save(account int64, data []byte)
 	// Update changes a saved character that is not in the world.
 	Update(account int64, change func(*Char)) error
+	// Totals are counts kept for the whole world.
+	Total(name string) int64
+	AddTotal(name string, n int64)
 }
 
 // spot is a tile of a map.
@@ -54,6 +57,7 @@ type World struct {
 	before map[uint32]fields // what every entity looked like on the last tick
 
 	nextBoss   int
+	feesTaken  int64 // by graves and the reaper, from everyone, ever
 	bossPeriod int
 }
 type station struct {
@@ -72,6 +76,7 @@ func NewWorld(store Store, rnd func() float64, dev bool, bossPeriod int) *World 
 		before:     map[uint32]fields{},
 		nextBoss:   bossPeriod,
 		bossPeriod: bossPeriod,
+		feesTaken:  store.Total(feesTotal),
 	}
 	for _, m := range content.Maps {
 		for _, n := range m.Nodes {

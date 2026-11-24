@@ -68,7 +68,7 @@ func TestLookIsSavedAndShown(t *testing.T) {
 	e.run(1)
 	e.do(p, &pb.ClientMessage{Msg: &pb.ClientMessage_Look{Look: &pb.Look{Cut: 2, Color: 7}}}, 1)
 	var c Char
-	json.Unmarshal(e.saved[1], &c)
+	json.Unmarshal(e.saved.chars[1], &c)
 	eq(t, *c.Look, Look{2, 7})
 	l := e.c[2].ents[p.ID].Look
 	check(t, l.Cut == 2 && l.Color == 7)

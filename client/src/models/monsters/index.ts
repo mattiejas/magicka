@@ -2,6 +2,7 @@ import { MONSTERS, type MonsterDef } from '@driftwake/shared';
 import * as THREE from 'three';
 import type { Model } from '../model';
 import { beast } from './beast';
+import { bird } from './bird';
 import { crab } from './crab';
 import { golem } from './golem';
 import { plant } from './plant';
@@ -11,6 +12,7 @@ import { wisp } from './wisp';
 
 const SHAPES: Record<MonsterDef['shape'], (monster: MonsterDef) => MonsterShape> = {
   beast,
+  bird,
   wisp,
   plant,
   golem,

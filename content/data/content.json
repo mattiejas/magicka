@@ -1,22 +1,27 @@
 {
  "items": [
   {
+   "value": 10,
    "id": "worn_pickaxe",
    "name": "Worn pickaxe",
    "icon": "pickaxe",
    "color": "#94887c",
    "tier": 0,
-   "tool": "pickaxe"
+   "tool": "pickaxe",
+   "basic": true
   },
   {
+   "value": 10,
    "id": "worn_axe",
    "name": "Worn axe",
    "icon": "axe",
    "color": "#94887c",
    "tier": 0,
-   "tool": "axe"
+   "tool": "axe",
+   "basic": true
   },
   {
+   "value": 10,
    "id": "worn_sword",
    "name": "Worn sword",
    "icon": "sword",
@@ -27,9 +32,20 @@
    "acc": 2,
    "power": 2,
    "speed": 4,
-   "range": 1
+   "range": 1,
+   "basic": true
   },
   {
+   "value": 1,
+   "id": "coin",
+   "name": "Coins",
+   "icon": "coin",
+   "color": "#d9b25b",
+   "tier": 1,
+   "stack": true
+  },
+  {
+   "value": 2,
    "id": "essence",
    "name": "Essence",
    "icon": "essence",
@@ -40,6 +56,7 @@
    "ammo": "essence"
   },
   {
+   "value": 3,
    "id": "berries",
    "name": "Berries",
    "icon": "berries",
@@ -48,6 +65,7 @@
    "heal": 4
   },
   {
+   "value": 4,
    "id": "meat",
    "name": "Raw meat",
    "icon": "meat",
@@ -55,6 +73,7 @@
    "tier": 1
   },
   {
+   "value": 8,
    "id": "ration",
    "name": "Trail ration",
    "icon": "ration",
@@ -63,6 +82,7 @@
    "heal": 12
   },
   {
+   "value": 17,
    "id": "feast",
    "name": "Hearty feast",
    "icon": "ration",
@@ -71,6 +91,7 @@
    "heal": 26
   },
   {
+   "value": 50,
    "id": "ships_wheel",
    "name": "Ship's wheel",
    "icon": "wheel",
@@ -78,6 +99,7 @@
    "tier": 1
   },
   {
+   "value": 6,
    "id": "copper_ore",
    "name": "Copper ore",
    "icon": "ore",
@@ -85,6 +107,7 @@
    "tier": 1
   },
   {
+   "value": 14,
    "id": "copper_bar",
    "name": "Copper bar",
    "icon": "bar",
@@ -92,6 +115,7 @@
    "tier": 1
   },
   {
+   "value": 5,
    "id": "ash_log",
    "name": "Ash log",
    "icon": "log",
@@ -99,6 +123,7 @@
    "tier": 1
   },
   {
+   "value": 40,
    "id": "copper_pickaxe",
    "name": "Copper pickaxe",
    "icon": "pickaxe",
@@ -110,6 +135,7 @@
    }
   },
   {
+   "value": 40,
    "id": "copper_axe",
    "name": "Copper axe",
    "icon": "axe",
@@ -121,6 +147,7 @@
    }
   },
   {
+   "value": 56,
    "id": "copper_sword",
    "name": "Copper sword",
    "icon": "sword",
@@ -137,6 +164,7 @@
    }
   },
   {
+   "value": 50,
    "id": "copper_helm",
    "name": "Copper helm",
    "icon": "helm",
@@ -149,6 +177,7 @@
    }
   },
   {
+   "value": 84,
    "id": "copper_plate",
    "name": "Copper plate",
    "icon": "body",
@@ -161,6 +190,7 @@
    }
   },
   {
+   "value": 67,
    "id": "copper_greaves",
    "name": "Copper greaves",
    "icon": "legs",
@@ -173,6 +203,7 @@
    }
   },
   {
+   "value": 1,
    "id": "copper_arrowhead",
    "name": "Copper arrowhead",
    "icon": "arrowhead",
@@ -181,6 +212,7 @@
    "stack": true
   },
   {
+   "value": 1,
    "id": "ash_shaft",
    "name": "Ash shaft",
    "icon": "shaft",
@@ -189,6 +221,7 @@
    "stack": true
   },
   {
+   "value": 2,
    "id": "copper_arrow",
    "name": "Copper arrow",
    "icon": "arrow",
@@ -200,6 +233,7 @@
    "power": 3
   },
   {
+   "value": 23,
    "id": "ash_bow",
    "name": "Ash bow",
    "icon": "bow",
@@ -216,6 +250,7 @@
    }
   },
   {
+   "value": 42,
    "id": "ash_staff",
    "name": "Ash staff",
    "icon": "staff",
@@ -232,6 +267,7 @@
    }
   },
   {
+   "value": 8,
    "id": "hide_1",
    "name": "Soft hide",
    "icon": "hide",
@@ -239,6 +275,7 @@
    "tier": 1
   },
   {
+   "value": 4,
    "id": "fibre_1",
    "name": "Flax",
    "icon": "fibre",
@@ -246,6 +283,7 @@
    "tier": 1
   },
   {
+   "value": 30,
    "id": "gem_1",
    "name": "Quartz",
    "icon": "gem",
@@ -253,6 +291,7 @@
    "tier": 1
   },
   {
+   "value": 41,
    "id": "amulet_1",
    "name": "Quartz amulet",
    "icon": "amulet",
@@ -266,6 +305,7 @@
    }
   },
   {
+   "value": 19,
    "id": "leather_cowl_1",
    "name": "Soft cowl",
    "icon": "helm",
@@ -279,6 +319,7 @@
    }
   },
   {
+   "value": 38,
    "id": "leather_jerkin_1",
    "name": "Soft jerkin",
    "icon": "body",
@@ -292,6 +333,7 @@
    }
   },
   {
+   "value": 29,
    "id": "leather_chaps_1",
    "name": "Soft chaps",
    "icon": "legs",
@@ -305,6 +347,7 @@
    }
   },
   {
+   "value": 10,
    "id": "cloth_hood_1",
    "name": "Flax hood",
    "icon": "helm",
@@ -318,6 +361,7 @@
    }
   },
   {
+   "value": 19,
    "id": "cloth_robe_1",
    "name": "Flax robe",
    "icon": "body",
@@ -331,6 +375,7 @@
    }
   },
   {
+   "value": 14,
    "id": "cloth_skirt_1",
    "name": "Flax wrap",
    "icon": "legs",
@@ -344,6 +389,7 @@
    }
   },
   {
+   "value": 15,
    "id": "iron_ore",
    "name": "Iron ore",
    "icon": "ore",
@@ -351,6 +397,7 @@
    "tier": 2
   },
   {
+   "value": 36,
    "id": "iron_bar",
    "name": "Iron bar",
    "icon": "bar",
@@ -358,6 +405,7 @@
    "tier": 2
   },
   {
+   "value": 12,
    "id": "pine_log",
    "name": "Pine log",
    "icon": "log",
@@ -365,6 +413,7 @@
    "tier": 2
   },
   {
+   "value": 101,
    "id": "iron_pickaxe",
    "name": "Iron pickaxe",
    "icon": "pickaxe",
@@ -376,6 +425,7 @@
    }
   },
   {
+   "value": 101,
    "id": "iron_axe",
    "name": "Iron axe",
    "icon": "axe",
@@ -387,6 +437,7 @@
    }
   },
   {
+   "value": 144,
    "id": "iron_sword",
    "name": "Iron sword",
    "icon": "sword",
@@ -403,6 +454,7 @@
    }
   },
   {
+   "value": 130,
    "id": "iron_helm",
    "name": "Iron helm",
    "icon": "helm",
@@ -415,6 +467,7 @@
    }
   },
   {
+   "value": 216,
    "id": "iron_plate",
    "name": "Iron plate",
    "icon": "body",
@@ -427,6 +480,7 @@
    }
   },
   {
+   "value": 173,
    "id": "iron_greaves",
    "name": "Iron greaves",
    "icon": "legs",
@@ -439,6 +493,7 @@
    }
   },
   {
+   "value": 3,
    "id": "iron_arrowhead",
    "name": "Iron arrowhead",
    "icon": "arrowhead",
@@ -447,6 +502,7 @@
    "stack": true
   },
   {
+   "value": 1,
    "id": "pine_shaft",
    "name": "Pine shaft",
    "icon": "shaft",
@@ -455,6 +511,7 @@
    "stack": true
   },
   {
+   "value": 5,
    "id": "iron_arrow",
    "name": "Iron arrow",
    "icon": "arrow",
@@ -466,6 +523,7 @@
    "power": 6
   },
   {
+   "value": 55,
    "id": "pine_bow",
    "name": "Pine bow",
    "icon": "bow",
@@ -482,6 +540,7 @@
    }
   },
   {
+   "value": 67,
    "id": "pine_staff",
    "name": "Pine staff",
    "icon": "staff",
@@ -498,6 +557,7 @@
    }
   },
   {
+   "value": 20,
    "id": "hide_2",
    "name": "Thick hide",
    "icon": "hide",
@@ -505,6 +565,7 @@
    "tier": 2
   },
   {
+   "value": 10,
    "id": "fibre_2",
    "name": "Silkgrass",
    "icon": "fibre",
@@ -512,6 +573,7 @@
    "tier": 2
   },
   {
+   "value": 80,
    "id": "gem_2",
    "name": "Topaz",
    "icon": "gem",
@@ -519,6 +581,7 @@
    "tier": 2
   },
   {
+   "value": 108,
    "id": "amulet_2",
    "name": "Topaz amulet",
    "icon": "amulet",
@@ -532,6 +595,7 @@
    }
   },
   {
+   "value": 48,
    "id": "leather_cowl_2",
    "name": "Thick cowl",
    "icon": "helm",
@@ -545,6 +609,7 @@
    }
   },
   {
+   "value": 96,
    "id": "leather_jerkin_2",
    "name": "Thick jerkin",
    "icon": "body",
@@ -558,6 +623,7 @@
    }
   },
   {
+   "value": 72,
    "id": "leather_chaps_2",
    "name": "Thick chaps",
    "icon": "legs",
@@ -571,6 +637,7 @@
    }
   },
   {
+   "value": 24,
    "id": "cloth_hood_2",
    "name": "Silkgrass hood",
    "icon": "helm",
@@ -584,6 +651,7 @@
    }
   },
   {
+   "value": 48,
    "id": "cloth_robe_2",
    "name": "Silkgrass robe",
    "icon": "body",
@@ -597,6 +665,7 @@
    }
   },
   {
+   "value": 36,
    "id": "cloth_skirt_2",
    "name": "Silkgrass wrap",
    "icon": "legs",
@@ -610,6 +679,7 @@
    }
   },
   {
+   "value": 32,
    "id": "mithril_ore",
    "name": "Mithril ore",
    "icon": "ore",
@@ -617,6 +687,7 @@
    "tier": 3
   },
   {
+   "value": 77,
    "id": "mithril_bar",
    "name": "Mithril bar",
    "icon": "bar",
@@ -624,6 +695,7 @@
    "tier": 3
   },
   {
+   "value": 28,
    "id": "oak_log",
    "name": "Oak log",
    "icon": "log",
@@ -631,6 +703,7 @@
    "tier": 3
   },
   {
+   "value": 218,
    "id": "mithril_pickaxe",
    "name": "Mithril pickaxe",
    "icon": "pickaxe",
@@ -642,6 +715,7 @@
    }
   },
   {
+   "value": 218,
    "id": "mithril_axe",
    "name": "Mithril axe",
    "icon": "axe",
@@ -653,6 +727,7 @@
    }
   },
   {
+   "value": 311,
    "id": "mithril_sword",
    "name": "Mithril sword",
    "icon": "sword",
@@ -669,6 +744,7 @@
    }
   },
   {
+   "value": 277,
    "id": "mithril_helm",
    "name": "Mithril helm",
    "icon": "helm",
@@ -681,6 +757,7 @@
    }
   },
   {
+   "value": 462,
    "id": "mithril_plate",
    "name": "Mithril plate",
    "icon": "body",
@@ -693,6 +770,7 @@
    }
   },
   {
+   "value": 370,
    "id": "mithril_greaves",
    "name": "Mithril greaves",
    "icon": "legs",
@@ -705,6 +783,7 @@
    }
   },
   {
+   "value": 6,
    "id": "mithril_arrowhead",
    "name": "Mithril arrowhead",
    "icon": "arrowhead",
@@ -713,6 +792,7 @@
    "stack": true
   },
   {
+   "value": 2,
    "id": "oak_shaft",
    "name": "Oak shaft",
    "icon": "shaft",
@@ -721,6 +801,7 @@
    "stack": true
   },
   {
+   "value": 10,
    "id": "mithril_arrow",
    "name": "Mithril arrow",
    "icon": "arrow",
@@ -732,6 +813,7 @@
    "power": 9
   },
   {
+   "value": 127,
    "id": "oak_bow",
    "name": "Oak bow",
    "icon": "bow",
@@ -748,6 +830,7 @@
    }
   },
   {
+   "value": 125,
    "id": "oak_staff",
    "name": "Oak staff",
    "icon": "staff",
@@ -764,6 +847,7 @@
    }
   },
   {
+   "value": 40,
    "id": "hide_3",
    "name": "Thorned hide",
    "icon": "hide",
@@ -771,6 +855,7 @@
    "tier": 3
   },
   {
+   "value": 22,
    "id": "fibre_3",
    "name": "Moonreed",
    "icon": "fibre",
@@ -778,6 +863,7 @@
    "tier": 3
   },
   {
+   "value": 180,
    "id": "gem_3",
    "name": "Garnet",
    "icon": "gem",
@@ -785,6 +871,7 @@
    "tier": 3
   },
   {
+   "value": 242,
    "id": "amulet_3",
    "name": "Garnet amulet",
    "icon": "amulet",
@@ -798,6 +885,7 @@
    }
   },
   {
+   "value": 96,
    "id": "leather_cowl_3",
    "name": "Thorned cowl",
    "icon": "helm",
@@ -811,6 +899,7 @@
    }
   },
   {
+   "value": 192,
    "id": "leather_jerkin_3",
    "name": "Thorned jerkin",
    "icon": "body",
@@ -824,6 +913,7 @@
    }
   },
   {
+   "value": 144,
    "id": "leather_chaps_3",
    "name": "Thorned chaps",
    "icon": "legs",
@@ -837,6 +927,7 @@
    }
   },
   {
+   "value": 53,
    "id": "cloth_hood_3",
    "name": "Moonreed hood",
    "icon": "helm",
@@ -850,6 +941,7 @@
    }
   },
   {
+   "value": 106,
    "id": "cloth_robe_3",
    "name": "Moonreed robe",
    "icon": "body",
@@ -863,6 +955,7 @@
    }
   },
   {
+   "value": 79,
    "id": "cloth_skirt_3",
    "name": "Moonreed wrap",
    "icon": "legs",
@@ -876,6 +969,7 @@
    }
   },
   {
+   "value": 60,
    "id": "cobalt_ore",
    "name": "Cobalt ore",
    "icon": "ore",
@@ -883,6 +977,7 @@
    "tier": 4
   },
   {
+   "value": 144,
    "id": "cobalt_bar",
    "name": "Cobalt bar",
    "icon": "bar",
@@ -890,6 +985,7 @@
    "tier": 4
   },
   {
+   "value": 52,
    "id": "maple_log",
    "name": "Maple log",
    "icon": "log",
@@ -897,6 +993,7 @@
    "tier": 4
   },
   {
+   "value": 408,
    "id": "cobalt_pickaxe",
    "name": "Cobalt pickaxe",
    "icon": "pickaxe",
@@ -908,6 +1005,7 @@
    }
   },
   {
+   "value": 408,
    "id": "cobalt_axe",
    "name": "Cobalt axe",
    "icon": "axe",
@@ -919,6 +1017,7 @@
    }
   },
   {
+   "value": 581,
    "id": "cobalt_sword",
    "name": "Cobalt sword",
    "icon": "sword",
@@ -935,6 +1034,7 @@
    }
   },
   {
+   "value": 518,
    "id": "cobalt_helm",
    "name": "Cobalt helm",
    "icon": "helm",
@@ -947,6 +1047,7 @@
    }
   },
   {
+   "value": 864,
    "id": "cobalt_plate",
    "name": "Cobalt plate",
    "icon": "body",
@@ -959,6 +1060,7 @@
    }
   },
   {
+   "value": 691,
    "id": "cobalt_greaves",
    "name": "Cobalt greaves",
    "icon": "legs",
@@ -971,6 +1073,7 @@
    }
   },
   {
+   "value": 12,
    "id": "cobalt_arrowhead",
    "name": "Cobalt arrowhead",
    "icon": "arrowhead",
@@ -979,6 +1082,7 @@
    "stack": true
   },
   {
+   "value": 4,
    "id": "maple_shaft",
    "name": "Maple shaft",
    "icon": "shaft",
@@ -987,6 +1091,7 @@
    "stack": true
   },
   {
+   "value": 19,
    "id": "cobalt_arrow",
    "name": "Cobalt arrow",
    "icon": "arrow",
@@ -998,6 +1103,7 @@
    "power": 12
   },
   {
+   "value": 241,
    "id": "maple_bow",
    "name": "Maple bow",
    "icon": "bow",
@@ -1014,6 +1120,7 @@
    }
   },
   {
+   "value": 211,
    "id": "maple_staff",
    "name": "Maple staff",
    "icon": "staff",
@@ -1030,6 +1137,7 @@
    }
   },
   {
+   "value": 75,
    "id": "hide_4",
    "name": "Storm hide",
    "icon": "hide",
@@ -1037,6 +1145,7 @@
    "tier": 4
   },
   {
+   "value": 45,
    "id": "fibre_4",
    "name": "Frostvine",
    "icon": "fibre",
@@ -1044,6 +1153,7 @@
    "tier": 4
   },
   {
+   "value": 350,
    "id": "gem_4",
    "name": "Opal",
    "icon": "gem",
@@ -1051,6 +1161,7 @@
    "tier": 4
   },
   {
+   "value": 474,
    "id": "amulet_4",
    "name": "Opal amulet",
    "icon": "amulet",
@@ -1064,6 +1175,7 @@
    }
   },
   {
+   "value": 180,
    "id": "leather_cowl_4",
    "name": "Storm cowl",
    "icon": "helm",
@@ -1077,6 +1189,7 @@
    }
   },
   {
+   "value": 360,
    "id": "leather_jerkin_4",
    "name": "Storm jerkin",
    "icon": "body",
@@ -1090,6 +1203,7 @@
    }
   },
   {
+   "value": 270,
    "id": "leather_chaps_4",
    "name": "Storm chaps",
    "icon": "legs",
@@ -1103,6 +1217,7 @@
    }
   },
   {
+   "value": 108,
    "id": "cloth_hood_4",
    "name": "Frostvine hood",
    "icon": "helm",
@@ -1116,6 +1231,7 @@
    }
   },
   {
+   "value": 216,
    "id": "cloth_robe_4",
    "name": "Frostvine robe",
    "icon": "body",
@@ -1129,6 +1245,7 @@
    }
   },
   {
+   "value": 162,
    "id": "cloth_skirt_4",
    "name": "Frostvine wrap",
    "icon": "legs",
@@ -1142,6 +1259,7 @@
    }
   },
   {
+   "value": 110,
    "id": "adamantite_ore",
    "name": "Adamantite ore",
    "icon": "ore",
@@ -1149,6 +1267,7 @@
    "tier": 5
   },
   {
+   "value": 264,
    "id": "adamantite_bar",
    "name": "Adamantite bar",
    "icon": "bar",
@@ -1156,6 +1275,7 @@
    "tier": 5
   },
   {
+   "value": 95,
    "id": "ebony_log",
    "name": "Ebony log",
    "icon": "log",
@@ -1163,6 +1283,7 @@
    "tier": 5
   },
   {
+   "value": 748,
    "id": "adamantite_pickaxe",
    "name": "Adamantite pickaxe",
    "icon": "pickaxe",
@@ -1174,6 +1295,7 @@
    }
   },
   {
+   "value": 748,
    "id": "adamantite_axe",
    "name": "Adamantite axe",
    "icon": "axe",
@@ -1185,6 +1307,7 @@
    }
   },
   {
+   "value": 1064,
    "id": "adamantite_sword",
    "name": "Adamantite sword",
    "icon": "sword",
@@ -1201,6 +1324,7 @@
    }
   },
   {
+   "value": 950,
    "id": "adamantite_helm",
    "name": "Adamantite helm",
    "icon": "helm",
@@ -1213,6 +1337,7 @@
    }
   },
   {
+   "value": 1584,
    "id": "adamantite_plate",
    "name": "Adamantite plate",
    "icon": "body",
@@ -1225,6 +1350,7 @@
    }
   },
   {
+   "value": 1267,
    "id": "adamantite_greaves",
    "name": "Adamantite greaves",
    "icon": "legs",
@@ -1237,6 +1363,7 @@
    }
   },
   {
+   "value": 21,
    "id": "adamantite_arrowhead",
    "name": "Adamantite arrowhead",
    "icon": "arrowhead",
@@ -1245,6 +1372,7 @@
    "stack": true
   },
   {
+   "value": 8,
    "id": "ebony_shaft",
    "name": "Ebony shaft",
    "icon": "shaft",
@@ -1253,6 +1381,7 @@
    "stack": true
   },
   {
+   "value": 35,
    "id": "adamantite_arrow",
    "name": "Adamantite arrow",
    "icon": "arrow",
@@ -1264,6 +1393,7 @@
    "power": 15
   },
   {
+   "value": 444,
    "id": "ebony_bow",
    "name": "Ebony bow",
    "icon": "bow",
@@ -1280,6 +1410,7 @@
    }
   },
   {
+   "value": 366,
    "id": "ebony_staff",
    "name": "Ebony staff",
    "icon": "staff",
@@ -1296,6 +1427,7 @@
    }
   },
   {
+   "value": 140,
    "id": "hide_5",
    "name": "Dread hide",
    "icon": "hide",
@@ -1303,6 +1435,7 @@
    "tier": 5
   },
   {
+   "value": 85,
    "id": "fibre_5",
    "name": "Nightbloom",
    "icon": "fibre",
@@ -1310,6 +1443,7 @@
    "tier": 5
   },
   {
+   "value": 700,
    "id": "gem_5",
    "name": "Beryl",
    "icon": "gem",
@@ -1317,6 +1451,7 @@
    "tier": 5
   },
   {
+   "value": 942,
    "id": "amulet_5",
    "name": "Beryl amulet",
    "icon": "amulet",
@@ -1330,6 +1465,7 @@
    }
   },
   {
+   "value": 336,
    "id": "leather_cowl_5",
    "name": "Dread cowl",
    "icon": "helm",
@@ -1343,6 +1479,7 @@
    }
   },
   {
+   "value": 672,
    "id": "leather_jerkin_5",
    "name": "Dread jerkin",
    "icon": "body",
@@ -1356,6 +1493,7 @@
    }
   },
   {
+   "value": 504,
    "id": "leather_chaps_5",
    "name": "Dread chaps",
    "icon": "legs",
@@ -1369,6 +1507,7 @@
    }
   },
   {
+   "value": 204,
    "id": "cloth_hood_5",
    "name": "Nightbloom hood",
    "icon": "helm",
@@ -1382,6 +1521,7 @@
    }
   },
   {
+   "value": 408,
    "id": "cloth_robe_5",
    "name": "Nightbloom robe",
    "icon": "body",
@@ -1395,6 +1535,7 @@
    }
   },
   {
+   "value": 306,
    "id": "cloth_skirt_5",
    "name": "Nightbloom wrap",
    "icon": "legs",
@@ -1408,6 +1549,7 @@
    }
   },
   {
+   "value": 2500,
    "id": "barnacle_charm",
    "name": "Barnacle charm",
    "icon": "amulet",
@@ -1420,6 +1562,7 @@
    "unique": true
   },
   {
+   "value": 150000,
    "id": "rootcleaver",
    "name": "Rootcleaver",
    "icon": "sword",
@@ -1437,6 +1580,7 @@
    "unique": true
   },
   {
+   "value": 150000,
    "id": "briarstring",
    "name": "Briarstring",
    "icon": "bow",
@@ -1454,6 +1598,7 @@
    "unique": true
   },
   {
+   "value": 150000,
    "id": "heartwood",
    "name": "Heartwood staff",
    "icon": "staff",
@@ -3312,6 +3457,39 @@
  ],
  "monsters": [
   {
+   "acc": 0,
+   "power": 0,
+   "armour": 0.6,
+   "speed": 5,
+   "range": 1,
+   "respawn": 10,
+   "size": 1,
+   "id": "chicken",
+   "name": "Chicken",
+   "style": "melee",
+   "level": 1,
+   "hp": 4,
+   "aggro": 0,
+   "color": "#e8dcc4",
+   "shape": "bird",
+   "loot": {
+    "always": [
+     [
+      "coin",
+      1,
+      4
+     ]
+    ],
+    "rare": [
+     [
+      "meat",
+      1,
+      0.4
+     ]
+    ]
+   }
+  },
+  {
    "acc": 1,
    "power": 0.9,
    "armour": 0.6,
@@ -3338,6 +3516,11 @@
       "meat",
       1,
       1
+     ],
+     [
+      "coin",
+      1,
+      2
      ]
     ]
    }
@@ -3364,6 +3547,11 @@
       "fibre_1",
       1,
       2
+     ],
+     [
+      "coin",
+      2,
+      6
      ]
     ],
     "rare": [
@@ -3397,6 +3585,11 @@
       "essence",
       3,
       8
+     ],
+     [
+      "coin",
+      3,
+      10
      ]
     ],
     "rare": [
@@ -3435,6 +3628,11 @@
       "meat",
       1,
       2
+     ],
+     [
+      "coin",
+      8,
+      24
      ]
     ],
     "rare": [
@@ -3468,6 +3666,11 @@
       "essence",
       8,
       16
+     ],
+     [
+      "coin",
+      9,
+      30
      ]
     ],
     "rare": [
@@ -3506,6 +3709,11 @@
       "meat",
       1,
       2
+     ],
+     [
+      "coin",
+      14,
+      44
      ]
     ],
     "rare": [
@@ -3552,6 +3760,13 @@
       1,
       0.15
      ]
+    ],
+    "always": [
+     [
+      "coin",
+      16,
+      52
+     ]
     ]
    }
   },
@@ -3577,6 +3792,11 @@
       "hide_4",
       1,
       2
+     ],
+     [
+      "coin",
+      20,
+      64
      ]
     ],
     "common": [
@@ -3635,6 +3855,13 @@
       1,
       0.15
      ]
+    ],
+    "always": [
+     [
+      "coin",
+      22,
+      72
+     ]
     ]
    }
   },
@@ -3665,6 +3892,11 @@
       "meat",
       1,
       3
+     ],
+     [
+      "coin",
+      26,
+      84
      ]
     ],
     "rare": [
@@ -3698,6 +3930,11 @@
       "essence",
       15,
       30
+     ],
+     [
+      "coin",
+      28,
+      92
      ]
     ],
     "rare": [
@@ -3731,6 +3968,11 @@
       "ships_wheel",
       1,
       1
+     ],
+     [
+      "coin",
+      40,
+      80
      ]
     ],
     "common": [
@@ -3832,6 +4074,11 @@
    "shape": "treant",
    "loot": {
     "always": [
+     [
+      "coin",
+      1500,
+      3000
+     ],
      [
       "maple_log",
       4,
@@ -4034,5 +4281,15 @@
    "name": "Platinum",
    "color": "#ddd3bf"
   }
- ]
+ ],
+ "economy": {
+  "shopStock": [
+   "worn_pickaxe",
+   "worn_axe",
+   "worn_sword"
+  ],
+  "sellPercent": 50,
+  "graveFeePercent": 5,
+  "reaperFeePercent": 10
+ }
 }

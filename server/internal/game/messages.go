@@ -51,6 +51,11 @@ func (w *World) emitDeath(m *content.Map, x, y int, id uint32) {
 	w.emit(m, x, y, &pb.Event{Event: &pb.Event_Death{Death: id}})
 }
 
+// open shows the window of a station, or of the player's grave.
+func (w *World) open(p *Player, window string) {
+	w.send(p, &pb.ServerMessage{Msg: &pb.ServerMessage_OpenStation{OpenStation: window}})
+}
+
 func (w *World) sendBossStatus(p *Player) {
 	boss := w.worldBoss()
 	w.send(p, &pb.ServerMessage{Msg: &pb.ServerMessage_Boss{Boss: &pb.BossStatus{

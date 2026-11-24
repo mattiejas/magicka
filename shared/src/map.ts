@@ -2,7 +2,7 @@
 import data from '../../content/data/maps.json';
 export type MapId = 'island' | 'mainland';
 export const T = { WATER: 0, SAND: 1, GRASS: 2, DIRT: 3, STONE: 4, WOOD: 5 } as const;
-export type StationType = 'bank' | 'furnace' | 'anvil' | 'workbench' | 'reaper' | 'dock';
+export type StationType = 'bank' | 'furnace' | 'anvil' | 'workbench' | 'reaper' | 'dock' | 'shop';
 export interface MapNode {
   id: string;
   type: string;

@@ -2,7 +2,7 @@
 import { NODES } from './items';
 export type MapId = 'island' | 'mainland';
 export const T = { WATER: 0, SAND: 1, GRASS: 2, DIRT: 3, STONE: 4, WOOD: 5 } as const;
-export type StationType = 'bank' | 'furnace' | 'anvil' | 'workbench' | 'reaper' | 'dock';
+export type StationType = 'bank' | 'furnace' | 'anvil' | 'workbench' | 'reaper' | 'dock' | 'shop';
 export interface MapNode {
   id: string;
   type: string;
@@ -170,6 +170,7 @@ function island() {
   b.station('workbench', 28, 36);
   b.station('reaper', 36, 37);
   b.station('dock', 33, 57);
+  b.station('shop', 29, 39);
   b.keep(32, 34, 6);
   b.keep(51, 40, 6);
   b.disc(51, 40, 5, T.SAND);
@@ -185,6 +186,7 @@ function island() {
   b.mobs('spitter', 4, 33, 18, 5);
   b.mobs('wisp', 4, 40, 14, 4);
   m.spawns.push({ type: 'gnashclaw', x: 51, y: 40 });
+  b.mobs('chicken', 5, 39, 43, 3);
   m.labels.push(
     { name: 'Camp', x: 32, y: 34 },
     { name: 'Copper rise', x: 46, y: 24 },
@@ -214,6 +216,7 @@ function mainland() {
   b.station('workbench', 44, 79);
   b.station('reaper', 53, 79);
   b.station('dock', 49, 89);
+  b.station('shop', 52, 82);
   b.keep(48, 76, 7);
   b.keep(48, 20, 9);
   b.disc(48, 20, 8, T.STONE);

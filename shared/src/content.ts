@@ -38,6 +38,10 @@ export interface Item {
   ammo?: 'arrow' | 'essence';
   heal?: number;
   unique?: boolean;
+  /** What it is worth, in coins. */
+  value: number;
+  /** Sold in every shop, and worth nothing to anyone else. */
+  basic?: boolean;
 }
 export interface Recipe {
   id: string;
@@ -85,7 +89,7 @@ export interface MonsterDef {
   respawn: number;
   size: number;
   color: string;
-  shape: 'beast' | 'wisp' | 'plant' | 'golem' | 'crab' | 'treant';
+  shape: 'beast' | 'bird' | 'wisp' | 'plant' | 'golem' | 'crab' | 'treant';
   loot: LootTable;
   boss?: BossDef;
 }
@@ -111,6 +115,13 @@ export interface Look {
   cut: number;
   color: number;
 }
+/** Percentages are of an item's shop value. */
+export interface Economy {
+  shopStock: string[];
+  sellPercent: number;
+  graveFeePercent: number;
+  reaperFeePercent: number;
+}
 const byId = <T extends { id: string }>(l: T[]) =>
   Object.fromEntries(l.map(v => [v.id, v])) as Record<string, T>;
 const d = data as unknown as {
@@ -122,6 +133,7 @@ const d = data as unknown as {
   metals: string[];
   haircuts: { id: string; name: string }[];
   hairColors: { name: string; color: string }[];
+  economy: Economy;
 };
 export const ITEMS = byId(d.items),
   RECIPES = d.recipes,
@@ -130,7 +142,8 @@ export const ITEMS = byId(d.items),
   BOAT_PARTS = d.boatParts,
   METALS = d.metals,
   HAIRCUTS = d.haircuts,
-  HAIR_COLORS = d.hairColors;
+  HAIR_COLORS = d.hairColors,
+  ECONOMY = d.economy;
 export const nameHash = (s: string) => {
   let h = 0;
   for (const ch of s) h = (h * 31 + ch.charCodeAt(0)) % 9973;

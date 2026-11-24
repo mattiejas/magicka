@@ -1,8 +1,6 @@
 package game
 
-import (
-	"driftwake/server/internal/pb"
-)
+import ()
 
 // goal is where an action takes place, and how close the player has to come.
 type goal struct {
@@ -102,10 +100,10 @@ func (w *World) performAction(p *Player) {
 		w.playerAttack(p, lookup(w.monsters, kindMonster, id))
 	case actStation:
 		w.stop(p)
-		w.send(p, &pb.ServerMessage{Msg: &pb.ServerMessage_OpenStation{OpenStation: w.station(id).s.Type}})
+		w.open(p, w.station(id).s.Type)
 	case actGrave:
 		w.stop(p)
-		w.claimGrave(p)
+		w.open(p, "grave")
 	case actPickup:
 		w.pickup(p, w.findDrop(id))
 	}

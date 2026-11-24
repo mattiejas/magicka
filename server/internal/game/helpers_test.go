@@ -13,18 +13,27 @@ import (
 	"google.golang.org/protobuf/proto"
 )
 
-type memStore map[int64][]byte
+type memStore struct {
+	chars  map[int64][]byte
+	totals map[string]int64
+}
 
-func (m memStore) Save(a int64, b []byte) { m[a] = b }
+func newStore() memStore { return memStore{map[int64][]byte{}, map[string]int64{}} }
+
+func (m memStore) Save(a int64, b []byte) { m.chars[a] = b }
+
+func (m memStore) Total(name string) int64 { return m.totals[name] }
+
+func (m memStore) AddTotal(name string, n int64) { m.totals[name] += n }
 
 func (m memStore) Update(a int64, change func(*Char)) error {
 	var c Char
-	if err := json.Unmarshal(m[a], &c); err != nil {
+	if err := json.Unmarshal(m.chars[a], &c); err != nil {
 		return err
 	}
 	change(&c)
 	b, err := json.Marshal(&c)
-	m[a] = b
+	m.chars[a] = b
 	return err
 }
 
@@ -99,7 +108,7 @@ type env struct {
 }
 
 func setup(t *testing.T) *env {
-	s := memStore{}
+	s := newStore()
 	return &env{t, NewWorld(s, Mulberry(5), false, 1000), s, map[int64]*client{}}
 }
 
@@ -219,8 +228,16 @@ func chatMsg(s string) *pb.ClientMessage {
 	return &pb.ClientMessage{Msg: &pb.ClientMessage_Chat{Chat: s}}
 }
 
+func claimOne(item string) *pb.ClientMessage {
+	return &pb.ClientMessage{Msg: &pb.ClientMessage_Claim{Claim: &pb.Claim{Item: item}}}
+}
+
+func shopMsg(buy bool, item string, n uint32) *pb.ClientMessage {
+	return &pb.ClientMessage{Msg: &pb.ClientMessage_Shop{Shop: &pb.Shop{Buy: buy, Item: item, Qty: n}}}
+}
+
 var (
-	claimMsg   = &pb.ClientMessage{Msg: &pb.ClientMessage_Claim{Claim: &pb.Empty{}}}
+	claimMsg   = &pb.ClientMessage{Msg: &pb.ClientMessage_Claim{Claim: &pb.Claim{}}}
 	graveMsg   = &pb.ClientMessage{Msg: &pb.ClientMessage_Grave{Grave: &pb.Empty{}}}
 	depositAll = &pb.ClientMessage{Msg: &pb.ClientMessage_DepositAll{DepositAll: &pb.Empty{}}}
 )

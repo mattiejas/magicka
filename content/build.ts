@@ -36,6 +36,17 @@ export function build(): Record<string, string> {
       [50, 1, 5],
       [20, 20, 2],
     ].map(([a, b, d]) => [a, b, d, f.gatherChance(a, b, d)]),
+    sellPrice: [
+      [10, 1],
+      [7, 3],
+      [1, 1],
+    ].map(([v, n]) => [v, n, c.ECONOMY.sellPercent, f.sellPrice(v, n, c.ECONOMY.sellPercent)]),
+    deathFee: [
+      [100, 20, 5],
+      [1, 1, 5],
+      [33, 7, 10],
+      [150000, 1, 10],
+    ].map(([v, n, p]) => [v, n, p, f.deathFee(v, n, p)]),
     mulberry: (() => {
       const r = mulberry(5);
       return Array.from({ length: 5 }, () => r());
@@ -56,6 +67,7 @@ export function build(): Record<string, string> {
       metals: c.METALS,
       haircuts: c.HAIRCUTS,
       hairColors: c.HAIR_COLORS,
+      economy: c.ECONOMY,
     }),
     'maps.json': line(maps),
     'vectors.json': line(vectors),

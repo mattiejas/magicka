@@ -39,6 +39,8 @@ func TestSharedVectors(t *testing.T) {
 	each("maxHit", func(a []float64) float64 { return float64(MaxHit(int(a[0]), a[1])) })
 	each("bossMaxHp", func(a []float64) float64 { return BossMaxHP(a[0], int(a[1])) })
 	each("gatherChance", func(a []float64) float64 { return GatherChance(int(a[0]), int(a[1]), int(a[2])) })
+	each("sellPrice", func(a []float64) float64 { return float64(SellPrice(int(a[0]), int(a[1]), int(a[2]))) })
+	each("deathFee", func(a []float64) float64 { return float64(DeathFee(int(a[0]), int(a[1]), int(a[2]))) })
 	for _, r := range v["styleModifier"] {
 		var a, d *string
 		var m float64

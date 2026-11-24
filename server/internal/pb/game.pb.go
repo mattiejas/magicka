@@ -328,6 +328,8 @@ type ClientMessage struct {
 	//	*ClientMessage_Boat
 	//	*ClientMessage_Look
 	//	*ClientMessage_Chat
+	//	*ClientMessage_Shop
+	//	*ClientMessage_AskFees
 	Msg           isClientMessage_Msg `protobuf_oneof:"msg"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
@@ -460,7 +462,7 @@ func (x *ClientMessage) GetGrave() *Empty {
 	return nil
 }
 
-func (x *ClientMessage) GetClaim() *Empty {
+func (x *ClientMessage) GetClaim() *Claim {
 	if x != nil {
 		if x, ok := x.Msg.(*ClientMessage_Claim); ok {
 			return x.Claim
@@ -568,6 +570,24 @@ func (x *ClientMessage) GetChat() string {
 	return ""
 }
 
+func (x *ClientMessage) GetShop() *Shop {
+	if x != nil {
+		if x, ok := x.Msg.(*ClientMessage_Shop); ok {
+			return x.Shop
+		}
+	}
+	return nil
+}
+
+func (x *ClientMessage) GetAskFees() *Empty {
+	if x != nil {
+		if x, ok := x.Msg.(*ClientMessage_AskFees); ok {
+			return x.AskFees
+		}
+	}
+	return nil
+}
+
 type isClientMessage_Msg interface {
 	isClientMessage_Msg()
 }
@@ -613,7 +633,7 @@ type ClientMessage_Grave struct {
 }
 
 type ClientMessage_Claim struct {
-	Claim *Empty `protobuf:"bytes,11,opt,name=claim,proto3,oneof"`
+	Claim *Claim `protobuf:"bytes,11,opt,name=claim,proto3,oneof"`
 }
 
 type ClientMessage_Craft struct {
@@ -660,6 +680,14 @@ type ClientMessage_Chat struct {
 	Chat string `protobuf:"bytes,22,opt,name=chat,proto3,oneof"`
 }
 
+type ClientMessage_Shop struct {
+	Shop *Shop `protobuf:"bytes,23,opt,name=shop,proto3,oneof"`
+}
+
+type ClientMessage_AskFees struct {
+	AskFees *Empty `protobuf:"bytes,24,opt,name=ask_fees,json=askFees,proto3,oneof"`
+}
+
 func (*ClientMessage_Register) isClientMessage_Msg() {}
 
 func (*ClientMessage_Login) isClientMessage_Msg() {}
@@ -703,6 +731,10 @@ func (*ClientMessage_Boat) isClientMessage_Msg() {}
 func (*ClientMessage_Look) isClientMessage_Msg() {}
 
 func (*ClientMessage_Chat) isClientMessage_Msg() {}
+
+func (*ClientMessage_Shop) isClientMessage_Msg() {}
+
+func (*ClientMessage_AskFees) isClientMessage_Msg() {}
 
 type Empty struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
@@ -1052,6 +1084,111 @@ func (x *Boat) GetSail() bool {
 	return false
 }
 
+// Takes back what was lost by dying: one kind of item, or everything affordable when left empty.
+type Claim struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Item          string                 `protobuf:"bytes,1,opt,name=item,proto3" json:"item,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *Claim) Reset() {
+	*x = Claim{}
+	mi := &file_driftwake_v1_game_proto_msgTypes[8]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *Claim) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*Claim) ProtoMessage() {}
+
+func (x *Claim) ProtoReflect() protoreflect.Message {
+	mi := &file_driftwake_v1_game_proto_msgTypes[8]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use Claim.ProtoReflect.Descriptor instead.
+func (*Claim) Descriptor() ([]byte, []int) {
+	return file_driftwake_v1_game_proto_rawDescGZIP(), []int{8}
+}
+
+func (x *Claim) GetItem() string {
+	if x != nil {
+		return x.Item
+	}
+	return ""
+}
+
+type Shop struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Buy           bool                   `protobuf:"varint,1,opt,name=buy,proto3" json:"buy,omitempty"`
+	Item          string                 `protobuf:"bytes,2,opt,name=item,proto3" json:"item,omitempty"`
+	Qty           uint32                 `protobuf:"varint,3,opt,name=qty,proto3" json:"qty,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *Shop) Reset() {
+	*x = Shop{}
+	mi := &file_driftwake_v1_game_proto_msgTypes[9]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *Shop) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*Shop) ProtoMessage() {}
+
+func (x *Shop) ProtoReflect() protoreflect.Message {
+	mi := &file_driftwake_v1_game_proto_msgTypes[9]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use Shop.ProtoReflect.Descriptor instead.
+func (*Shop) Descriptor() ([]byte, []int) {
+	return file_driftwake_v1_game_proto_rawDescGZIP(), []int{9}
+}
+
+func (x *Shop) GetBuy() bool {
+	if x != nil {
+		return x.Buy
+	}
+	return false
+}
+
+func (x *Shop) GetItem() string {
+	if x != nil {
+		return x.Item
+	}
+	return ""
+}
+
+func (x *Shop) GetQty() uint32 {
+	if x != nil {
+		return x.Qty
+	}
+	return 0
+}
+
 type Look struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Cut           uint32                 `protobuf:"varint,1,opt,name=cut,proto3" json:"cut,omitempty"`
@@ -1062,7 +1199,7 @@ type Look struct {
 
 func (x *Look) Reset() {
 	*x = Look{}
-	mi := &file_driftwake_v1_game_proto_msgTypes[8]
+	mi := &file_driftwake_v1_game_proto_msgTypes[10]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1074,7 +1211,7 @@ func (x *Look) String() string {
 func (*Look) ProtoMessage() {}
 
 func (x *Look) ProtoReflect() protoreflect.Message {
-	mi := &file_driftwake_v1_game_proto_msgTypes[8]
+	mi := &file_driftwake_v1_game_proto_msgTypes[10]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1087,7 +1224,7 @@ func (x *Look) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Look.ProtoReflect.Descriptor instead.
 func (*Look) Descriptor() ([]byte, []int) {
-	return file_driftwake_v1_game_proto_rawDescGZIP(), []int{8}
+	return file_driftwake_v1_game_proto_rawDescGZIP(), []int{10}
 }
 
 func (x *Look) GetCut() uint32 {
@@ -1119,6 +1256,7 @@ type ServerMessage struct {
 	//	*ServerMessage_Xp
 	//	*ServerMessage_OpenStation
 	//	*ServerMessage_Boss
+	//	*ServerMessage_FeesTaken
 	Msg           isServerMessage_Msg `protobuf_oneof:"msg"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
@@ -1126,7 +1264,7 @@ type ServerMessage struct {
 
 func (x *ServerMessage) Reset() {
 	*x = ServerMessage{}
-	mi := &file_driftwake_v1_game_proto_msgTypes[9]
+	mi := &file_driftwake_v1_game_proto_msgTypes[11]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1138,7 +1276,7 @@ func (x *ServerMessage) String() string {
 func (*ServerMessage) ProtoMessage() {}
 
 func (x *ServerMessage) ProtoReflect() protoreflect.Message {
-	mi := &file_driftwake_v1_game_proto_msgTypes[9]
+	mi := &file_driftwake_v1_game_proto_msgTypes[11]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1151,7 +1289,7 @@ func (x *ServerMessage) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ServerMessage.ProtoReflect.Descriptor instead.
 func (*ServerMessage) Descriptor() ([]byte, []int) {
-	return file_driftwake_v1_game_proto_rawDescGZIP(), []int{9}
+	return file_driftwake_v1_game_proto_rawDescGZIP(), []int{11}
 }
 
 func (x *ServerMessage) GetMsg() isServerMessage_Msg {
@@ -1251,6 +1389,15 @@ func (x *ServerMessage) GetBoss() *BossStatus {
 	return nil
 }
 
+func (x *ServerMessage) GetFeesTaken() uint64 {
+	if x != nil {
+		if x, ok := x.Msg.(*ServerMessage_FeesTaken); ok {
+			return x.FeesTaken
+		}
+	}
+	return 0
+}
+
 type isServerMessage_Msg interface {
 	isServerMessage_Msg()
 }
@@ -1295,6 +1442,11 @@ type ServerMessage_Boss struct {
 	Boss *BossStatus `protobuf:"bytes,10,opt,name=boss,proto3,oneof"`
 }
 
+type ServerMessage_FeesTaken struct {
+	// Everything the reaper and graves have ever taken, from everyone.
+	FeesTaken uint64 `protobuf:"varint,11,opt,name=fees_taken,json=feesTaken,proto3,oneof"`
+}
+
 func (*ServerMessage_Welcome) isServerMessage_Msg() {}
 
 func (*ServerMessage_Error) isServerMessage_Msg() {}
@@ -1315,6 +1467,8 @@ func (*ServerMessage_OpenStation) isServerMessage_Msg() {}
 
 func (*ServerMessage_Boss) isServerMessage_Msg() {}
 
+func (*ServerMessage_FeesTaken) isServerMessage_Msg() {}
+
 type Welcome struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Token         string                 `protobuf:"bytes,1,opt,name=token,proto3" json:"token,omitempty"`
@@ -1325,7 +1479,7 @@ type Welcome struct {
 
 func (x *Welcome) Reset() {
 	*x = Welcome{}
-	mi := &file_driftwake_v1_game_proto_msgTypes[10]
+	mi := &file_driftwake_v1_game_proto_msgTypes[12]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1337,7 +1491,7 @@ func (x *Welcome) String() string {
 func (*Welcome) ProtoMessage() {}
 
 func (x *Welcome) ProtoReflect() protoreflect.Message {
-	mi := &file_driftwake_v1_game_proto_msgTypes[10]
+	mi := &file_driftwake_v1_game_proto_msgTypes[12]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1350,7 +1504,7 @@ func (x *Welcome) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Welcome.ProtoReflect.Descriptor instead.
 func (*Welcome) Descriptor() ([]byte, []int) {
-	return file_driftwake_v1_game_proto_rawDescGZIP(), []int{10}
+	return file_driftwake_v1_game_proto_rawDescGZIP(), []int{12}
 }
 
 func (x *Welcome) GetToken() string {
@@ -1377,7 +1531,7 @@ type Chat struct {
 
 func (x *Chat) Reset() {
 	*x = Chat{}
-	mi := &file_driftwake_v1_game_proto_msgTypes[11]
+	mi := &file_driftwake_v1_game_proto_msgTypes[13]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1389,7 +1543,7 @@ func (x *Chat) String() string {
 func (*Chat) ProtoMessage() {}
 
 func (x *Chat) ProtoReflect() protoreflect.Message {
-	mi := &file_driftwake_v1_game_proto_msgTypes[11]
+	mi := &file_driftwake_v1_game_proto_msgTypes[13]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1402,7 +1556,7 @@ func (x *Chat) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Chat.ProtoReflect.Descriptor instead.
 func (*Chat) Descriptor() ([]byte, []int) {
-	return file_driftwake_v1_game_proto_rawDescGZIP(), []int{11}
+	return file_driftwake_v1_game_proto_rawDescGZIP(), []int{13}
 }
 
 func (x *Chat) GetFrom() string {
@@ -1429,7 +1583,7 @@ type Info struct {
 
 func (x *Info) Reset() {
 	*x = Info{}
-	mi := &file_driftwake_v1_game_proto_msgTypes[12]
+	mi := &file_driftwake_v1_game_proto_msgTypes[14]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1441,7 +1595,7 @@ func (x *Info) String() string {
 func (*Info) ProtoMessage() {}
 
 func (x *Info) ProtoReflect() protoreflect.Message {
-	mi := &file_driftwake_v1_game_proto_msgTypes[12]
+	mi := &file_driftwake_v1_game_proto_msgTypes[14]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1454,7 +1608,7 @@ func (x *Info) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Info.ProtoReflect.Descriptor instead.
 func (*Info) Descriptor() ([]byte, []int) {
-	return file_driftwake_v1_game_proto_rawDescGZIP(), []int{12}
+	return file_driftwake_v1_game_proto_rawDescGZIP(), []int{14}
 }
 
 func (x *Info) GetText() string {
@@ -1481,7 +1635,7 @@ type Xp struct {
 
 func (x *Xp) Reset() {
 	*x = Xp{}
-	mi := &file_driftwake_v1_game_proto_msgTypes[13]
+	mi := &file_driftwake_v1_game_proto_msgTypes[15]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1493,7 +1647,7 @@ func (x *Xp) String() string {
 func (*Xp) ProtoMessage() {}
 
 func (x *Xp) ProtoReflect() protoreflect.Message {
-	mi := &file_driftwake_v1_game_proto_msgTypes[13]
+	mi := &file_driftwake_v1_game_proto_msgTypes[15]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1506,7 +1660,7 @@ func (x *Xp) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Xp.ProtoReflect.Descriptor instead.
 func (*Xp) Descriptor() ([]byte, []int) {
-	return file_driftwake_v1_game_proto_rawDescGZIP(), []int{13}
+	return file_driftwake_v1_game_proto_rawDescGZIP(), []int{15}
 }
 
 func (x *Xp) GetSkill() string {
@@ -1535,7 +1689,7 @@ type BossStatus struct {
 
 func (x *BossStatus) Reset() {
 	*x = BossStatus{}
-	mi := &file_driftwake_v1_game_proto_msgTypes[14]
+	mi := &file_driftwake_v1_game_proto_msgTypes[16]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1547,7 +1701,7 @@ func (x *BossStatus) String() string {
 func (*BossStatus) ProtoMessage() {}
 
 func (x *BossStatus) ProtoReflect() protoreflect.Message {
-	mi := &file_driftwake_v1_game_proto_msgTypes[14]
+	mi := &file_driftwake_v1_game_proto_msgTypes[16]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1560,7 +1714,7 @@ func (x *BossStatus) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use BossStatus.ProtoReflect.Descriptor instead.
 func (*BossStatus) Descriptor() ([]byte, []int) {
-	return file_driftwake_v1_game_proto_rawDescGZIP(), []int{14}
+	return file_driftwake_v1_game_proto_rawDescGZIP(), []int{16}
 }
 
 func (x *BossStatus) GetAlive() bool {
@@ -1601,7 +1755,7 @@ type Stack struct {
 
 func (x *Stack) Reset() {
 	*x = Stack{}
-	mi := &file_driftwake_v1_game_proto_msgTypes[15]
+	mi := &file_driftwake_v1_game_proto_msgTypes[17]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1613,7 +1767,7 @@ func (x *Stack) String() string {
 func (*Stack) ProtoMessage() {}
 
 func (x *Stack) ProtoReflect() protoreflect.Message {
-	mi := &file_driftwake_v1_game_proto_msgTypes[15]
+	mi := &file_driftwake_v1_game_proto_msgTypes[17]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1626,7 +1780,7 @@ func (x *Stack) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Stack.ProtoReflect.Descriptor instead.
 func (*Stack) Descriptor() ([]byte, []int) {
-	return file_driftwake_v1_game_proto_rawDescGZIP(), []int{15}
+	return file_driftwake_v1_game_proto_rawDescGZIP(), []int{17}
 }
 
 func (x *Stack) GetItem() string {
@@ -1653,7 +1807,7 @@ type InvSlot struct {
 
 func (x *InvSlot) Reset() {
 	*x = InvSlot{}
-	mi := &file_driftwake_v1_game_proto_msgTypes[16]
+	mi := &file_driftwake_v1_game_proto_msgTypes[18]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1665,7 +1819,7 @@ func (x *InvSlot) String() string {
 func (*InvSlot) ProtoMessage() {}
 
 func (x *InvSlot) ProtoReflect() protoreflect.Message {
-	mi := &file_driftwake_v1_game_proto_msgTypes[16]
+	mi := &file_driftwake_v1_game_proto_msgTypes[18]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1678,7 +1832,7 @@ func (x *InvSlot) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use InvSlot.ProtoReflect.Descriptor instead.
 func (*InvSlot) Descriptor() ([]byte, []int) {
-	return file_driftwake_v1_game_proto_rawDescGZIP(), []int{16}
+	return file_driftwake_v1_game_proto_rawDescGZIP(), []int{18}
 }
 
 func (x *InvSlot) GetIndex() uint32 {
@@ -1705,7 +1859,7 @@ type EquipSlot struct {
 
 func (x *EquipSlot) Reset() {
 	*x = EquipSlot{}
-	mi := &file_driftwake_v1_game_proto_msgTypes[17]
+	mi := &file_driftwake_v1_game_proto_msgTypes[19]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1717,7 +1871,7 @@ func (x *EquipSlot) String() string {
 func (*EquipSlot) ProtoMessage() {}
 
 func (x *EquipSlot) ProtoReflect() protoreflect.Message {
-	mi := &file_driftwake_v1_game_proto_msgTypes[17]
+	mi := &file_driftwake_v1_game_proto_msgTypes[19]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1730,7 +1884,7 @@ func (x *EquipSlot) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use EquipSlot.ProtoReflect.Descriptor instead.
 func (*EquipSlot) Descriptor() ([]byte, []int) {
-	return file_driftwake_v1_game_proto_rawDescGZIP(), []int{17}
+	return file_driftwake_v1_game_proto_rawDescGZIP(), []int{19}
 }
 
 func (x *EquipSlot) GetSlot() Slot {
@@ -1768,7 +1922,7 @@ type Self struct {
 
 func (x *Self) Reset() {
 	*x = Self{}
-	mi := &file_driftwake_v1_game_proto_msgTypes[18]
+	mi := &file_driftwake_v1_game_proto_msgTypes[20]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1780,7 +1934,7 @@ func (x *Self) String() string {
 func (*Self) ProtoMessage() {}
 
 func (x *Self) ProtoReflect() protoreflect.Message {
-	mi := &file_driftwake_v1_game_proto_msgTypes[18]
+	mi := &file_driftwake_v1_game_proto_msgTypes[20]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1793,7 +1947,7 @@ func (x *Self) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Self.ProtoReflect.Descriptor instead.
 func (*Self) Descriptor() ([]byte, []int) {
-	return file_driftwake_v1_game_proto_rawDescGZIP(), []int{18}
+	return file_driftwake_v1_game_proto_rawDescGZIP(), []int{20}
 }
 
 func (x *Self) GetId() uint32 {
@@ -1895,7 +2049,7 @@ type Snapshot struct {
 
 func (x *Snapshot) Reset() {
 	*x = Snapshot{}
-	mi := &file_driftwake_v1_game_proto_msgTypes[19]
+	mi := &file_driftwake_v1_game_proto_msgTypes[21]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1907,7 +2061,7 @@ func (x *Snapshot) String() string {
 func (*Snapshot) ProtoMessage() {}
 
 func (x *Snapshot) ProtoReflect() protoreflect.Message {
-	mi := &file_driftwake_v1_game_proto_msgTypes[19]
+	mi := &file_driftwake_v1_game_proto_msgTypes[21]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1920,7 +2074,7 @@ func (x *Snapshot) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Snapshot.ProtoReflect.Descriptor instead.
 func (*Snapshot) Descriptor() ([]byte, []int) {
-	return file_driftwake_v1_game_proto_rawDescGZIP(), []int{19}
+	return file_driftwake_v1_game_proto_rawDescGZIP(), []int{21}
 }
 
 func (x *Snapshot) GetTick() uint32 {
@@ -1994,7 +2148,7 @@ type Entity struct {
 
 func (x *Entity) Reset() {
 	*x = Entity{}
-	mi := &file_driftwake_v1_game_proto_msgTypes[20]
+	mi := &file_driftwake_v1_game_proto_msgTypes[22]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2006,7 +2160,7 @@ func (x *Entity) String() string {
 func (*Entity) ProtoMessage() {}
 
 func (x *Entity) ProtoReflect() protoreflect.Message {
-	mi := &file_driftwake_v1_game_proto_msgTypes[20]
+	mi := &file_driftwake_v1_game_proto_msgTypes[22]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2019,7 +2173,7 @@ func (x *Entity) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Entity.ProtoReflect.Descriptor instead.
 func (*Entity) Descriptor() ([]byte, []int) {
-	return file_driftwake_v1_game_proto_rawDescGZIP(), []int{20}
+	return file_driftwake_v1_game_proto_rawDescGZIP(), []int{22}
 }
 
 func (x *Entity) GetId() uint32 {
@@ -2160,7 +2314,7 @@ type Gear struct {
 
 func (x *Gear) Reset() {
 	*x = Gear{}
-	mi := &file_driftwake_v1_game_proto_msgTypes[21]
+	mi := &file_driftwake_v1_game_proto_msgTypes[23]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2172,7 +2326,7 @@ func (x *Gear) String() string {
 func (*Gear) ProtoMessage() {}
 
 func (x *Gear) ProtoReflect() protoreflect.Message {
-	mi := &file_driftwake_v1_game_proto_msgTypes[21]
+	mi := &file_driftwake_v1_game_proto_msgTypes[23]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2185,7 +2339,7 @@ func (x *Gear) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Gear.ProtoReflect.Descriptor instead.
 func (*Gear) Descriptor() ([]byte, []int) {
-	return file_driftwake_v1_game_proto_rawDescGZIP(), []int{21}
+	return file_driftwake_v1_game_proto_rawDescGZIP(), []int{23}
 }
 
 func (x *Gear) GetWeapon() string {
@@ -2230,7 +2384,7 @@ type BossView struct {
 
 func (x *BossView) Reset() {
 	*x = BossView{}
-	mi := &file_driftwake_v1_game_proto_msgTypes[22]
+	mi := &file_driftwake_v1_game_proto_msgTypes[24]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2242,7 +2396,7 @@ func (x *BossView) String() string {
 func (*BossView) ProtoMessage() {}
 
 func (x *BossView) ProtoReflect() protoreflect.Message {
-	mi := &file_driftwake_v1_game_proto_msgTypes[22]
+	mi := &file_driftwake_v1_game_proto_msgTypes[24]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2255,7 +2409,7 @@ func (x *BossView) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use BossView.ProtoReflect.Descriptor instead.
 func (*BossView) Descriptor() ([]byte, []int) {
-	return file_driftwake_v1_game_proto_rawDescGZIP(), []int{22}
+	return file_driftwake_v1_game_proto_rawDescGZIP(), []int{24}
 }
 
 func (x *BossView) GetState() BossState {
@@ -2314,7 +2468,7 @@ type Event struct {
 
 func (x *Event) Reset() {
 	*x = Event{}
-	mi := &file_driftwake_v1_game_proto_msgTypes[23]
+	mi := &file_driftwake_v1_game_proto_msgTypes[25]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2326,7 +2480,7 @@ func (x *Event) String() string {
 func (*Event) ProtoMessage() {}
 
 func (x *Event) ProtoReflect() protoreflect.Message {
-	mi := &file_driftwake_v1_game_proto_msgTypes[23]
+	mi := &file_driftwake_v1_game_proto_msgTypes[25]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2339,7 +2493,7 @@ func (x *Event) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Event.ProtoReflect.Descriptor instead.
 func (*Event) Descriptor() ([]byte, []int) {
-	return file_driftwake_v1_game_proto_rawDescGZIP(), []int{23}
+	return file_driftwake_v1_game_proto_rawDescGZIP(), []int{25}
 }
 
 func (x *Event) GetEvent() isEvent_Event {
@@ -2410,7 +2564,7 @@ type Hit struct {
 
 func (x *Hit) Reset() {
 	*x = Hit{}
-	mi := &file_driftwake_v1_game_proto_msgTypes[24]
+	mi := &file_driftwake_v1_game_proto_msgTypes[26]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2422,7 +2576,7 @@ func (x *Hit) String() string {
 func (*Hit) ProtoMessage() {}
 
 func (x *Hit) ProtoReflect() protoreflect.Message {
-	mi := &file_driftwake_v1_game_proto_msgTypes[24]
+	mi := &file_driftwake_v1_game_proto_msgTypes[26]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2435,7 +2589,7 @@ func (x *Hit) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Hit.ProtoReflect.Descriptor instead.
 func (*Hit) Descriptor() ([]byte, []int) {
-	return file_driftwake_v1_game_proto_rawDescGZIP(), []int{24}
+	return file_driftwake_v1_game_proto_rawDescGZIP(), []int{26}
 }
 
 func (x *Hit) GetFrom() uint32 {
@@ -2477,7 +2631,7 @@ type Impact struct {
 
 func (x *Impact) Reset() {
 	*x = Impact{}
-	mi := &file_driftwake_v1_game_proto_msgTypes[25]
+	mi := &file_driftwake_v1_game_proto_msgTypes[27]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2489,7 +2643,7 @@ func (x *Impact) String() string {
 func (*Impact) ProtoMessage() {}
 
 func (x *Impact) ProtoReflect() protoreflect.Message {
-	mi := &file_driftwake_v1_game_proto_msgTypes[25]
+	mi := &file_driftwake_v1_game_proto_msgTypes[27]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2502,7 +2656,7 @@ func (x *Impact) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Impact.ProtoReflect.Descriptor instead.
 func (*Impact) Descriptor() ([]byte, []int) {
-	return file_driftwake_v1_game_proto_rawDescGZIP(), []int{25}
+	return file_driftwake_v1_game_proto_rawDescGZIP(), []int{27}
 }
 
 func (x *Impact) GetBoss() uint32 {
@@ -2530,7 +2684,7 @@ var File_driftwake_v1_game_proto protoreflect.FileDescriptor
 
 const file_driftwake_v1_game_proto_rawDesc = "" +
 	"\n" +
-	"\x17driftwake/v1/game.proto\x12\fdriftwake.v1\"\xf4\x06\n" +
+	"\x17driftwake/v1/game.proto\x12\fdriftwake.v1\"\xd0\a\n" +
 	"\rClientMessage\x127\n" +
 	"\bregister\x18\x01 \x01(\v2\x19.driftwake.v1.CredentialsH\x00R\bregister\x121\n" +
 	"\x05login\x18\x02 \x01(\v2\x19.driftwake.v1.CredentialsH\x00R\x05login\x12#\n" +
@@ -2543,7 +2697,7 @@ const file_driftwake_v1_game_proto_rawDesc = "" +
 	"\x06pickup\x18\t \x01(\rH\x00R\x06pickup\x12+\n" +
 	"\x05grave\x18\n" +
 	" \x01(\v2\x13.driftwake.v1.EmptyH\x00R\x05grave\x12+\n" +
-	"\x05claim\x18\v \x01(\v2\x13.driftwake.v1.EmptyH\x00R\x05claim\x12+\n" +
+	"\x05claim\x18\v \x01(\v2\x13.driftwake.v1.ClaimH\x00R\x05claim\x12+\n" +
 	"\x05craft\x18\f \x01(\v2\x13.driftwake.v1.CraftH\x00R\x05craft\x12\x1f\n" +
 	"\n" +
 	"equip_slot\x18\r \x01(\rH\x00R\tequipSlot\x12.\n" +
@@ -2556,7 +2710,9 @@ const file_driftwake_v1_game_proto_rawDesc = "" +
 	"depositAll\x12(\n" +
 	"\x04boat\x18\x14 \x01(\v2\x12.driftwake.v1.BoatH\x00R\x04boat\x12(\n" +
 	"\x04look\x18\x15 \x01(\v2\x12.driftwake.v1.LookH\x00R\x04look\x12\x14\n" +
-	"\x04chat\x18\x16 \x01(\tH\x00R\x04chatB\x05\n" +
+	"\x04chat\x18\x16 \x01(\tH\x00R\x04chat\x12(\n" +
+	"\x04shop\x18\x17 \x01(\v2\x12.driftwake.v1.ShopH\x00R\x04shop\x120\n" +
+	"\bask_fees\x18\x18 \x01(\v2\x13.driftwake.v1.EmptyH\x00R\aaskFeesB\x05\n" +
 	"\x03msg\"\a\n" +
 	"\x05Empty\"=\n" +
 	"\vCredentials\x12\x12\n" +
@@ -2576,10 +2732,16 @@ const file_driftwake_v1_game_proto_rawDesc = "" +
 	"\x04item\x18\x02 \x01(\tR\x04item\x12\x10\n" +
 	"\x03qty\x18\x03 \x01(\rR\x03qty\"\x1a\n" +
 	"\x04Boat\x12\x12\n" +
-	"\x04sail\x18\x01 \x01(\bR\x04sail\".\n" +
+	"\x04sail\x18\x01 \x01(\bR\x04sail\"\x1b\n" +
+	"\x05Claim\x12\x12\n" +
+	"\x04item\x18\x01 \x01(\tR\x04item\">\n" +
+	"\x04Shop\x12\x10\n" +
+	"\x03buy\x18\x01 \x01(\bR\x03buy\x12\x12\n" +
+	"\x04item\x18\x02 \x01(\tR\x04item\x12\x10\n" +
+	"\x03qty\x18\x03 \x01(\rR\x03qty\".\n" +
 	"\x04Look\x12\x10\n" +
 	"\x03cut\x18\x01 \x01(\rR\x03cut\x12\x14\n" +
-	"\x05color\x18\x02 \x01(\rR\x05color\"\xa8\x03\n" +
+	"\x05color\x18\x02 \x01(\rR\x05color\"\xc9\x03\n" +
 	"\rServerMessage\x121\n" +
 	"\awelcome\x18\x01 \x01(\v2\x15.driftwake.v1.WelcomeH\x00R\awelcome\x12\x16\n" +
 	"\x05error\x18\x02 \x01(\tH\x00R\x05error\x12\x18\n" +
@@ -2591,7 +2753,9 @@ const file_driftwake_v1_game_proto_rawDesc = "" +
 	"\x02xp\x18\b \x01(\v2\x10.driftwake.v1.XpH\x00R\x02xp\x12#\n" +
 	"\fopen_station\x18\t \x01(\tH\x00R\vopenStation\x12.\n" +
 	"\x04boss\x18\n" +
-	" \x01(\v2\x18.driftwake.v1.BossStatusH\x00R\x04bossB\x05\n" +
+	" \x01(\v2\x18.driftwake.v1.BossStatusH\x00R\x04boss\x12\x1f\n" +
+	"\n" +
+	"fees_taken\x18\v \x01(\x04H\x00R\tfeesTakenB\x05\n" +
 	"\x03msg\"/\n" +
 	"\aWelcome\x12\x14\n" +
 	"\x05token\x18\x01 \x01(\tR\x05token\x12\x0e\n" +
@@ -2753,7 +2917,7 @@ func file_driftwake_v1_game_proto_rawDescGZIP() []byte {
 }
 
 var file_driftwake_v1_game_proto_enumTypes = make([]protoimpl.EnumInfo, 5)
-var file_driftwake_v1_game_proto_msgTypes = make([]protoimpl.MessageInfo, 28)
+var file_driftwake_v1_game_proto_msgTypes = make([]protoimpl.MessageInfo, 30)
 var file_driftwake_v1_game_proto_goTypes = []any{
 	(Slot)(0),             // 0: driftwake.v1.Slot
 	(MapId)(0),            // 1: driftwake.v1.MapId
@@ -2768,26 +2932,28 @@ var file_driftwake_v1_game_proto_goTypes = []any{
 	(*Swap)(nil),          // 10: driftwake.v1.Swap
 	(*Bank)(nil),          // 11: driftwake.v1.Bank
 	(*Boat)(nil),          // 12: driftwake.v1.Boat
-	(*Look)(nil),          // 13: driftwake.v1.Look
-	(*ServerMessage)(nil), // 14: driftwake.v1.ServerMessage
-	(*Welcome)(nil),       // 15: driftwake.v1.Welcome
-	(*Chat)(nil),          // 16: driftwake.v1.Chat
-	(*Info)(nil),          // 17: driftwake.v1.Info
-	(*Xp)(nil),            // 18: driftwake.v1.Xp
-	(*BossStatus)(nil),    // 19: driftwake.v1.BossStatus
-	(*Stack)(nil),         // 20: driftwake.v1.Stack
-	(*InvSlot)(nil),       // 21: driftwake.v1.InvSlot
-	(*EquipSlot)(nil),     // 22: driftwake.v1.EquipSlot
-	(*Self)(nil),          // 23: driftwake.v1.Self
-	(*Snapshot)(nil),      // 24: driftwake.v1.Snapshot
-	(*Entity)(nil),        // 25: driftwake.v1.Entity
-	(*Gear)(nil),          // 26: driftwake.v1.Gear
-	(*BossView)(nil),      // 27: driftwake.v1.BossView
-	(*Event)(nil),         // 28: driftwake.v1.Event
-	(*Hit)(nil),           // 29: driftwake.v1.Hit
-	(*Impact)(nil),        // 30: driftwake.v1.Impact
-	nil,                   // 31: driftwake.v1.Self.XpEntry
-	nil,                   // 32: driftwake.v1.Self.BoatEntry
+	(*Claim)(nil),         // 13: driftwake.v1.Claim
+	(*Shop)(nil),          // 14: driftwake.v1.Shop
+	(*Look)(nil),          // 15: driftwake.v1.Look
+	(*ServerMessage)(nil), // 16: driftwake.v1.ServerMessage
+	(*Welcome)(nil),       // 17: driftwake.v1.Welcome
+	(*Chat)(nil),          // 18: driftwake.v1.Chat
+	(*Info)(nil),          // 19: driftwake.v1.Info
+	(*Xp)(nil),            // 20: driftwake.v1.Xp
+	(*BossStatus)(nil),    // 21: driftwake.v1.BossStatus
+	(*Stack)(nil),         // 22: driftwake.v1.Stack
+	(*InvSlot)(nil),       // 23: driftwake.v1.InvSlot
+	(*EquipSlot)(nil),     // 24: driftwake.v1.EquipSlot
+	(*Self)(nil),          // 25: driftwake.v1.Self
+	(*Snapshot)(nil),      // 26: driftwake.v1.Snapshot
+	(*Entity)(nil),        // 27: driftwake.v1.Entity
+	(*Gear)(nil),          // 28: driftwake.v1.Gear
+	(*BossView)(nil),      // 29: driftwake.v1.BossView
+	(*Event)(nil),         // 30: driftwake.v1.Event
+	(*Hit)(nil),           // 31: driftwake.v1.Hit
+	(*Impact)(nil),        // 32: driftwake.v1.Impact
+	nil,                   // 33: driftwake.v1.Self.XpEntry
+	nil,                   // 34: driftwake.v1.Self.BoatEntry
 }
 var file_driftwake_v1_game_proto_depIdxs = []int32{
 	7,  // 0: driftwake.v1.ClientMessage.register:type_name -> driftwake.v1.Credentials
@@ -2795,48 +2961,50 @@ var file_driftwake_v1_game_proto_depIdxs = []int32{
 	6,  // 2: driftwake.v1.ClientMessage.logout:type_name -> driftwake.v1.Empty
 	8,  // 3: driftwake.v1.ClientMessage.move:type_name -> driftwake.v1.Tile
 	6,  // 4: driftwake.v1.ClientMessage.grave:type_name -> driftwake.v1.Empty
-	6,  // 5: driftwake.v1.ClientMessage.claim:type_name -> driftwake.v1.Empty
+	13, // 5: driftwake.v1.ClientMessage.claim:type_name -> driftwake.v1.Claim
 	9,  // 6: driftwake.v1.ClientMessage.craft:type_name -> driftwake.v1.Craft
 	0,  // 7: driftwake.v1.ClientMessage.unequip:type_name -> driftwake.v1.Slot
 	10, // 8: driftwake.v1.ClientMessage.swap:type_name -> driftwake.v1.Swap
 	11, // 9: driftwake.v1.ClientMessage.bank:type_name -> driftwake.v1.Bank
 	6,  // 10: driftwake.v1.ClientMessage.deposit_all:type_name -> driftwake.v1.Empty
 	12, // 11: driftwake.v1.ClientMessage.boat:type_name -> driftwake.v1.Boat
-	13, // 12: driftwake.v1.ClientMessage.look:type_name -> driftwake.v1.Look
-	15, // 13: driftwake.v1.ServerMessage.welcome:type_name -> driftwake.v1.Welcome
-	23, // 14: driftwake.v1.ServerMessage.self:type_name -> driftwake.v1.Self
-	24, // 15: driftwake.v1.ServerMessage.snapshot:type_name -> driftwake.v1.Snapshot
-	16, // 16: driftwake.v1.ServerMessage.chat:type_name -> driftwake.v1.Chat
-	17, // 17: driftwake.v1.ServerMessage.info:type_name -> driftwake.v1.Info
-	18, // 18: driftwake.v1.ServerMessage.xp:type_name -> driftwake.v1.Xp
-	19, // 19: driftwake.v1.ServerMessage.boss:type_name -> driftwake.v1.BossStatus
-	4,  // 20: driftwake.v1.Info.kind:type_name -> driftwake.v1.InfoKind
-	20, // 21: driftwake.v1.InvSlot.stack:type_name -> driftwake.v1.Stack
-	0,  // 22: driftwake.v1.EquipSlot.slot:type_name -> driftwake.v1.Slot
-	20, // 23: driftwake.v1.EquipSlot.stack:type_name -> driftwake.v1.Stack
-	1,  // 24: driftwake.v1.Self.map:type_name -> driftwake.v1.MapId
-	31, // 25: driftwake.v1.Self.xp:type_name -> driftwake.v1.Self.XpEntry
-	21, // 26: driftwake.v1.Self.inventory:type_name -> driftwake.v1.InvSlot
-	22, // 27: driftwake.v1.Self.equipment:type_name -> driftwake.v1.EquipSlot
-	20, // 28: driftwake.v1.Self.bank:type_name -> driftwake.v1.Stack
-	32, // 29: driftwake.v1.Self.boat:type_name -> driftwake.v1.Self.BoatEntry
-	13, // 30: driftwake.v1.Self.look:type_name -> driftwake.v1.Look
-	20, // 31: driftwake.v1.Self.reaper:type_name -> driftwake.v1.Stack
-	20, // 32: driftwake.v1.Self.kept:type_name -> driftwake.v1.Stack
-	1,  // 33: driftwake.v1.Snapshot.map:type_name -> driftwake.v1.MapId
-	25, // 34: driftwake.v1.Snapshot.entities:type_name -> driftwake.v1.Entity
-	28, // 35: driftwake.v1.Snapshot.events:type_name -> driftwake.v1.Event
-	26, // 36: driftwake.v1.Entity.gear:type_name -> driftwake.v1.Gear
-	13, // 37: driftwake.v1.Entity.look:type_name -> driftwake.v1.Look
-	27, // 38: driftwake.v1.Entity.boss:type_name -> driftwake.v1.BossView
-	3,  // 39: driftwake.v1.BossView.state:type_name -> driftwake.v1.BossState
-	29, // 40: driftwake.v1.Event.hit:type_name -> driftwake.v1.Hit
-	30, // 41: driftwake.v1.Event.impact:type_name -> driftwake.v1.Impact
-	42, // [42:42] is the sub-list for method output_type
-	42, // [42:42] is the sub-list for method input_type
-	42, // [42:42] is the sub-list for extension type_name
-	42, // [42:42] is the sub-list for extension extendee
-	0,  // [0:42] is the sub-list for field type_name
+	15, // 12: driftwake.v1.ClientMessage.look:type_name -> driftwake.v1.Look
+	14, // 13: driftwake.v1.ClientMessage.shop:type_name -> driftwake.v1.Shop
+	6,  // 14: driftwake.v1.ClientMessage.ask_fees:type_name -> driftwake.v1.Empty
+	17, // 15: driftwake.v1.ServerMessage.welcome:type_name -> driftwake.v1.Welcome
+	25, // 16: driftwake.v1.ServerMessage.self:type_name -> driftwake.v1.Self
+	26, // 17: driftwake.v1.ServerMessage.snapshot:type_name -> driftwake.v1.Snapshot
+	18, // 18: driftwake.v1.ServerMessage.chat:type_name -> driftwake.v1.Chat
+	19, // 19: driftwake.v1.ServerMessage.info:type_name -> driftwake.v1.Info
+	20, // 20: driftwake.v1.ServerMessage.xp:type_name -> driftwake.v1.Xp
+	21, // 21: driftwake.v1.ServerMessage.boss:type_name -> driftwake.v1.BossStatus
+	4,  // 22: driftwake.v1.Info.kind:type_name -> driftwake.v1.InfoKind
+	22, // 23: driftwake.v1.InvSlot.stack:type_name -> driftwake.v1.Stack
+	0,  // 24: driftwake.v1.EquipSlot.slot:type_name -> driftwake.v1.Slot
+	22, // 25: driftwake.v1.EquipSlot.stack:type_name -> driftwake.v1.Stack
+	1,  // 26: driftwake.v1.Self.map:type_name -> driftwake.v1.MapId
+	33, // 27: driftwake.v1.Self.xp:type_name -> driftwake.v1.Self.XpEntry
+	23, // 28: driftwake.v1.Self.inventory:type_name -> driftwake.v1.InvSlot
+	24, // 29: driftwake.v1.Self.equipment:type_name -> driftwake.v1.EquipSlot
+	22, // 30: driftwake.v1.Self.bank:type_name -> driftwake.v1.Stack
+	34, // 31: driftwake.v1.Self.boat:type_name -> driftwake.v1.Self.BoatEntry
+	15, // 32: driftwake.v1.Self.look:type_name -> driftwake.v1.Look
+	22, // 33: driftwake.v1.Self.reaper:type_name -> driftwake.v1.Stack
+	22, // 34: driftwake.v1.Self.kept:type_name -> driftwake.v1.Stack
+	1,  // 35: driftwake.v1.Snapshot.map:type_name -> driftwake.v1.MapId
+	27, // 36: driftwake.v1.Snapshot.entities:type_name -> driftwake.v1.Entity
+	30, // 37: driftwake.v1.Snapshot.events:type_name -> driftwake.v1.Event
+	28, // 38: driftwake.v1.Entity.gear:type_name -> driftwake.v1.Gear
+	15, // 39: driftwake.v1.Entity.look:type_name -> driftwake.v1.Look
+	29, // 40: driftwake.v1.Entity.boss:type_name -> driftwake.v1.BossView
+	3,  // 41: driftwake.v1.BossView.state:type_name -> driftwake.v1.BossState
+	31, // 42: driftwake.v1.Event.hit:type_name -> driftwake.v1.Hit
+	32, // 43: driftwake.v1.Event.impact:type_name -> driftwake.v1.Impact
+	44, // [44:44] is the sub-list for method output_type
+	44, // [44:44] is the sub-list for method input_type
+	44, // [44:44] is the sub-list for extension type_name
+	44, // [44:44] is the sub-list for extension extendee
+	0,  // [0:44] is the sub-list for field type_name
 }
 
 func init() { file_driftwake_v1_game_proto_init() }
@@ -2867,8 +3035,10 @@ func file_driftwake_v1_game_proto_init() {
 		(*ClientMessage_Boat)(nil),
 		(*ClientMessage_Look)(nil),
 		(*ClientMessage_Chat)(nil),
+		(*ClientMessage_Shop)(nil),
+		(*ClientMessage_AskFees)(nil),
 	}
-	file_driftwake_v1_game_proto_msgTypes[9].OneofWrappers = []any{
+	file_driftwake_v1_game_proto_msgTypes[11].OneofWrappers = []any{
 		(*ServerMessage_Welcome)(nil),
 		(*ServerMessage_Error)(nil),
 		(*ServerMessage_Kicked)(nil),
@@ -2879,9 +3049,10 @@ func file_driftwake_v1_game_proto_init() {
 		(*ServerMessage_Xp)(nil),
 		(*ServerMessage_OpenStation)(nil),
 		(*ServerMessage_Boss)(nil),
+		(*ServerMessage_FeesTaken)(nil),
 	}
-	file_driftwake_v1_game_proto_msgTypes[20].OneofWrappers = []any{}
-	file_driftwake_v1_game_proto_msgTypes[23].OneofWrappers = []any{
+	file_driftwake_v1_game_proto_msgTypes[22].OneofWrappers = []any{}
+	file_driftwake_v1_game_proto_msgTypes[25].OneofWrappers = []any{
 		(*Event_Hit)(nil),
 		(*Event_Impact)(nil),
 		(*Event_Death)(nil),
@@ -2892,7 +3063,7 @@ func file_driftwake_v1_game_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_driftwake_v1_game_proto_rawDesc), len(file_driftwake_v1_game_proto_rawDesc)),
 			NumEnums:      5,
-			NumMessages:   28,
+			NumMessages:   30,
 			NumExtensions: 0,
 			NumServices:   0,
 		},

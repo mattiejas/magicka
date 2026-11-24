@@ -89,8 +89,8 @@ function payload(msg: ClientMsg): { case: string; value: unknown } {
       return { case: 'resumeToken', value: msg.token };
     case 'logout':
     case 'grave':
-    case 'claim':
     case 'depositAll':
+    case 'askFees':
       return { case: msg.type, value: {} };
     case 'move':
       return { case: 'move', value: { x: msg.x, y: msg.y } };
@@ -115,6 +115,10 @@ function payload(msg: ClientMsg): { case: string; value: unknown } {
       return { case: 'swap', value: { a: msg.a, b: msg.b } };
     case 'bank':
       return { case: 'bank', value: { withdraw: msg.op === 'withdraw', item: msg.item, qty: msg.qty } };
+    case 'claim':
+      return { case: 'claim', value: { item: msg.item ?? '' } };
+    case 'shop':
+      return { case: 'shop', value: { buy: msg.op === 'buy', item: msg.item, qty: msg.qty } };
     case 'boat':
       return { case: 'boat', value: { sail: msg.op === 'sail' } };
     case 'look':
@@ -246,7 +250,9 @@ export function decode(data: ArrayBuffer): ServerMsg | null {
     case 'xp':
       return { type: 'xp', skill: msg.value.skill as Skill, amount: msg.value.amount };
     case 'openStation':
-      return { type: 'open', station: msg.value as StationType };
+      return { type: 'open', station: msg.value as StationType | 'grave' };
+    case 'feesTaken':
+      return { type: 'fees', taken: Number(msg.value) };
     case 'boss': {
       const { alive, nextTicks, contribution, online } = msg.value;
       return { type: 'boss', alive, nextTicks, contribution, online };

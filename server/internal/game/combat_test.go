@@ -75,11 +75,12 @@ func TestDeathKeepsGearAndStoresItemsForever(t *testing.T) {
 	eq(t, len(p.C.Grave.Items), 5)
 	// Reload into a new world and claim from the reaper.
 	var c Char
-	check(t, json.Unmarshal(e.saved[1], &c) == nil)
+	check(t, json.Unmarshal(e.saved.chars[1], &c) == nil)
 	e2 := setup(t)
 	id, _ := e2.w.Join(1, "P1", func() (*Char, error) { return &c, nil }, &client{})
 	p2 := e2.w.players[id]
 	eq(t, p2.C.Grave, p.C.Grave)
+	p2.C.Bank = []*Stack{{coin, 1000}}
 	e2.atStation(p2, "reaper", "island")
 	e2.do(p2, claimMsg, 1)
 	check(t, p2.C.Grave == nil)
@@ -94,6 +95,7 @@ func TestClaimTakesOnlyWhatFits(t *testing.T) {
 	p.give("ash_log", 24)
 	e.w.hurt(p, 0, 999, melee)
 	p.give("berries", 20)
+	p.C.Bank = []*Stack{{coin, 1000}}
 	e.atStation(p, "reaper", "island")
 	e.do(p, claimMsg, 1)
 	eq(t, p.count("ash_log"), 4)
@@ -109,7 +111,7 @@ func TestDisconnectingInCombatLingers(t *testing.T) {
 	e.run(10)
 	check(t, e.w.players[p.ID] != nil)
 	e.run(60)
-	check(t, e.w.players[p.ID] == nil && e.saved[1] != nil)
+	check(t, e.w.players[p.ID] == nil && e.saved.chars[1] != nil)
 }
 
 func TestSecondLoginTakesOver(t *testing.T) {

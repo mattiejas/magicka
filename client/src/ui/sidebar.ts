@@ -12,8 +12,8 @@ import {
 import { send } from '../net/connection';
 import { state } from '../net/state';
 import { bar, button, h } from './dom';
-import { ALL_ITEMS, itemSlot, level } from './items';
-import { bankQuantity, isPanelOpen } from './panels';
+import { ALL_ITEMS, isSellable, itemSlot, level } from './items';
+import { clickQuantity, isPanelOpen } from './panels';
 import type { MenuItem } from './popups';
 
 const TABS = ['inventory', 'equipment', 'skills'] as const;
@@ -63,10 +63,13 @@ function inventorySlot(stack: Stack | null, slot: number): HTMLElement {
 
 function useItem({ id }: Stack, slot: number) {
   const item = ITEMS[id];
-  if (isPanelOpen('bank')) send({ type: 'bank', op: 'deposit', item: id, qty: bankQuantity() });
+  if (isPanelOpen('bank')) send({ type: 'bank', op: 'deposit', item: id, qty: clickQuantity() });
+  else if (isPanelOpen('shop')) sell(id, clickQuantity());
   else if (item.heal) send({ type: 'eat', slot });
   else if (item.slot) send({ type: 'equip', slot });
 }
+
+const sell = (item: string, qty: number) => send({ type: 'shop', op: 'sell', item, qty });
 
 function itemMenu({ id }: Stack, slot: number): MenuItem[] {
   const item = ITEMS[id];
@@ -75,6 +78,7 @@ function itemMenu({ id }: Stack, slot: number): MenuItem[] {
   if (item.slot) entries.push([`Equip ${item.name}`, () => send({ type: 'equip', slot })]);
   if (isPanelOpen('bank'))
     entries.push(['Deposit all', () => send({ type: 'bank', op: 'deposit', item: id, qty: ALL_ITEMS })]);
+  if (isPanelOpen('shop') && isSellable(id)) entries.push(['Sell all', () => sell(id, ALL_ITEMS)]);
   entries.push([`Drop ${item.name}`, () => send({ type: 'drop', slot })]);
   return entries;
 }

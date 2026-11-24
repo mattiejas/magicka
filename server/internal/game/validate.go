@@ -51,6 +51,8 @@ func Decode(b []byte) (*pb.ClientMessage, bool) {
 		ok = m.Unequip >= pb.Slot_SLOT_WEAPON && m.Unequip <= pb.Slot_SLOT_AMMO
 	case *pb.ClientMessage_Bank:
 		ok = qty(m.Bank.GetQty(), 1_000_000)
+	case *pb.ClientMessage_Shop:
+		ok = qty(m.Shop.GetQty(), 1_000_000)
 	case *pb.ClientMessage_Look:
 		ok = m.Look.GetCut() < uint32(content.Haircuts) && m.Look.GetColor() < uint32(content.HairColors)
 	case *pb.ClientMessage_Chat:

@@ -12,7 +12,10 @@ export interface Stack {
 export type ClientMsg =
   | { type: 'register' | 'login'; name: string; password: string }
   | { type: 'resume'; token: string }
-  | { type: 'logout' | 'grave' | 'claim' | 'depositAll' }
+  | { type: 'logout' | 'grave' | 'depositAll' | 'askFees' }
+  /** Without an item: everything. */
+  | { type: 'claim'; item?: string }
+  | { type: 'shop'; op: 'buy' | 'sell'; item: string; qty: number }
   | { type: 'move'; x: number; y: number }
   | { type: 'gather' | 'station' | 'attack' | 'pickup'; id: string }
   | { type: 'craft'; recipe: string; qty: number }
@@ -105,5 +108,7 @@ export type ServerMsg =
   | { type: 'chat'; from: string; text: string }
   | { type: 'info'; text: string; kind?: InfoKind }
   | { type: 'xp'; skill: Skill; amount: number }
-  | { type: 'open'; station: StationType }
+  | { type: 'open'; station: StationType | 'grave' }
+  /** Coins that graves and the reaper have taken from everyone, ever. */
+  | { type: 'fees'; taken: number }
   | { type: 'boss'; alive: boolean; nextTicks: number; contribution: number; online: number };

@@ -1,7 +1,9 @@
 // Camp stations, each about one tile wide and facing +z.
 import * as THREE from 'three';
 import { ball, blob, cyl, lathe, merge, part, plate, rbox, shade, taper, torus } from '../geo';
+import { posePlayer } from './animation';
 import { type Geometry, ring, TAU } from './model';
+import { playerModel } from './player';
 
 const STONE = '#918d85';
 const WOOD = '#8a6b48';
@@ -217,6 +219,65 @@ const dock = () =>
     part(torus(0.12, 0.035), '#bfae82', [0, 0.36, 0], [Math.PI / 2, 0.1, 0]),
   ]);
 
-const SHAPES: Record<string, () => Geometry> = { bank, furnace, anvil, workbench, reaper, dock };
+const CANVAS_RED = '#a8584a';
+const CANVAS_PALE = '#e3d5b4';
+
+/** A market stall. The shopkeeper stands behind its counter. */
+const shop = () =>
+  merge([
+    part(rbox(1.3, 0.1, 0.42, 0.02), shade(WOOD, 1.15), [0, 0.86, 0.3]),
+    ...[-0.48, -0.16, 0.16, 0.48].map((x, i) =>
+      part(rbox(0.31, 0.8, 0.08, 0.02), shade(WOOD, 0.85 + (i % 2) * 0.1), [x, 0.41, 0.42]),
+    ),
+    ...[-1, 1].flatMap(side => [
+      part(rbox(0.08, 0.8, 0.34, 0.02), shade(WOOD, 0.8), [side * 0.6, 0.41, 0.3]),
+      part(cyl(0.04, 0.05, 2.3, 8), shade(WOOD, 0.75), [side * 0.66, 1.15, -0.5]),
+      part(
+        taper(
+          [
+            [side * 0.66, 1.75, -0.5],
+            [side * 0.66, 2.08, -0.16],
+          ],
+          0.03,
+          0.025,
+          6,
+        ),
+        shade(WOOD, 0.75),
+      ),
+    ]),
+    // The awning hangs back, so the keeper can be seen from above.
+    ...[-3, -2, -1, 0, 1, 2, 3].flatMap(i => {
+      const color = i % 2 ? CANVAS_PALE : CANVAS_RED;
+      const flap = new THREE.CylinderGeometry(0.105, 0.105, 0.03, 8, 1, false, 0, Math.PI);
+      return [
+        part(rbox(0.21, 0.035, 0.62, 0.01), color, [i * 0.21, 2.2, -0.42], [0.35, 0, 0]),
+        part(flap, color, [i * 0.21, 2.08, -0.12], [Math.PI / 2, Math.PI / 2, 0]),
+      ];
+    }),
+    ...goods(),
+  ]);
+
+/** What lies on the counter. */
+const goods = () => [
+  part(rbox(0.34, 0.05, 0.28, 0.01), '#7b5f42', [-0.38, 0.93, 0.32]),
+  ...[-0.48, -0.38, -0.28].map((x, i) =>
+    part(blob(0.07, 0.2, i), ['#b5673f', '#8d9299', '#9aa870'][i], [x, 0.99, 0.32 + (i % 2) * 0.05]),
+  ),
+  part(cyl(0.05, 0.05, 0.04, 8), '#d9b25b', [0.14, 0.93, 0.4]),
+  part(cyl(0.05, 0.05, 0.08, 8), '#cfa64f', [0.25, 0.95, 0.36]),
+  part(cyl(0.02, 0.02, 0.5, 6), '#7a5f42', [0.44, 0.94, 0.28], [0, 0.5, Math.PI / 2]),
+  part(rbox(0.07, 0.06, 0.2, 0.02), IRON, [0.63, 0.95, 0.38], [0, 0.5, 0]),
+];
+
+const SHAPES: Record<string, () => Geometry> = { bank, furnace, anvil, workbench, reaper, dock, shop };
+
+/** The person at a station, if there is one. */
+export function keeperOf(type: string): THREE.Object3D | null {
+  if (type !== 'shop') return null;
+  const keeper = playerModel('Shopkeeper', [null, null, 'leather_jerkin_2', null]);
+  posePlayer(keeper, { moving: false, walk: 0, hit: 0, time: 0 });
+  keeper.root.position.z = -0.12;
+  return keeper.root;
+}
 
 export const stationGeo = (type: string): Geometry => SHAPES[type]();

@@ -30,6 +30,16 @@ const SHAPES: Record<string, (color: string) => Geometry> = {
     ),
   gem: jewel,
   essence: jewel,
+  coin: c =>
+    merge(
+      [0, 1, 2, 3].map(i =>
+        part(cyl(0.08, 0.08, 0.03, 8), shade(c, 1 - i * 0.06), [
+          Math.cos(i * 2.2) * 0.1 * Math.min(1, i),
+          0.02 + (i === 3 ? 0.03 : 0),
+          Math.sin(i * 2.2) * 0.1 * Math.min(1, i),
+        ]),
+      ),
+    ),
   hide: c => part(blob(0.25, 0.25, 2), c, [0, 0.05, 0], [0, 0, 0], [1.1, 0.25, 0.9]),
   meat: c =>
     merge([

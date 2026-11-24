@@ -36,6 +36,7 @@ var migrations = []string{
 		data TEXT NOT NULL,
 		saved INTEGER NOT NULL
 	);`,
+	`CREATE TABLE totals(name TEXT PRIMARY KEY, value INTEGER NOT NULL);`,
 }
 
 const options = "?_pragma=journal_mode(WAL)&_pragma=foreign_keys(1)" +
@@ -52,6 +53,7 @@ type Store struct {
 	db      *sql.DB
 	mu      sync.Mutex
 	pending map[int64][]byte
+	totals  map[string]int64 // not yet added to the saved ones
 	writing map[int64][]byte
 	wake    chan struct{}
 	stop    chan struct{}
@@ -85,6 +87,7 @@ func Open(path string) (*Store, error) {
 	s := &Store{
 		db:      db,
 		pending: map[int64][]byte{},
+		totals:  map[string]int64{},
 		wake:    make(chan struct{}, 1),
 		stop:    make(chan struct{}),
 		done:    make(chan struct{}),
@@ -192,6 +195,11 @@ func (s *Store) Save(account int64, data []byte) {
 	s.mu.Lock()
 	s.pending[account] = data
 	s.mu.Unlock()
+	s.wakeWriter()
+}
+
+// wakeWriter makes run write what is waiting.
+func (s *Store) wakeWriter() {
 	select {
 	case s.wake <- struct{}{}:
 	default:
@@ -215,9 +223,10 @@ func (s *Store) run() {
 func (s *Store) flush() {
 	s.mu.Lock()
 	s.writing, s.pending = s.pending, map[int64][]byte{}
-	batch := s.writing
+	batch, totals := s.writing, s.totals
+	s.totals = map[string]int64{}
 	s.mu.Unlock()
-	if err := s.write(batch); err != nil {
+	if err := s.write(batch, totals); err != nil {
 		log.Printf("saving %d characters failed, will retry: %v", len(batch), err)
 		s.mu.Lock()
 		for k, v := range batch { // newer saves win
@@ -225,13 +234,11 @@ func (s *Store) flush() {
 				s.pending[k] = v
 			}
 		}
+		for name, n := range totals {
+			s.totals[name] += n
+		}
 		s.mu.Unlock()
-		time.AfterFunc(time.Second, func() {
-			select {
-			case s.wake <- struct{}{}:
-			default:
-			}
-		})
+		time.AfterFunc(time.Second, s.wakeWriter)
 	}
 	s.mu.Lock()
 	s.writing = nil
@@ -241,8 +248,8 @@ func (s *Store) flush() {
 const upsert = `INSERT INTO characters VALUES(?,?,?)
 	ON CONFLICT(account) DO UPDATE SET data=excluded.data, saved=excluded.saved`
 
-func (s *Store) write(batch map[int64][]byte) error {
-	if len(batch) == 0 {
+func (s *Store) write(batch map[int64][]byte, totals map[string]int64) error {
+	if len(batch)+len(totals) == 0 {
 		return nil
 	}
 	tx, err := s.db.Begin()
@@ -252,6 +259,11 @@ func (s *Store) write(batch map[int64][]byte) error {
 	defer tx.Rollback()
 	for id, data := range batch {
 		if _, err := tx.Exec(upsert, id, string(data), time.Now().UnixMilli()); err != nil {
+			return err
+		}
+	}
+	for name, n := range totals {
+		if _, err := tx.Exec(addTotal, name, n); err != nil {
 			return err
 		}
 	}

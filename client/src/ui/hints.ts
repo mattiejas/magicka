@@ -1,5 +1,5 @@
 // Suggestions for what to do next, shown to newer players.
-import { type SelfState, xpForLevel } from '@driftwake/shared';
+import { ITEMS, type SelfState, xpForLevel } from '@driftwake/shared';
 import { myTrack, state } from '../net/state';
 import { byId } from './dom';
 
@@ -18,6 +18,10 @@ function owns({ inv, equip, bank }: SelfState, ...items: string[]): boolean {
   return [...inv, ...Object.values(equip), ...bank].some(stack => stack && items.includes(stack.id));
 }
 
+/** Any tier of it, anywhere. */
+const ownsTool = (self: SelfState, tool: string) =>
+  owns(self, ...Object.keys(ITEMS).filter(id => id.endsWith(`_${tool}`)));
+
 function isNearBoss(): boolean {
   const me = myTrack()?.entity;
   if (!me) return false;
@@ -33,7 +37,7 @@ const ANYWHERE: Hint[] = [
   },
   {
     applies: self => self.reaper.length > 0,
-    text: 'Your items are safe. Return to your grave, or ask the reaper at camp.',
+    text: 'Your items are safe. Pay a small fee at your grave, or twice that at the reaper in town.',
   },
   {
     applies: self => isNearBoss() && self.xp.vitality < xpForLevel(VETERAN_VITALITY),
@@ -44,6 +48,10 @@ const ON_THE_ISLAND: Hint[] = [
   {
     applies: self => self.boatDone,
     text: 'Your boat is ready. Speak to the shipwright to sail to the mainland.',
+  },
+  {
+    applies: self => !ownsTool(self, 'pickaxe') || !ownsTool(self, 'axe'),
+    text: 'Out of tools? Kill chickens south-east of camp for coins, and buy worn tools from the shopkeeper.',
   },
   { applies: self => self.xp.mining === 0, text: 'Mine copper on the rise north-east of camp.' },
   {

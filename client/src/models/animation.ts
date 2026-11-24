@@ -299,6 +299,13 @@ const MONSTER_POSES: Record<string, (parts: Model['parts'], pose: MonsterPose, s
     parts.ra.rotation.x = stride - blow * 2;
     parts.body.rotation.x = blow * 0.2;
   },
+  bird(parts, { time, hit, phase, moving }) {
+    const peck = Math.sin(hit * Math.PI);
+    // Every few seconds it pecks at the ground.
+    const grazing = moving ? 0 : Math.max(0, Math.sin(time / 1300 + phase * 3) - 0.6) * 2.5;
+    parts.head.rotation.x = peck * 0.9 + grazing * (0.95 + Math.sin(time / 90) * 0.2);
+    parts.body.rotation.x = peck * 0.2 + grazing * 0.25;
+  },
   beast(parts, { time, hit, phase }) {
     const lunge = Math.sin(hit * Math.PI);
     parts.head.rotation.x = Math.sin(time / 600 + phase) * 0.05 + lunge * 0.45;

@@ -31,3 +31,10 @@ export const bossMaxHp = (base: number, players: number) =>
 /** Chance per attempt of a successful gather. */
 export const gatherChance = (level: number, req: number, toolTier: number) =>
   Math.min(0.95, 0.3 + (level - req) * 0.015 + toolTier * 0.08);
+
+/** What a shop pays for some items, rounded down. */
+export const sellPrice = (value: number, qty: number, percent: number) =>
+  Math.floor((value * qty * percent) / 100);
+/** What reclaiming some items costs after dying: rounded up, and at least one coin. */
+export const deathFee = (value: number, qty: number, percent: number) =>
+  Math.max(1, Math.ceil((value * qty * percent) / 100));

@@ -33,7 +33,7 @@ const (
 	botActsEvery = 2 * time.Second
 
 	// Kinds in the low bits of entity ids, and how many of each the island has.
-	monsterKind, islandMonsters = 2, 15
+	monsterKind, islandMonsters = 2, 20
 	nodeKind, islandNodes       = 3, 42
 )
 

@@ -334,7 +334,7 @@ func TestUniqueIsKeptForSomeoneWhoLeft(t *testing.T) {
 	e.run(Ticks(181))
 	check(t, e.w.players[p.ID] == nil)
 	var c Char
-	check(t, json.Unmarshal(e.saved[1], &c) == nil)
+	check(t, json.Unmarshal(e.saved.chars[1], &c) == nil)
 	eq(t, c.Kept, []*Stack{{"rootcleaver", 1}})
 }
 
@@ -345,7 +345,7 @@ func TestUniqueSurvivesShutdown(t *testing.T) {
 	e.w.drop(e.w.mapOf(p), p.at(), "copper_ore", 1, p.ID, bossLoot)
 	e.w.SaveAll()
 	var c Char
-	check(t, json.Unmarshal(e.saved[1], &c) == nil)
+	check(t, json.Unmarshal(e.saved.chars[1], &c) == nil)
 	eq(t, c.Kept, []*Stack{{"rootcleaver", 1}})
 }
 

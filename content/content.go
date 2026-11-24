@@ -6,6 +6,7 @@ import (
 	"embed"
 	"encoding/json"
 	"fmt"
+	"slices"
 )
 
 //go:embed data/*.json
@@ -25,6 +26,8 @@ type Item struct {
 	Tier, Speed, Range, Heal          int
 	Acc, Power, Armour                float64
 	Stack, Unique                     bool
+	Basic                             bool // sold in every shop, and never bought back
+	Value                             int  // in coins
 	Req                               map[string]int
 }
 
@@ -107,6 +110,15 @@ type Monster struct {
 	Boss                             *Boss
 }
 
+// Economy sets prices. Percentages are of an item's shop value.
+type Economy struct {
+	ShopStock                                      []string
+	SellPercent, GraveFeePercent, ReaperFeePercent int
+}
+
+// Sells reports whether shops have an item in stock.
+func (e *Economy) Sells(item string) bool { return slices.Contains(e.ShopStock, item) }
+
 type Part struct {
 	ID, Name, Item string
 	Qty            int
@@ -154,6 +166,7 @@ var (
 	Nodes      = map[string]*Node{}
 	Monsters   = map[string]*Monster{}
 	BoatParts  []Part
+	Prices     Economy
 	Metals     []string
 	Haircuts   int
 	HairColors int
@@ -193,6 +206,7 @@ func init() {
 		Metals     []string
 		Haircuts   []named
 		HairColors []struct{ Name string }
+		Economy    Economy
 	}
 	must(json.Unmarshal(Raw("content.json"), &d))
 	for _, i := range d.Items {
@@ -209,7 +223,8 @@ func init() {
 	for _, m := range d.Monsters {
 		Monsters[m.ID] = m
 	}
-	BoatParts, Metals, Haircuts, HairColors = d.BoatParts, d.Metals, len(d.Haircuts), len(d.HairColors)
+	BoatParts, Metals, Prices = d.BoatParts, d.Metals, d.Economy
+	Haircuts, HairColors = len(d.Haircuts), len(d.HairColors)
 	must(json.Unmarshal(Raw("maps.json"), &Maps))
 	for _, m := range Maps {
 		MapByID[m.ID] = m

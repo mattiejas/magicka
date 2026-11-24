@@ -79,3 +79,9 @@ func nameHash(s string) int {
 	}
 	return h
 }
+
+// SellPrice is what a shop pays for some items, rounded down.
+func SellPrice(value, qty, percent int) int { return value * qty * percent / 100 }
+
+// DeathFee is what reclaiming some items costs after dying: rounded up, and at least one coin.
+func DeathFee(value, qty, percent int) int { return max(1, (value*qty*percent+99)/100) }

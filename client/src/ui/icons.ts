@@ -28,6 +28,7 @@ const P: Record<string, string> = {
   berries:
     '<path d="M5 10h6v6H5zM13 9h6v6h-6zM9 15h6v6H9z" fill="C"/><path d="M11 3h2v7h-2z" fill="#6f8a52"/>',
   meat: '<path d="M4 8l7-4 8 4 1 7-7 5-8-3z" fill="C"/><path d="M10 10h4v4h-4z" fill="#ecdcc8"/>',
+  coin: '<path d="M12 3l6 3 3 6-3 6-6 3-6-3-3-6 3-6z" fill="C"/><path d="M12 7l4 5-4 5-4-5z" fill="#8a6b2f" opacity=".6"/>',
   ration: '<path d="M3 11h18l-3 9H6z" fill="C"/><path d="M6 6h5v4H6zM13 5h5v5h-5z" fill="#a8685a"/>',
   wheel:
     '<path d="M12 4a8 8 0 1 0 .01 0zM12 7a5 5 0 1 1-.01 0z" fill="C" fill-rule="evenodd"/><path d="M11 0h2v24h-2zM0 11h24v2H0z" fill="#6d5f48"/><path d="M10 10h4v4h-4z" fill="C"/>',

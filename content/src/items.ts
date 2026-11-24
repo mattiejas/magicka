@@ -48,11 +48,24 @@ export interface Item {
   ammo?: 'arrow' | 'essence';
   heal?: number;
   unique?: boolean;
+  /** What it is worth, in coins. */
+  value: number;
+  /** Sold in every shop, and worth nothing to anyone else. */
+  basic?: boolean;
 }
 export const ITEMS: Record<string, Item> = {};
-const add = (i: Item) => {
-  ITEMS[i.id] = i;
+/** Items that are made get their value from what goes into them; see valueCraftedItems. */
+const add = (i: Omit<Item, 'value'> & { value?: number }) => {
+  ITEMS[i.id] = { value: 0, ...i };
 };
+/** Shop values of what is gathered or dropped, by tier. */
+const ORE_VALUES = [0, 6, 15, 32, 60, 110];
+const LOG_VALUES = [0, 5, 12, 28, 52, 95];
+const HIDE_VALUES = [0, 8, 20, 40, 75, 140];
+const FIBRE_VALUES = [0, 4, 10, 22, 45, 85];
+const GEM_VALUES = [0, 30, 80, 180, 350, 700];
+const WORN_VALUE = 10;
+const WORLD_UNIQUE_VALUE = 150_000;
 const cap = (s: string) => s[0].toUpperCase() + s.slice(1);
 
 export interface Recipe {
@@ -84,8 +97,19 @@ add({
   color: METAL_COLORS[0],
   tier: 0,
   tool: 'pickaxe',
+  value: WORN_VALUE,
+  basic: true,
 });
-add({ id: 'worn_axe', name: 'Worn axe', icon: 'axe', color: METAL_COLORS[0], tier: 0, tool: 'axe' });
+add({
+  id: 'worn_axe',
+  name: 'Worn axe',
+  icon: 'axe',
+  color: METAL_COLORS[0],
+  tier: 0,
+  tool: 'axe',
+  value: WORN_VALUE,
+  basic: true,
+});
 add({
   id: 'worn_sword',
   name: 'Worn sword',
@@ -98,7 +122,10 @@ add({
   power: 2,
   speed: 4,
   range: 1,
+  value: WORN_VALUE,
+  basic: true,
 });
+add({ id: 'coin', name: 'Coins', icon: 'coin', color: '#d9b25b', tier: 1, stack: true, value: 1 });
 add({
   id: 'essence',
   name: 'Essence',
@@ -108,12 +135,13 @@ add({
   stack: true,
   slot: 'ammo',
   ammo: 'essence',
+  value: 2,
 });
-add({ id: 'berries', name: 'Berries', icon: 'berries', color: '#a8485e', tier: 1, heal: 4 });
-add({ id: 'meat', name: 'Raw meat', icon: 'meat', color: '#b0625a', tier: 1 });
+add({ id: 'berries', name: 'Berries', icon: 'berries', color: '#a8485e', tier: 1, heal: 4, value: 3 });
+add({ id: 'meat', name: 'Raw meat', icon: 'meat', color: '#b0625a', tier: 1, value: 4 });
 add({ id: 'ration', name: 'Trail ration', icon: 'ration', color: '#b58a58', tier: 1, heal: 12 });
 add({ id: 'feast', name: 'Hearty feast', icon: 'ration', color: '#d0a060', tier: 3, heal: 26 });
-add({ id: 'ships_wheel', name: "Ship's wheel", icon: 'wheel', color: '#8d7a5e', tier: 1 });
+add({ id: 'ships_wheel', name: "Ship's wheel", icon: 'wheel', color: '#8d7a5e', tier: 1, value: 50 });
 recipe('ration', 'workbench', 'crafting', 1, 12, [
   ['meat', 1],
   ['berries', 1],
@@ -133,9 +161,9 @@ for (let t = 1; t <= 5; t++) {
     mc = METAL_COLORS[t],
     wc = WOOD_COLORS[t];
   const lv = (o: number) => L + o;
-  add({ id: `${m}_ore`, name: `${M} ore`, icon: 'ore', color: mc, tier: t });
+  add({ id: `${m}_ore`, name: `${M} ore`, icon: 'ore', color: mc, tier: t, value: ORE_VALUES[t] });
   add({ id: `${m}_bar`, name: `${M} bar`, icon: 'bar', color: mc, tier: t });
-  add({ id: `${w}_log`, name: `${W} log`, icon: 'log', color: wc, tier: t });
+  add({ id: `${w}_log`, name: `${W} log`, icon: 'log', color: wc, tier: t, value: LOG_VALUES[t] });
   add({
     id: `${m}_pickaxe`,
     name: `${M} pickaxe`,
@@ -239,9 +267,23 @@ for (let t = 1; t <= 5; t++) {
     range: 6,
     req: { magic: L },
   });
-  add({ id: `hide_${t}`, name: `${HIDES[t]} hide`, icon: 'hide', color: HIDE_COLORS[t], tier: t });
-  add({ id: `fibre_${t}`, name: FIBRES[t], icon: 'fibre', color: FIBRE_COLORS[t], tier: t });
-  add({ id: `gem_${t}`, name: GEMS[t], icon: 'gem', color: GEM_COLORS[t], tier: t });
+  add({
+    id: `hide_${t}`,
+    name: `${HIDES[t]} hide`,
+    icon: 'hide',
+    color: HIDE_COLORS[t],
+    tier: t,
+    value: HIDE_VALUES[t],
+  });
+  add({
+    id: `fibre_${t}`,
+    name: FIBRES[t],
+    icon: 'fibre',
+    color: FIBRE_COLORS[t],
+    tier: t,
+    value: FIBRE_VALUES[t],
+  });
+  add({ id: `gem_${t}`, name: GEMS[t], icon: 'gem', color: GEM_COLORS[t], tier: t, value: GEM_VALUES[t] });
   add({
     id: `amulet_${t}`,
     name: `${GEMS[t]} amulet`,
@@ -343,6 +385,7 @@ add({
   acc: 6,
   power: 3,
   armour: 4,
+  value: 2500,
   unique: true,
 });
 add({
@@ -358,6 +401,7 @@ add({
   speed: 4,
   range: 1,
   req: { melee: 40 },
+  value: WORLD_UNIQUE_VALUE,
   unique: true,
 });
 add({
@@ -373,6 +417,7 @@ add({
   speed: 4,
   range: 7,
   req: { ranged: 40 },
+  value: WORLD_UNIQUE_VALUE,
   unique: true,
 });
 add({
@@ -388,6 +433,7 @@ add({
   speed: 5,
   range: 7,
   req: { magic: 40 },
+  value: WORLD_UNIQUE_VALUE,
   unique: true,
 });
 
@@ -500,7 +546,7 @@ export interface MonsterDef {
   respawn: number;
   size: number;
   color: string;
-  shape: 'beast' | 'wisp' | 'plant' | 'golem' | 'crab' | 'treant';
+  shape: 'beast' | 'bird' | 'wisp' | 'plant' | 'golem' | 'crab' | 'treant';
   loot: LootTable;
   boss?: BossDef;
 }
@@ -538,6 +584,20 @@ const mon = (
     ...d,
   };
 };
+mon({
+  id: 'chicken',
+  name: 'Chicken',
+  style: 'melee',
+  level: 1,
+  hp: 4,
+  acc: 0,
+  power: 0,
+  aggro: 0,
+  respawn: 10,
+  color: '#e8dcc4',
+  shape: 'bird',
+  loot: { always: [['coin', 1, 4]], rare: [['meat', 1, 0.4]] },
+});
 mon({
   id: 'boar',
   name: 'Meadow boar',
@@ -713,7 +773,10 @@ mon({
   color: '#b5604a',
   shape: 'crab',
   loot: {
-    always: [['ships_wheel', 1, 1]],
+    always: [
+      ['ships_wheel', 1, 1],
+      ['coin', 40, 80],
+    ],
     common: [
       ['meat', 2, 4],
       ['essence', 15, 30],
@@ -760,6 +823,7 @@ mon({
   loot: {
     // A tree gives wood and what grows on it.
     always: [
+      ['coin', 1500, 3000],
       ['maple_log', 4, 8],
       ['feast', 1, 2],
     ],
@@ -809,6 +873,33 @@ mon({
     ],
   },
 });
+
+/** Ordinary monsters carry coins according to their level. */
+const carryCoins = ({ level, loot }: MonsterDef) => {
+  loot.always = [...(loot.always ?? []), ['coin', Math.ceil(level * 0.6), level * 2]];
+};
+for (const monster of Object.values(MONSTERS))
+  if (!monster.boss && monster.id !== 'chicken') carryCoins(monster);
+
+/** Making something adds a fifth to the value of what goes into it. */
+const CRAFTING_MARKUP = 1.2;
+function valueCraftedItems() {
+  const unvalued = () => RECIPES.filter(r => !ITEMS[r.out].value && r.in.every(([id]) => ITEMS[id].value));
+  for (let ready = unvalued(); ready.length; ready = unvalued())
+    for (const { out, qty, in: inputs } of ready) {
+      const cost = inputs.reduce((sum, [id, n]) => sum + ITEMS[id].value * n, 0);
+      ITEMS[out].value = Math.max(1, Math.round((cost * CRAFTING_MARKUP) / qty));
+    }
+}
+valueCraftedItems();
+
+/** Percentages are of an item's shop value. */
+export const ECONOMY = {
+  shopStock: ['worn_pickaxe', 'worn_axe', 'worn_sword'],
+  sellPercent: 50,
+  graveFeePercent: 5,
+  reaperFeePercent: 10,
+};
 
 export interface Look {
   cut: number;

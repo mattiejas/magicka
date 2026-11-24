@@ -6,6 +6,7 @@ import { HAIRCUTS, MONSTERS, NODES } from '@driftwake/shared';
 import * as THREE from 'three';
 import {
   boatGeo,
+  keeperOf,
   mesh,
   monsterModel,
   nodeGeo,
@@ -131,6 +132,17 @@ const SETS: Record<string, GallerySet> = {
         return { object: model.root };
       }),
   },
+  chicken: {
+    columns: 3,
+    gap: 1,
+    camera: { from: [0, 0.8, 3.2], to: [0, 0.4, 0] },
+    exhibits: () =>
+      [0.5, Math.PI / 2, Math.PI].map(turn => {
+        const model = monsterModel('chicken');
+        poseMonster(model, { ...STILL, time, phase: 0 });
+        return { object: model.root, turn };
+      }),
+  },
   nodes: {
     columns: 6,
     gap: 2.2,
@@ -140,10 +152,12 @@ const SETS: Record<string, GallerySet> = {
     columns: 4,
     gap: 2.6,
     exhibits: () => [
-      ...['bank', 'furnace', 'anvil', 'workbench', 'reaper', 'dock'].map(id => ({
-        object: mesh(stationGeo(id)),
-        turn: 0.3,
-      })),
+      ...['bank', 'furnace', 'anvil', 'workbench', 'reaper', 'dock', 'shop'].map(id => {
+        const object = mesh(stationGeo(id));
+        const keeper = keeperOf(id);
+        if (keeper) object.add(keeper);
+        return { object, turn: 0.3 };
+      }),
       ...[0.3, 1].map(progress => ({ object: mesh(boatGeo(() => progress)), turn: 0.9 })),
     ],
   },

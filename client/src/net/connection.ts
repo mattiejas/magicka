@@ -97,6 +97,9 @@ function receive(msg: ServerMsg) {
     case 'boss':
       state.boss = { ...msg, receivedAt: performance.now() };
       break;
+    case 'fees':
+      state.feesTaken = msg.taken;
+      break;
     case 'snapshot':
       applySnapshot(msg);
       break;
