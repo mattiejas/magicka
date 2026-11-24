@@ -141,13 +141,7 @@ func TestRelaxedSpotsAreOutOfReach(t *testing.T) {
 		if n.Map.ID != "mainland" {
 			continue
 		}
-		safe := true
-		for _, m := range e.w.monsters {
-			reach := wanderRange + m.Def.Aggro
-			if m.Map == n.Map && m.Def.Aggro > 0 && !m.Def.Herd && RectDist(m.home.X, m.home.Y, n.rect()) < reach {
-				safe = false
-			}
-		}
+		safe := e.w.outOfReach(n.Map, n.rect())
 		if safe {
 			quiet[n.Def.ID]++
 		}

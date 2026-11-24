@@ -185,6 +185,41 @@ func TestStrandedTraderPaysDoubleUpToALimit(t *testing.T) {
 	eq(t, len(e.w.npcs), 0)
 }
 
+func TestTraderSpawnsOutOfReach(t *testing.T) {
+	e := setup(t)
+	m := content.MapByID[encounterMap]
+	var besideGolem []Point
+	raw := 0
+	for y, row := range m.Rows {
+		for x := range row {
+			if row[x] != dirt || !m.Walkable(x, y) || !m.Walkable(x+1, y) || e.w.inTown(m, x, y) {
+				continue
+			}
+			raw++
+			for _, mon := range e.w.monsters {
+				if mon.Def.ID != "golem" {
+					continue
+				}
+				if RectDist(mon.home.X, mon.home.Y, tile(x, y)) < wanderRange+mon.Def.Aggro {
+					besideGolem = append(besideGolem, Point{X: x, Y: y})
+					break
+				}
+			}
+		}
+	}
+	check(t, len(besideGolem) > 0, "expected road tiles next to golems")
+	spots := e.w.traderSpots()
+	check(t, len(spots) > 0 && len(spots) < raw, len(spots), raw)
+	for _, at := range besideGolem {
+		for _, s := range spots {
+			check(t, s.X != at.X || s.Y != at.Y, "road beside golem", at.X, at.Y)
+		}
+	}
+	for _, s := range spots {
+		check(t, e.w.outOfReach(m, tile(s.X, s.Y)), s.X, s.Y)
+	}
+}
+
 func TestStampedeCrossesAndIsGone(t *testing.T) {
 	e := setup(t)
 	herd := func() (out []*Monster) {

@@ -54,14 +54,7 @@ func (w *World) startTrader() {
 		}
 	}
 	slices.Sort(wanted) // maps have no order
-	var spots []Point
-	for y, row := range m.Rows {
-		for x := range row {
-			if row[x] == dirt && m.Walkable(x, y) && m.Walkable(x+1, y) && !w.inTown(m, x, y) {
-				spots = append(spots, Point{X: x, Y: y})
-			}
-		}
-	}
+	spots := w.traderSpots()
 	at := spots[randomInt(w.rnd, len(spots))]
 	w.addNPC(&NPC{
 		Kind:  npcTrader,
@@ -72,6 +65,33 @@ func (w *World) startTrader() {
 		wants: wanted[randomInt(w.rnd, len(wanted))],
 		sold:  map[uint32]int{},
 	})
+}
+
+// traderSpots are mainland road tiles out of aggressive monsters' reach, as big rocks are.
+func (w *World) traderSpots() []Point {
+	m := content.MapByID[encounterMap]
+	var spots []Point
+	for y, row := range m.Rows {
+		for x := range row {
+			if row[x] == dirt && m.Walkable(x, y) && m.Walkable(x+1, y) && !w.inTown(m, x, y) && w.outOfReach(m, tile(x, y)) {
+				spots = append(spots, Point{X: x, Y: y})
+			}
+		}
+	}
+	return spots
+}
+
+// outOfReach is true when no aggressive monster can wander into aggro of r, as for big rocks.
+func (w *World) outOfReach(mp *content.Map, r Rect) bool {
+	for _, m := range w.monsters {
+		if m.Map != mp || m.Def.Aggro == 0 || m.Def.Herd {
+			continue
+		}
+		if RectDist(m.home.X, m.home.Y, r) < wanderRange+m.Def.Aggro {
+			return false
+		}
+	}
+	return true
 }
 
 // addHerd prepares the animals of stampedes, which wait out of sight.
