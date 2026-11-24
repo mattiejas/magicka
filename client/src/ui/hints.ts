@@ -1,5 +1,5 @@
 // Suggestions for what to do next, shown to newer players.
-import { type SelfState, xpForLevel } from '@magicka/shared';
+import { type SelfState, xpForLevel } from '@driftwake/shared';
 import { myTrack, state } from '../net/state';
 import { byId } from './dom';
 

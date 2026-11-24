@@ -1,5 +1,5 @@
 // Things lying on the ground: dropped items and graves.
-import { ITEMS } from '@magicka/shared';
+import { ITEMS } from '@driftwake/shared';
 import * as THREE from 'three';
 import { ball, blob, cyl, gem, lathe, merge, part, plate, rbox, shade, torus } from '../geo';
 import { heldGeo, isHeld } from './held';

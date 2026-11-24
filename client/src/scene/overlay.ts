@@ -1,5 +1,5 @@
 // Text drawn over the world: names, health bars and damage numbers.
-import { type Entity, MONSTERS, type TilePos } from '@magicka/shared';
+import { type Entity, MONSTERS, type TilePos } from '@driftwake/shared';
 import { centreOf, state } from '../net/state';
 
 export type Project = (x: number, z: number, height: number) => { x: number; y: number; visible: boolean };

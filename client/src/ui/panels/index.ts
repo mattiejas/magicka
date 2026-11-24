@@ -1,5 +1,5 @@
 // The panel on the left: one station's window, or the hair picker.
-import { MAPS, type SelfState, type StationType } from '@magicka/shared';
+import { MAPS, type SelfState, type StationType } from '@driftwake/shared';
 import { myTrack, state } from '../../net/state';
 import { button, byId, h, uiRoot } from '../dom';
 import { hideTooltip } from '../popups';

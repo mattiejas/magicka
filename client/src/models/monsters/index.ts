@@ -1,4 +1,4 @@
-import { MONSTERS, type MonsterDef } from '@magicka/shared';
+import { MONSTERS, type MonsterDef } from '@driftwake/shared';
 import * as THREE from 'three';
 import type { Model } from '../model';
 import { beast } from './beast';

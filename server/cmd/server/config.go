@@ -22,15 +22,15 @@ const devBossPeriod = 2 * time.Minute
 func loadConfig() (config, error) {
 	c := config{
 		port:        env("PORT", "3000"),
-		dbPath:      env("DB_PATH", "magicka.db"),
+		dbPath:      env("DB_PATH", "driftwake.db"),
 		clientDir:   env("CLIENT_DIR", "client/dist"),
 		prod:        os.Getenv("NODE_ENV") == "production",
-		dev:         os.Getenv("MAGICKA_DEV") == "1",
+		dev:         os.Getenv("DRIFTWAKE_DEV") == "1",
 		logMessages: os.Getenv("LOG_MESSAGES") == "1",
 		tickStats:   os.Getenv("TICK_STATS") != "",
 	}
 	if c.prod && c.dev {
-		return c, errors.New("MAGICKA_DEV must not be set in production.")
+		return c, errors.New("DRIFTWAKE_DEV must not be set in production.")
 	}
 	c.logMessages = c.logMessages && c.dev
 	if list := os.Getenv("ALLOWED_ORIGINS"); list != "" {

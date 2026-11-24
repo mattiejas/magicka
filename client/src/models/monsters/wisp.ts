@@ -1,5 +1,5 @@
 // Wisps: floating spirits with trailing tentacles and orbiting shards.
-import type { MonsterDef } from '@magicka/shared';
+import type { MonsterDef } from '@driftwake/shared';
 import { ball, gem, lathe, merge, part, shade, taper, torus } from '../../geo';
 import { pivot, ring } from '../model';
 import type { MonsterShape } from './shape';

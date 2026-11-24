@@ -1,6 +1,6 @@
 // Game content, loaded from the generated data files. Edit content/src and run `npm run content`.
 import data from '../../content/data/content.json';
-export const GAME_NAME = 'Magicka'; // working title; rename here before any public launch
+export const GAME_NAME = 'Driftwake'; // working title; rename here before any public launch
 export const SKILLS = [
   'mining',
   'smithing',

@@ -1,5 +1,5 @@
 // Crabs: a domed shell with barnacles, stalked eyes and two heavy claws.
-import type { MonsterDef } from '@magicka/shared';
+import type { MonsterDef } from '@driftwake/shared';
 import { ball, blob, lathe, merge, part, shade, taper } from '../../geo';
 import { type Geometry, pivot, ring, SIDES } from '../model';
 import type { MonsterShape } from './shape';

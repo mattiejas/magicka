@@ -27,7 +27,7 @@ func boot(t *testing.T, db string) func() {
 	}
 	c := exec.Command(bin)
 	c.Env = append(os.Environ(),
-		"MAGICKA_DEV=", "NODE_ENV=production", "PORT=3998", "DB_PATH="+db, "CLIENT_DIR=../../client/dist")
+		"DRIFTWAKE_DEV=", "NODE_ENV=production", "PORT=3998", "DB_PATH="+db, "CLIENT_DIR=../../client/dist")
 	if err := c.Start(); err != nil {
 		t.Fatal(err)
 	}

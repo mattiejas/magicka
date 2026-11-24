@@ -8,7 +8,7 @@ import {
   NODES,
   type SelfState,
   type StationType,
-} from '@magicka/shared';
+} from '@driftwake/shared';
 import * as THREE from 'three';
 import { MAT } from '../geo';
 import { boatGeo, nodeGeo, stationGeo } from '../models';

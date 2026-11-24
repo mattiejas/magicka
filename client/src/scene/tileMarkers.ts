@@ -1,5 +1,5 @@
 // Outlined squares on the ground: the hovered tile, the destination, and the tile the server has you on.
-import type { TilePos } from '@magicka/shared';
+import type { TilePos } from '@driftwake/shared';
 import * as THREE from 'three';
 
 export class TileMarker {

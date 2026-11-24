@@ -58,7 +58,7 @@ Terms are defined in [GLOSSARY.md](../GLOSSARY.md). Numbers are starting points 
 
 Each step ends playable, tested and committed.
 
-1. Bosses, drop rates, ship's wheel, rename to Driftwake
+1. ~~Bosses, drop rates, ship's wheel, rename to Driftwake~~ done
 2. Coins, shops, worn tools, chickens, death fees, reaper total
 3. Skilling pace and methods, idle logout
 4. Trading, trophies, safety tools

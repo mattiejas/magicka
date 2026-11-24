@@ -1,5 +1,5 @@
 // Player characters: a sculpted body with equipment layered on top.
-import { defaultLook, type Item, type Look } from '@magicka/shared';
+import { defaultLook, type Item, type Look } from '@driftwake/shared';
 import * as THREE from 'three';
 import { merge } from '../../geo';
 import { heldGeo } from '../held';

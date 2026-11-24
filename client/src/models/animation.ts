@@ -1,5 +1,5 @@
 // Posing models. Every function sets all joints it uses, so poses never depend on the frame before.
-import { type BossView, ITEMS } from '@magicka/shared';
+import { type BossView, ITEMS } from '@driftwake/shared';
 import type * as THREE from 'three';
 import { heldGeo } from './held';
 import { type Model, mesh, TAU } from './model';

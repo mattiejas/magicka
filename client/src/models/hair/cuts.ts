@@ -1,5 +1,5 @@
 // The four haircuts. Each adds locks to a Style; coordinates are in head space (see skull.ts).
-import { HAIRCUTS } from '@magicka/shared';
+import { HAIRCUTS } from '@driftwake/shared';
 import { blob, part, shade, type V3 } from '../../geo';
 import type { Geometry } from '../model';
 import { lock } from './lock';

@@ -1,5 +1,5 @@
 // The sign-in screen.
-import { GAME_NAME } from '@magicka/shared';
+import { GAME_NAME } from '@driftwake/shared';
 import { connect } from '../net/connection';
 import { button, byId, h, uiRoot } from './dom';
 

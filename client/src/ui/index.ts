@@ -1,5 +1,5 @@
 // The interface: lays out the panels and keeps them in step with the server's messages.
-import type { ServerMsg } from '@magicka/shared';
+import type { ServerMsg } from '@driftwake/shared';
 import { hasSession, onClosed, onMessage, resume } from '../net/connection';
 import { updateBosses } from './bosses';
 import { chatBox, showChat, showInfo } from './chat';

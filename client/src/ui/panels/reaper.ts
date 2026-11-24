@@ -1,4 +1,4 @@
-import type { Stack } from '@magicka/shared';
+import type { Stack } from '@driftwake/shared';
 import { send } from '../../net/connection';
 import { button, h } from '../dom';
 import { itemSlot } from '../items';

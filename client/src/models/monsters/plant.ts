@@ -1,5 +1,5 @@
 // Plants: a toothed flower on a stalk.
-import type { MonsterDef } from '@magicka/shared';
+import type { MonsterDef } from '@driftwake/shared';
 import { ball, blob, cone, merge, part, shade, taper, torus } from '../../geo';
 import { pivot, ring } from '../model';
 import { eyes } from './parts';

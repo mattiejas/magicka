@@ -1,5 +1,5 @@
 // Name, health and the character's menu buttons.
-import { maxHp } from '@magicka/shared';
+import { maxHp } from '@driftwake/shared';
 import { logout } from '../net/connection';
 import { myTrack, state } from '../net/state';
 import { bar, button, byId, h, renderIfChanged } from './dom';

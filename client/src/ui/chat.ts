@@ -1,5 +1,5 @@
 // The chat box, which also shows messages from the game.
-import type { InfoKind } from '@magicka/shared';
+import type { InfoKind } from '@driftwake/shared';
 import { send } from '../net/connection';
 import { byId, h } from './dom';
 

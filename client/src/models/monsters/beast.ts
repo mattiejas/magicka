@@ -1,5 +1,5 @@
 // Four-legged animals. One body plan with per-species measurements and features.
-import type { MonsterDef } from '@magicka/shared';
+import type { MonsterDef } from '@driftwake/shared';
 import { ball, blob, capsule, cone, lathe, merge, part, plate, shade, taper } from '../../geo';
 import { type Geometry, pivot, ring, SIDES } from '../model';
 import { eyes } from './parts';

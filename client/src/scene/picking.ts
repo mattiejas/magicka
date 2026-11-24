@@ -1,5 +1,5 @@
 // Finding out what is under the mouse.
-import { type Entity, ITEMS, MONSTERS, type TilePos } from '@magicka/shared';
+import { type Entity, ITEMS, MONSTERS, type TilePos } from '@driftwake/shared';
 import * as THREE from 'three';
 import { positionOf, sizeOf, state } from '../net/state';
 

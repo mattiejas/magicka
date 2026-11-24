@@ -8,7 +8,7 @@ import {
   SLOTS,
   type Stack,
   xpForLevel,
-} from '@magicka/shared';
+} from '@driftwake/shared';
 import { send } from '../net/connection';
 import { state } from '../net/state';
 import { bar, button, h } from './dom';

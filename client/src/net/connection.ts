@@ -1,5 +1,5 @@
 // The WebSocket connection: signing in, reconnecting, and applying what the server sends to the state.
-import type { ClientMsg, Entity, ServerMsg } from '@magicka/shared';
+import type { ClientMsg, Entity, ServerMsg } from '@driftwake/shared';
 import type { Entity as PbEntity } from '../pb/driftwake/v1/game_pb';
 import { state, type Track } from './state';
 import { clientId, decode, encode, mergeEntity } from './wire';

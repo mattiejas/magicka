@@ -1,5 +1,5 @@
 // XP that pops up above the bottom of the screen, added together while it keeps coming.
-import type { Skill } from '@magicka/shared';
+import type { Skill } from '@driftwake/shared';
 import { byId, h } from './dom';
 
 const SHOWN_MS = 1800;

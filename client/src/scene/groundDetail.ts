@@ -1,5 +1,5 @@
 // Grass, flowers and pebbles scattered over a map. Decoration only.
-import { type GameMap, T } from '@magicka/shared';
+import { type GameMap, T } from '@driftwake/shared';
 import * as THREE from 'three';
 import { blob, MAT, merge, part, shade, taper } from '../geo';
 

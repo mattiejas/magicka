@@ -80,7 +80,7 @@ func startServer() func() string {
 	var output lockedBuffer
 	cmd := exec.Command("bin/server")
 	cmd.Env = append(os.Environ(),
-		"NODE_ENV=", "PORT="+port, "DB_PATH="+filepath.Join(dir, "load.db"), "MAGICKA_DEV=1", "TICK_STATS=1")
+		"NODE_ENV=", "PORT="+port, "DB_PATH="+filepath.Join(dir, "load.db"), "DRIFTWAKE_DEV=1", "TICK_STATS=1")
 	cmd.Stdout, cmd.Stderr = &output, &output
 	if err := cmd.Start(); err != nil {
 		log.Fatal(err)

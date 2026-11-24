@@ -1,4 +1,4 @@
-import { BOAT_PARTS, ITEMS, MAPS, type SelfState } from '@magicka/shared';
+import { BOAT_PARTS, ITEMS, MAPS, type SelfState } from '@driftwake/shared';
 import { send } from '../../net/connection';
 import { button, h } from '../dom';
 import { icon } from '../icons';

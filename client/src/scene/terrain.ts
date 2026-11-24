@@ -1,5 +1,5 @@
 // The ground of a map: a coarse faceted mesh, faint tile lines and the dock planks.
-import { type GameMap, T } from '@magicka/shared';
+import { type GameMap, T } from '@driftwake/shared';
 import * as THREE from 'three';
 import { MAT, merge, noise, part, rbox, shade } from '../geo';
 import { TILE_COLORS } from './palette';

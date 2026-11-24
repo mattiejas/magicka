@@ -1,5 +1,5 @@
 // Warnings on the ground before a boss attack lands. Timing follows the server's ticks, so what is seen is what hits.
-import type { BossView, TilePos } from '@magicka/shared';
+import type { BossView, TilePos } from '@driftwake/shared';
 import * as THREE from 'three';
 import { blob, MAT, merge, part, taper } from '../geo';
 

@@ -1,5 +1,5 @@
 // Authoring source for items, recipes, nodes, monsters and loot. Run `npm run content` after editing.
-export const GAME_NAME = 'Magicka'; // working title; rename here before any public launch
+export const GAME_NAME = 'Driftwake'; // working title; rename here before any public launch
 export const SKILLS = [
   'mining',
   'smithing',

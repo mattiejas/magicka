@@ -10,7 +10,7 @@ import (
 )
 
 // GameName is the working title. Keep it in step with GAME_NAME in shared/src/content.ts.
-const GameName = "Magicka"
+const GameName = "Driftwake"
 
 // Store keeps characters. Save must not block for long.
 type Store interface {

@@ -1,4 +1,4 @@
-import { HAIR_COLORS, HAIRCUTS, type Look, type SelfState } from '@magicka/shared';
+import { HAIR_COLORS, HAIRCUTS, type Look, type SelfState } from '@driftwake/shared';
 import { send } from '../../net/connection';
 import { h } from '../dom';
 import { portrait } from '../portrait';

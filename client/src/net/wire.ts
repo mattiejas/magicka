@@ -16,7 +16,7 @@ import {
   type Stack,
   type StationType,
   type TilePos,
-} from '@magicka/shared';
+} from '@driftwake/shared';
 import {
   BossState,
   ClientMessageSchema,

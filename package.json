@@ -1,5 +1,5 @@
 {
-  "name": "magicka",
+  "name": "driftwake",
   "private": true,
   "type": "module",
   "workspaces": [
@@ -15,7 +15,7 @@
     "loadtest": "go build -o bin/server ./server/cmd/server && go run ./server/cmd/loadtest",
     "content": "tsx content/build.ts",
     "proto": "buf generate",
-    "dev:server": "go build -o bin/server ./server/cmd/server && cd server && PORT=3000 MAGICKA_DEV=1 exec ../bin/server",
+    "dev:server": "go build -o bin/server ./server/cmd/server && cd server && PORT=3000 DRIFTWAKE_DEV=1 exec ../bin/server",
     "lint": "biome check . && test -z \"$(gofmt -l content server)\" && go vet ./...",
     "format": "biome check --write . && gofmt -w content server",
     "check": "npm run lint && npm run typecheck && npm test"

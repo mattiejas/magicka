@@ -1,5 +1,5 @@
 // The 3D view. Reads the state every frame and draws it.
-import { type GameEvent, MAPS, type TilePos } from '@magicka/shared';
+import { type GameEvent, MAPS, type TilePos } from '@driftwake/shared';
 import * as THREE from 'three';
 import { centreOf, isMoving, myTrack, positionOf, state } from '../net/state';
 import { CameraRig } from './cameraRig';

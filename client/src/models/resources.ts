@@ -1,5 +1,5 @@
 // Resource nodes: trees, rocks and plants, each whole and depleted.
-import { NODES, type NodeDef, WOOD_COLORS } from '@magicka/shared';
+import { NODES, type NodeDef, WOOD_COLORS } from '@driftwake/shared';
 import { ball, bend, blob, crystal, cyl, gem, lathe, merge, part, shade, taper, torus } from '../geo';
 import { type Geometry, ring } from './model';
 

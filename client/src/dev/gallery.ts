@@ -2,7 +2,7 @@
 //   set   one of the sets below
 //   t     milliseconds into the animation
 //   name  whose face and hair to show    color  hair colour    ry  how far heads are turned
-import { HAIRCUTS, MONSTERS, NODES } from '@magicka/shared';
+import { HAIRCUTS, MONSTERS, NODES } from '@driftwake/shared';
 import * as THREE from 'three';
 import {
   boatGeo,

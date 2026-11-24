@@ -1,5 +1,5 @@
 // The minimap: a pre-drawn picture of the map with moving dots on top.
-import { type Entity, type GameMap, MAPS, MONSTERS, type TilePos } from '@magicka/shared';
+import { type Entity, type GameMap, MAPS, MONSTERS, type TilePos } from '@driftwake/shared';
 import { send } from '../net/connection';
 import { myTrack, positionOf, state } from '../net/state';
 import { TILE_COLORS } from '../scene/palette';

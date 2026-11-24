@@ -1,5 +1,5 @@
 // Treants: a gnarled trunk with a face, roots, crown and two heavy limbs.
-import type { MonsterDef } from '@magicka/shared';
+import type { MonsterDef } from '@driftwake/shared';
 import { ball, blob, cone, lathe, merge, part, shade, taper } from '../../geo';
 import { type Geometry, pivot, ring } from '../model';
 import type { MonsterShape } from './shape';

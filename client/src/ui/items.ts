@@ -1,5 +1,5 @@
 // Item slots and descriptions.
-import { ITEMS, levelForXp, type Skill, type Stack } from '@magicka/shared';
+import { ITEMS, levelForXp, type Skill, type Stack } from '@driftwake/shared';
 import { state } from '../net/state';
 import { h } from './dom';
 import { icon } from './icons';

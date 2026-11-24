@@ -1,6 +1,6 @@
-# Magicka (working title)
+# Driftwake
 
-A tile-based browser MMO: skilling makes gear, gear kills bosses, and a boat takes you from the starter island to the mainland. "Magicka" is also the title of an existing commercial game, so choose another name before a public launch (`GAME_NAME` in `shared/src/content.ts`).
+A tile-based browser MMO: skilling makes gear, gear kills bosses, and a boat takes you from the starter island to the mainland. "Driftwake" is a working name that has not been checked for availability; it is set by `GAME_NAME` in `shared/src/content.ts` and `GameName` in `server/internal/game/world.go`.
 
 ## Run
 
@@ -25,7 +25,7 @@ Production, one binary and one port:
 | Variable          | Default        | Purpose                                              |
 | ----------------- | -------------- | ---------------------------------------------------- |
 | `PORT`            | 3000           | HTTP and WebSocket port                              |
-| `DB_PATH`         | `magicka.db`   | SQLite file (`npm run dev` uses `server/magicka.db`) |
+| `DB_PATH`         | `driftwake.db`   | SQLite file (`npm run dev` uses `server/driftwake.db`) |
 | `CLIENT_DIR`      | `client/dist`  | Built client                                         |
 | `ALLOWED_ORIGINS` | same host only | Comma-separated origins                              |
 
@@ -39,7 +39,7 @@ Click to walk, gather, attack, take and use. Right click for options. Arrow keys
 
 ## Dev commands
 
-Only with `MAGICKA_DEV=1` (set by `npm run dev`; refused in production): `/give item n`, `/level skill|all n`, `/tp x y`, `/map island|mainland`, `/boss`, `/heal`, `/die`. The world boss also spawns every two minutes instead of ten.
+Only with `DRIFTWAKE_DEV=1` (set by `npm run dev`; refused in production): `/give item n`, `/level skill|all n`, `/tp x y`, `/map island|mainland`, `/boss`, `/heal`, `/die`. The world boss also spawns every two minutes instead of ten.
 
 See [CONTRIBUTING.md](CONTRIBUTING.md) before changing code.
 

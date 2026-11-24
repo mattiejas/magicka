@@ -1,5 +1,5 @@
 // Everything the client knows about the world. Only connection.ts writes to it.
-import { type Entity, MONSTERS, type SelfState, TICK_MS, type TilePos } from '@magicka/shared';
+import { type Entity, MONSTERS, type SelfState, TICK_MS, type TilePos } from '@driftwake/shared';
 
 /** An entity together with the walk it is currently showing. */
 export interface Track {

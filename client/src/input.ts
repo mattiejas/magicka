@@ -1,5 +1,5 @@
 // Mouse and keyboard.
-import { MAPS, MONSTERS, NODES, type TilePos, walkable } from '@magicka/shared';
+import { MAPS, MONSTERS, NODES, type TilePos, walkable } from '@driftwake/shared';
 import { send } from './net/connection';
 import { state } from './net/state';
 import type { Pick } from './scene/picking';

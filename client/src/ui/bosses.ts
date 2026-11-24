@@ -1,5 +1,5 @@
 // The world boss timer and the health bar of a boss nearby.
-import { type Entity, MAPS, MONSTERS, TICK_MS } from '@magicka/shared';
+import { type Entity, MAPS, MONSTERS, TICK_MS } from '@driftwake/shared';
 import { state } from '../net/state';
 import { bar, byId, h, renderIfChanged } from './dom';
 

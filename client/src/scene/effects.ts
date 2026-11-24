@@ -1,5 +1,5 @@
 // Short-lived visuals: projectiles, debris from tools, and the dust of boss impacts.
-import type { Entity, GameEvent, TilePos } from '@magicka/shared';
+import type { Entity, GameEvent, TilePos } from '@driftwake/shared';
 import * as THREE from 'three';
 import { STRIKE_AT, workCycleMs } from '../models';
 

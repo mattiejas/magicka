@@ -1,5 +1,5 @@
 // Models of players, monsters, dropped items and graves, kept in step with the state.
-import { type Entity, MONSTERS } from '@magicka/shared';
+import { type Entity, MONSTERS } from '@driftwake/shared';
 import type * as THREE from 'three';
 import {
   dropModel,

@@ -1,4 +1,4 @@
-import { ITEMS, RECIPES, type Recipe, type Station } from '@magicka/shared';
+import { ITEMS, RECIPES, type Recipe, type Station } from '@driftwake/shared';
 import { send } from '../../net/connection';
 import { button, h } from '../dom';
 import { icon } from '../icons';

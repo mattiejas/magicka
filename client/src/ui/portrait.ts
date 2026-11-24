@@ -1,5 +1,5 @@
 // Head-and-shoulders pictures for the hair picker, drawn once each by a small renderer of their own.
-import type { Look } from '@magicka/shared';
+import type { Look } from '@driftwake/shared';
 import * as THREE from 'three';
 import { playerModel, posePlayer } from '../models';
 

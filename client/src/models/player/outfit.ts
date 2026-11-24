@@ -1,5 +1,5 @@
 // What a player looks like and wears.
-import { HAIR_COLORS, ITEMS, type Item, type Look, nameHash } from '@magicka/shared';
+import { HAIR_COLORS, ITEMS, type Item, type Look, nameHash } from '@driftwake/shared';
 
 const SKIN_COLORS = ['#f5cbaa', '#e6b18a', '#b98260', '#865d46'];
 const CLOTH_COLORS = ['#c9c6c2', '#8fa3b5', '#b3a486', '#9aa88a', '#a893a5'];

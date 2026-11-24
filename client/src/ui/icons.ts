@@ -1,4 +1,4 @@
-import { ITEMS } from '@magicka/shared';
+import { ITEMS } from '@driftwake/shared';
 
 const P: Record<string, string> = {
   pickaxe:

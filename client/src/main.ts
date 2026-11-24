@@ -1,4 +1,4 @@
-import { GAME_NAME } from '@magicka/shared';
+import { GAME_NAME } from '@driftwake/shared';
 import { bindInput } from './input';
 import { onMessage } from './net/connection';
 import { state } from './net/state';

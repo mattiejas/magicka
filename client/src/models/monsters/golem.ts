@@ -1,5 +1,5 @@
 // Golems: piled boulders with moss.
-import type { MonsterDef } from '@magicka/shared';
+import type { MonsterDef } from '@driftwake/shared';
 import { blob, merge, part, rbox, shade, type V3 } from '../../geo';
 import { pivot } from '../model';
 import { eyes } from './parts';
