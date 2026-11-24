@@ -6,6 +6,9 @@ func (w *World) Step() {
 	defer w.mu.Unlock()
 	w.Tick++
 	w.handleQueue()
+	for _, g := range w.glows {
+		w.moveGlow(g)
+	}
 	for _, p := range w.order {
 		w.actPlayer(p)
 	}
@@ -20,6 +23,7 @@ func (w *World) Step() {
 	if w.Tick%regenInterval == 0 {
 		w.regenerate()
 	}
+	w.logOutIdle()
 	w.removeGone()
 	if w.Tick%saveInterval == 0 {
 		for _, p := range w.order {
@@ -34,6 +38,7 @@ func (w *World) handleQueue() {
 	w.queue = nil
 	for _, i := range queue {
 		if p := w.players[i.id]; p != nil {
+			p.lastInput = w.Tick
 			w.handle(p, i.m)
 		}
 	}

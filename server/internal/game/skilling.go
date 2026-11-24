@@ -23,17 +23,23 @@ func (w *World) gather(p *Player, n *Node) {
 		p.tool = toolID(d.Tool, tier)
 	}
 	p.doing = gatherAction[d.Kind]
-	if !w.workReady(p) || w.rnd() > GatherChance(p.gatherLevel(d), d.Level, tier) {
+	xp := d.XP
+	if w.offersGlow(p, n) {
+		if !w.strikeGlow(p, n) {
+			return
+		}
+		xp *= content.Methods.GlowBonus
+	} else if !w.workReady(p, d.Interval) || w.rnd() > GatherChance(p.gatherLevel(d), d.Difficulty, tier) {
 		return
 	}
 	p.give(d.Item, 1)
 	if d.Skill != "" {
-		w.addXP(p, d.Skill, d.XP)
+		w.addXP(p, d.Skill, xp)
 	}
 	if d.HasGems() && w.rnd() < gemChance {
 		p.give(fmt.Sprintf("gem_%d", d.Tier), 1)
 	}
-	if w.rnd() < d.Deplete {
+	if !n.isGlowing(w.Tick) && w.rnd() < d.Deplete {
 		n.depletedUntil = w.Tick + Ticks(d.Respawn)
 		w.stop(p)
 	}
@@ -81,13 +87,13 @@ func toolID(tool string, tier int) string {
 	return content.Metals[tier] + "_" + tool
 }
 
-// workReady paces work at one attempt every three ticks; the first attempt waits too.
-func (w *World) workReady(p *Player) bool {
+// workReady paces work at one attempt per interval; the first attempt waits too.
+func (w *World) workReady(p *Player, interval int) bool {
 	if p.nextAct > w.Tick {
 		return false
 	}
 	started := p.nextAct >= w.Tick-1
-	p.nextAct = w.Tick + workInterval
+	p.nextAct = w.Tick + interval
 	return started
 }
 
@@ -109,7 +115,7 @@ func (w *World) craft(p *Player) {
 		}
 	}
 	p.doing = working
-	if !w.workReady(p) {
+	if !w.workReady(p, craftInterval) {
 		return
 	}
 	before := copyStacks(p.C.Inv)

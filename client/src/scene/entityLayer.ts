@@ -172,8 +172,7 @@ function targetAngle(entity: Entity, position: THREE.Vector3, world: WorldView):
 function targetCentre(id: string, world: WorldView): [number, number] | null {
   const track = state.entities.get(id);
   if (track && track.entity.kind !== 'node') return centreOf(track);
-  const corner = world.positionOf(id);
-  return corner && [corner.x + 0.5, corner.z + 0.5];
+  return world.centreOf(id);
 }
 
 function turnTowards(from: number, to: number, dt: number): number {

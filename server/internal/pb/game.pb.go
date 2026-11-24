@@ -2133,15 +2133,17 @@ type Entity struct {
 	Hp    *uint32  `protobuf:"varint,8,opt,name=hp,proto3,oneof" json:"hp,omitempty"`
 	MaxHp *uint32  `protobuf:"varint,9,opt,name=max_hp,json=maxHp,proto3,oneof" json:"max_hp,omitempty"`
 	// An empty text or zero target means "none".
-	Act           *string   `protobuf:"bytes,10,opt,name=act,proto3,oneof" json:"act,omitempty"`
-	Target        *uint32   `protobuf:"varint,11,opt,name=target,proto3,oneof" json:"target,omitempty"`
-	Tool          *string   `protobuf:"bytes,12,opt,name=tool,proto3,oneof" json:"tool,omitempty"`
-	Gear          *Gear     `protobuf:"bytes,13,opt,name=gear,proto3" json:"gear,omitempty"`
-	Look          *Look     `protobuf:"bytes,14,opt,name=look,proto3" json:"look,omitempty"`
-	Level         *uint32   `protobuf:"varint,15,opt,name=level,proto3,oneof" json:"level,omitempty"`
-	Rooted        *bool     `protobuf:"varint,16,opt,name=rooted,proto3,oneof" json:"rooted,omitempty"`
-	Qty           *uint32   `protobuf:"varint,17,opt,name=qty,proto3,oneof" json:"qty,omitempty"`
-	Boss          *BossView `protobuf:"bytes,18,opt,name=boss,proto3" json:"boss,omitempty"`
+	Act    *string   `protobuf:"bytes,10,opt,name=act,proto3,oneof" json:"act,omitempty"`
+	Target *uint32   `protobuf:"varint,11,opt,name=target,proto3,oneof" json:"target,omitempty"`
+	Tool   *string   `protobuf:"bytes,12,opt,name=tool,proto3,oneof" json:"tool,omitempty"`
+	Gear   *Gear     `protobuf:"bytes,13,opt,name=gear,proto3" json:"gear,omitempty"`
+	Look   *Look     `protobuf:"bytes,14,opt,name=look,proto3" json:"look,omitempty"`
+	Level  *uint32   `protobuf:"varint,15,opt,name=level,proto3,oneof" json:"level,omitempty"`
+	Rooted *bool     `protobuf:"varint,16,opt,name=rooted,proto3,oneof" json:"rooted,omitempty"`
+	Qty    *uint32   `protobuf:"varint,17,opt,name=qty,proto3,oneof" json:"qty,omitempty"`
+	Boss   *BossView `protobuf:"bytes,18,opt,name=boss,proto3" json:"boss,omitempty"`
+	// Nodes are only reported while they are depleted or glowing.
+	Glowing       *bool `protobuf:"varint,19,opt,name=glowing,proto3,oneof" json:"glowing,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -2300,6 +2302,13 @@ func (x *Entity) GetBoss() *BossView {
 		return x.Boss
 	}
 	return nil
+}
+
+func (x *Entity) GetGlowing() bool {
+	if x != nil && x.Glowing != nil {
+		return *x.Glowing
+	}
+	return false
 }
 
 type Gear struct {
@@ -2811,7 +2820,7 @@ const file_driftwake_v1_game_proto_rawDesc = "" +
 	"\x05reset\x18\x03 \x01(\bR\x05reset\x120\n" +
 	"\bentities\x18\x04 \x03(\v2\x14.driftwake.v1.EntityR\bentities\x12\x12\n" +
 	"\x04gone\x18\x05 \x03(\rR\x04gone\x12+\n" +
-	"\x06events\x18\x06 \x03(\v2\x13.driftwake.v1.EventR\x06events\"\xc8\x04\n" +
+	"\x06events\x18\x06 \x03(\v2\x13.driftwake.v1.EventR\x06events\"\xf3\x04\n" +
 	"\x06Entity\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\rR\x02id\x12\x12\n" +
 	"\x04full\x18\x02 \x01(\bR\x04full\x12\x11\n" +
@@ -2832,7 +2841,8 @@ const file_driftwake_v1_game_proto_rawDesc = "" +
 	"\x06rooted\x18\x10 \x01(\bH\n" +
 	"R\x06rooted\x88\x01\x01\x12\x15\n" +
 	"\x03qty\x18\x11 \x01(\rH\vR\x03qty\x88\x01\x01\x12*\n" +
-	"\x04boss\x18\x12 \x01(\v2\x16.driftwake.v1.BossViewR\x04bossB\x04\n" +
+	"\x04boss\x18\x12 \x01(\v2\x16.driftwake.v1.BossViewR\x04boss\x12\x1d\n" +
+	"\aglowing\x18\x13 \x01(\bH\fR\aglowing\x88\x01\x01B\x04\n" +
 	"\x02_xB\x04\n" +
 	"\x02_yB\a\n" +
 	"\x05_nameB\a\n" +
@@ -2844,7 +2854,9 @@ const file_driftwake_v1_game_proto_rawDesc = "" +
 	"\x05_toolB\b\n" +
 	"\x06_levelB\t\n" +
 	"\a_rootedB\x06\n" +
-	"\x04_qty\"Z\n" +
+	"\x04_qtyB\n" +
+	"\n" +
+	"\b_glowing\"Z\n" +
 	"\x04Gear\x12\x16\n" +
 	"\x06weapon\x18\x01 \x01(\tR\x06weapon\x12\x12\n" +
 	"\x04head\x18\x02 \x01(\tR\x04head\x12\x12\n" +

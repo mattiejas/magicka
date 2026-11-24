@@ -2,7 +2,8 @@ import type { Style } from './content';
 export const TICK_MS = 600;
 export const MAX_LEVEL = 50;
 export const ticks = (seconds: number) => Math.ceil((seconds * 1000) / TICK_MS);
-export const xpForLevel = (n: number) => Math.floor(25 * (n - 1) ** 2.2);
+/** Paced by TestPace: about 15 hours to level 50 with intense methods. */
+export const xpForLevel = (n: number) => Math.floor(60 * (n - 1) + 1.4 * (n - 1) ** 3.6);
 export function levelForXp(xp: number): number {
   let n = 1;
   while (n < MAX_LEVEL && xp >= xpForLevel(n + 1)) n++;

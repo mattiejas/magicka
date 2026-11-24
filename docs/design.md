@@ -60,7 +60,7 @@ Each step ends playable, tested and committed.
 
 1. ~~Bosses, drop rates, ship's wheel, rename to Driftwake~~ done
 2. ~~Coins, shops, worn tools, chickens, death fees, reaper total~~ done
-3. Skilling pace and methods, idle logout
+3. ~~Skilling pace and methods, idle logout~~ done
 4. Trading, trophies, safety tools
 5. Stranded, encounters and genie, mine dungeon
 6. Collection log, then the market board
@@ -72,4 +72,8 @@ Existing characters are kept until one restart at the public launch.
 - Claiming an uncollected unique from the reaper is free, since it was never lost by dying. It waits forever.
 - Mini bosses regenerate at the same rate as world bosses, and their scaling follows the same rule. Their unique stays at 1 in 12 until trading arrives.
 - The death fee counts shop value at the time of collecting, rounded up, at least 1 coin per stack. Coins themselves count at face value.
+- Trees glow like rocks do, so that woodcutting has an intense method too. A glowing node gives everyone one sure strike at 1.5 times the XP, lasts about seven seconds, and needs a group of at least four.
+- Danger at higher tiers means aggressive monsters beside the mithril, cobalt and adamantite rocks. Big rocks, and a few trees of every tier, stand out of their reach.
+- Combat skills follow the same XP table, at about 14 hours to level 50 with a sword. Characters from before keep their levels.
+- The pace is measured with bots that bank what they gather (`pace_test.go`): 13 to 17 hours intense, 35 to 36 relaxed.
 - The big rock also exists for essence; there is no relaxed or intense variant of smithing and crafting yet.

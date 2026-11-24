@@ -18,7 +18,7 @@ type fields struct {
 	gear                        [4]string
 	look                        Look
 	rooted                      bool
-	boss                        bool
+	boss, glowing               bool
 	bossSt                      pb.BossState
 	bossStart                   int
 }
@@ -85,6 +85,10 @@ func (v *view) fullBytes() []byte {
 			if v.boss != nil {
 				e.Boss = v.bossView()
 			}
+		case kindNode:
+			if f.glowing {
+				e.Glowing = &f.glowing
+			}
 		case kindDrop:
 			e.Type, e.Qty = &f.typ, u32(f.qty)
 		}
@@ -136,6 +140,9 @@ func (v *view) diff(o *fields) {
 	if f.rooted != o.rooted {
 		e.Rooted = &f.rooted
 	}
+	if f.glowing != o.glowing {
+		e.Glowing = &f.glowing
+	}
 	if v.boss != nil && (f.bossSt != o.bossSt || f.bossStart != o.bossStart) {
 		e.Boss = v.bossView()
 	}
@@ -153,8 +160,8 @@ func (w *World) views() (out []*view) {
 		}
 	}
 	for _, n := range w.nodes {
-		if n.depletedUntil > w.Tick {
-			out = append(out, &view{id: n.ID, m: n.Map, f: fields{x: n.X, y: n.Y}})
+		if glowing := n.isGlowing(w.Tick); glowing || n.depletedUntil > w.Tick {
+			out = append(out, &view{id: n.ID, m: n.Map, f: fields{x: n.X, y: n.Y, glowing: glowing}})
 		}
 	}
 	for _, d := range w.drops {

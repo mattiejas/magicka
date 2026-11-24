@@ -11,6 +11,7 @@ Use the words in [GLOSSARY.md](GLOSSARY.md). What the game should become is in [
 | An item, recipe, monster, loot or map | `content/src` | `npm run content` |
 | A message between browser and server | `proto/driftwake/v1/game.proto` | `npm run proto`, then `client/src/net/wire.ts` and `server/internal/game/validate.go` |
 | A number that shapes play | `server/internal/game/rules.go` or `formulas.go` | |
+| How fast skills level | `server/internal/game/pace_test.go` measures it; change `XPForLevel` or the nodes | `go test ./server/internal/game -run Pace -v` |
 | A formula the browser also shows | `formulas.go` and `shared/src/formulas.ts` | add a case in `content/build.ts`, `npm run content` |
 | What players can do | `server/internal/game/intents.go`, then `actions.go` | |
 | A boss attack | `content/src/items.ts`, `server/internal/game/bosses.go`, `client/src/scene/telegraphs.ts` | |

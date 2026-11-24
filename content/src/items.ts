@@ -448,10 +448,35 @@ export interface NodeDef {
   xp: number;
   item: string;
   tool?: 'pickaxe' | 'axe';
+  /** Skill level that counts as a beginner's, which decides how often an attempt succeeds. */
+  difficulty: number;
+  /** Ticks between attempts. */
+  interval: number;
   respawn: number;
+  /** Chance to run out with every item. */
   deplete: number;
+  /** Width in tiles. */
+  size: number;
+  /** Whether one of a group of these glows at times. */
+  glows: boolean;
   color: string;
 }
+/** Methods beyond the basic one. */
+export const METHODS = {
+  /** Skill level from which they work. */
+  level: 15,
+  /** How long one node of a group glows. */
+  glowTicks: 12,
+  /** Experience of the first strike on a glowing node, as a multiple of the usual. */
+  glowBonus: 1.5,
+  /** Fewer than this many nodes together do not glow. */
+  glowGroup: 4,
+};
+const WORK_INTERVAL = 3;
+const BIG_ROCK_INTERVAL = WORK_INTERVAL * 3;
+/** Higher trees give more logs before they fall, and take longer for each. */
+const LOGS_PER_TREE = [0, 4, 6, 8, 11, 15];
+const CHOP_INTERVALS = [0, 3, 6, 9, 11, 12];
 export const NODES: Record<string, NodeDef> = {};
 for (let t = 1; t <= 5; t++) {
   NODES[`rock_${t}`] = {
@@ -461,11 +486,15 @@ for (let t = 1; t <= 5; t++) {
     tier: t,
     skill: 'mining',
     level: TIER_LEVEL[t],
+    difficulty: TIER_LEVEL[t],
     xp: TIER_XP[t],
     item: `${METALS[t]}_ore`,
     tool: 'pickaxe',
+    interval: WORK_INTERVAL,
     respawn: 4 + t * 4,
     deplete: 0.5,
+    size: 1,
+    glows: true,
     color: METAL_COLORS[t],
   };
   NODES[`tree_${t}`] = {
@@ -475,11 +504,15 @@ for (let t = 1; t <= 5; t++) {
     tier: t,
     skill: 'woodcutting',
     level: TIER_LEVEL[t],
+    difficulty: TIER_LEVEL[t],
     xp: TIER_XP[t],
     item: `${WOODS[t]}_log`,
     tool: 'axe',
+    interval: CHOP_INTERVALS[t],
     respawn: 6 + t * 5,
-    deplete: 0.25,
+    deplete: 1 / LOGS_PER_TREE[t],
+    size: 1,
+    glows: true,
     color: WOOD_COLORS[t],
   };
   NODES[`plant_${t}`] = {
@@ -489,10 +522,14 @@ for (let t = 1; t <= 5; t++) {
     tier: t,
     skill: 'crafting',
     level: TIER_LEVEL[t],
+    difficulty: TIER_LEVEL[t],
     xp: TIER_XP[t] * 0.4,
     item: `fibre_${t}`,
+    interval: WORK_INTERVAL,
     respawn: 6 + t * 3,
     deplete: 0.6,
+    size: 1,
+    glows: false,
     color: FIBRE_COLORS[t],
   };
 }
@@ -503,11 +540,15 @@ NODES.essence_rock = {
   tier: 1,
   skill: 'mining',
   level: 1,
+  difficulty: 1,
   xp: 15,
   item: 'essence',
   tool: 'pickaxe',
+  interval: WORK_INTERVAL,
   respawn: 8,
   deplete: 0.1,
+  size: 1,
+  glows: false,
   color: '#8fb8d8',
 };
 NODES.berry_bush = {
@@ -517,12 +558,31 @@ NODES.berry_bush = {
   tier: 1,
   skill: null,
   level: 1,
+  difficulty: 1,
   xp: 0,
   item: 'berries',
+  interval: WORK_INTERVAL,
   respawn: 12,
   deplete: 0.4,
+  size: 1,
+  glows: false,
   color: '#a8485e',
 };
+/** Slow, but never runs out. */
+function addBigRock(id: string, of: NodeDef) {
+  NODES[id] = {
+    ...of,
+    id,
+    name: `Big ${of.name.toLowerCase()}`,
+    level: Math.max(METHODS.level, of.level),
+    interval: BIG_ROCK_INTERVAL,
+    deplete: 0,
+    size: 2,
+    glows: false,
+  };
+}
+for (let t = 1; t <= 5; t++) addBigRock(`big_rock_${t}`, NODES[`rock_${t}`]);
+addBigRock('big_essence_rock', NODES.essence_rock);
 
 // Loot: every guaranteed entry, plus one weighted common, plus independent rare and unique chances.
 export interface LootTable {
@@ -687,7 +747,7 @@ mon({
   style: 'melee',
   level: 26,
   hp: 85,
-  aggro: 0,
+  aggro: 3,
   color: '#85827a',
   shape: 'golem',
   loot: {

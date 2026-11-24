@@ -1,5 +1,5 @@
 // The 3D view. Reads the state every frame and draws it.
-import { type GameEvent, MAPS, type TilePos } from '@driftwake/shared';
+import { type Entity, type GameEvent, MAPS, type TilePos } from '@driftwake/shared';
 import * as THREE from 'three';
 import { centreOf, isMoving, myTrack, positionOf, state } from '../net/state';
 import { CameraRig } from './cameraRig';
@@ -88,7 +88,7 @@ export class Scene {
   private update(dt: number, now: number) {
     const self = state.self!;
     const world = this.worldFor(self.map);
-    world.update(now, depletedNodes(), self);
+    world.update(now, reportedNodes(), self, myTrack()?.entity);
     this.entities.update(world, now, dt);
     this.followPlayer(dt);
     this.effects.update(now);
@@ -135,10 +135,8 @@ export class Scene {
   }
 }
 
-function depletedNodes(): Set<string> {
-  const ids = new Set<string>();
-  for (const { entity } of state.entities.values()) if (entity.kind === 'node') ids.add(entity.id);
-  return ids;
+function reportedNodes(): Entity[] {
+  return [...state.entities.values()].flatMap(({ entity }) => (entity.kind === 'node' ? [entity] : []));
 }
 
 function createRenderer(canvas: HTMLCanvasElement): THREE.WebGLRenderer {

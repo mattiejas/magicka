@@ -62,8 +62,9 @@ func (w *World) damageMonster(p *Player, m *Monster, damage int, style string) {
 		m.damage.set(p.ID, m.damage.get(p.ID)+amount)
 	}
 	m.HP -= amount
-	w.addXP(p, style, amount*xpPerDamage)
-	w.addXP(p, "vitality", amount*vitalityPerDamage)
+	xp := amount * (xpPerDamage + xpPerDamageLevel*float64(m.Def.Level))
+	w.addXP(p, style, xp)
+	w.addXP(p, "vitality", xp*vitalityShare)
 	if m.HP <= 0.001 { // health of scaled bosses is fractional
 		w.kill(m)
 	}

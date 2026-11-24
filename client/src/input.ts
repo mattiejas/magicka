@@ -20,8 +20,11 @@ interface Interaction {
 }
 
 function interactionWith({ kind, id, type, entity }: Pick): Interaction | null {
-  if (kind === 'node')
-    return { verb: GATHER_VERBS[NODES[type].kind], run: () => send({ type: 'gather', id }) };
+  if (kind === 'node') {
+    const glowing = state.entities.get(id)?.entity.glowing;
+    const verb = GATHER_VERBS[NODES[type].kind];
+    return { verb: glowing ? `${verb} glowing` : verb, run: () => send({ type: 'gather', id }) };
+  }
   if (kind === 'station') return { verb: 'Use', run: () => send({ type: 'station', id }) };
   switch (entity!.kind) {
     case 'monster':

@@ -66,6 +66,14 @@ export interface NodeDef {
   tool?: 'pickaxe' | 'axe';
   respawn: number;
   deplete: number;
+  /** Skill level that counts as a beginner's, which decides how often an attempt succeeds. */
+  difficulty: number;
+  /** Ticks between attempts. */
+  interval: number;
+  /** Width in tiles. */
+  size: number;
+  /** Whether one of a group of these glows at times. */
+  glows: boolean;
   color: string;
 }
 export interface LootTable {
@@ -116,6 +124,11 @@ export interface Look {
   color: number;
 }
 /** Percentages are of an item's shop value. */
+/** Methods beyond the basic one. */
+export interface Methods {
+  /** Skill level from which they work. */
+  level: number;
+}
 export interface Economy {
   shopStock: string[];
   sellPercent: number;
@@ -134,6 +147,7 @@ const d = data as unknown as {
   haircuts: { id: string; name: string }[];
   hairColors: { name: string; color: string }[];
   economy: Economy;
+  methods: Methods;
 };
 export const ITEMS = byId(d.items),
   RECIPES = d.recipes,
@@ -143,7 +157,8 @@ export const ITEMS = byId(d.items),
   METALS = d.metals,
   HAIRCUTS = d.haircuts,
   HAIR_COLORS = d.hairColors,
-  ECONOMY = d.economy;
+  ECONOMY = d.economy,
+  METHODS = d.methods;
 export const nameHash = (s: string) => {
   let h = 0;
   for (const ch of s) h = (h * 31 + ch.charCodeAt(0)) % 9973;

@@ -1,6 +1,7 @@
 // The fixed part of a map: ground, water, resource nodes, stations and the player's boat.
 import {
   BOAT_PARTS,
+  type Entity,
   type GameMap,
   type MapNode,
   type MapStation,
@@ -8,10 +9,13 @@ import {
   NODES,
   type SelfState,
   type StationType,
+  type TilePos,
 } from '@driftwake/shared';
 import * as THREE from 'three';
 import { MAT } from '../geo';
 import { boatGeo, keeperOf, nodeGeo, stationGeo } from '../models';
+import { FallingTrees } from './fallingTrees';
+import { Glows } from './glows';
 import { groundDetail } from './groundDetail';
 import { type Pick, pickBox } from './picking';
 import { terrain } from './terrain';
@@ -31,8 +35,12 @@ const WATER_LEVEL = -0.22;
 /** Water beyond the edge of the map, in tiles. */
 const WATER_MARGIN = 160;
 
+/** Trees fall in sight of the player, rather than being found already down. */
+const FALL_RANGE = 14;
+
 /** One resource node, drawn either whole or depleted. */
 interface NodeInstance {
+  node: MapNode;
   whole: THREE.InstancedMesh;
   depleted: THREE.InstancedMesh;
   index: number;
@@ -45,6 +53,8 @@ export class WorldView {
   readonly picks: Pick[] = [];
   private nodes = new Map<string, NodeInstance>();
   private water: THREE.Mesh;
+  private glows = new Glows();
+  private fallingTrees = new FallingTrees();
   private boat: THREE.Mesh | null = null;
   private boatKey = '';
 
@@ -54,25 +64,36 @@ export class WorldView {
     this.group.add(terrain(map), this.water);
     this.addNodes(random);
     for (const station of map.stations) this.addStation(station);
-    this.group.add(...groundDetail(map, random));
+    this.group.add(...groundDetail(map, random), this.glows.group, this.fallingTrees.group);
   }
 
   dispose() {
     this.group.traverse(object => (object as THREE.Mesh).geometry?.dispose());
   }
 
-  /** Where a node or station stands, in world units. */
-  positionOf(id: string): THREE.Vector3 | null {
-    return this.picks.find(pick => pick.id === id)?.box.min ?? null;
+  /** The middle of a node or station, in world units. */
+  centreOf(id: string): TilePos | null {
+    const box = this.picks.find(pick => pick.id === id)?.box;
+    return box ? [(box.min.x + box.max.x) / 2, (box.min.z + box.max.z) / 2] : null;
   }
 
   isDepleted(nodeId: string): boolean {
     return this.nodes.get(nodeId)?.isDepleted ?? false;
   }
 
-  update(now: number, depletedIds: Set<string>, self: SelfState) {
+  /** `reported` are the nodes that are depleted or glowing. */
+  update(now: number, reported: Entity[], self: SelfState, me?: Entity) {
     this.water.position.y = WATER_LEVEL + Math.sin(now / 1600) * 0.03;
-    for (const [id, node] of this.nodes) setDepleted(node, depletedIds.has(id));
+    const glowing = new Set(reported.filter(node => node.glowing).map(node => node.id));
+    const depleted = new Set(reported.filter(node => !node.glowing).map(node => node.id));
+    for (const [id, node] of this.nodes) {
+      if (depleted.has(id) && !node.isDepleted && me && isTree(node.node) && isNear(node.node, me))
+        this.fallingTrees.add(node.whole.geometry, node.placement, node.node.x - me.x, node.node.y - me.y);
+      setDepleted(node, depleted.has(id));
+    }
+    this.glows.show(glowing, id => this.nodes.get(id)!);
+    this.glows.update(now);
+    this.fallingTrees.update(now);
     this.updateBoat(self);
   }
 
@@ -89,8 +110,8 @@ export class WorldView {
         const placement = nodePlacement(node, random);
         whole.setMatrixAt(index, placement);
         depleted.setMatrixAt(index, HIDDEN);
-        this.nodes.set(node.id, { whole, depleted, index, placement, isDepleted: false });
-        const box = pickBox(node.x, node.y, 1, shape.height);
+        this.nodes.set(node.id, { node, whole, depleted, index, placement, isDepleted: false });
+        const box = pickBox(node.x, node.y, NODES[type].size, shape.height);
         this.picks.push({ kind: 'node', id: node.id, name: NODES[type].name, type, box });
       });
       this.group.add(whole, depleted);
@@ -141,12 +162,18 @@ function water(map: GameMap): THREE.Mesh {
 /** Nodes vary a little in size and direction. */
 function nodePlacement(node: MapNode, random: () => number): THREE.Matrix4 {
   const scale = 0.9 + random() * 0.25;
+  const half = NODES[node.type].size / 2;
   return new THREE.Matrix4().compose(
-    new THREE.Vector3(node.x + 0.5, 0, node.y + 0.5),
+    new THREE.Vector3(node.x + half, 0, node.y + half),
     new THREE.Quaternion().setFromAxisAngle(UP, random() * 6.28),
     new THREE.Vector3(scale, scale, scale),
   );
 }
+
+const isTree = (node: MapNode) => NODES[node.type].kind === 'tree';
+
+const isNear = (node: MapNode, me: Entity) =>
+  Math.max(Math.abs(node.x - me.x), Math.abs(node.y - me.y)) <= FALL_RANGE;
 
 function setDepleted(node: NodeInstance, isDepleted: boolean) {
   if (isDepleted === node.isDepleted) return;

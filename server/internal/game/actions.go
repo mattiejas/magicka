@@ -1,7 +1,5 @@
 package game
 
-import ()
-
 // goal is where an action takes place, and how close the player has to come.
 type goal struct {
 	at    Rect
@@ -14,7 +12,7 @@ func (w *World) goal(p *Player) (g goal, ok bool) {
 	switch a.typ {
 	case actGather:
 		if n := lookup(w.nodes, kindNode, a.id); n != nil && n.Map == m {
-			return goal{tile(n.X, n.Y), 1}, true
+			return goal{n.rect(), 1}, true
 		}
 	case actStation:
 		if s := w.station(a.id); s != nil && s.m == m {

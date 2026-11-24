@@ -52,6 +52,14 @@ _Avoid_: AFK method
 A way to train a skill that needs constant attention and gives more XP.
 _Avoid_: Active method, click-intensive
 
+**Glowing**:
+The state of one rock or tree of a group that, for a few seconds, rewards whoever strikes it with extra XP.
+_Avoid_: Shiny, active, lucky
+
+**Big rock**:
+A rock that never runs out and gives ore slowly.
+_Avoid_: Infinite rock, AFK rock
+
 ## World
 
 **Encounter**:

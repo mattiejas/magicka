@@ -1,5 +1,6 @@
 // Maps, loaded from the generated data file. Edit content/src/maps.ts and run `npm run content`.
 import data from '../../content/data/maps.json';
+import { NODES } from './content';
 export type MapId = 'island' | 'mainland';
 export const T = { WATER: 0, SAND: 1, GRASS: 2, DIRT: 3, STONE: 4, WOOD: 5 } as const;
 export type StationType = 'bank' | 'furnace' | 'anvil' | 'workbench' | 'reaper' | 'dock' | 'shop';
@@ -32,6 +33,8 @@ export interface GameMap {
   spawn: { x: number; y: number };
   landing: { x: number; y: number };
   safe: { x: number; y: number; r: number };
+  /** Whether methods beyond the basic one are found here. */
+  methods: boolean;
   labels: { name: string; x: number; y: number }[];
 }
 
@@ -49,7 +52,11 @@ function load(raw: (typeof data)[number]): GameMap {
     size = m.size,
     tiles = Uint8Array.from(rows.join(''), Number),
     blocked = tiles.map(t => (t === T.WATER ? 1 : 0));
-  for (const o of [...m.nodes, ...m.stations]) blocked[o.y * size + o.x] = 1;
+  const block = (x: number, y: number, width: number) => {
+    for (let j = 0; j < width; j++) for (let i = 0; i < width; i++) blocked[(y + j) * size + x + i] = 1;
+  };
+  for (const { x, y, type } of m.nodes) block(x, y, NODES[type].size);
+  for (const { x, y } of m.stations) block(x, y, 1);
   return { ...m, tiles, blocked } as unknown as GameMap;
 }
 export const MAPS = Object.fromEntries(data.map(m => [m.id, load(m)])) as Record<MapId, GameMap>;

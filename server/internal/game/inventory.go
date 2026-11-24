@@ -10,6 +10,7 @@ import (
 func NewChar() *Char {
 	c := &Char{
 		Map:   "island",
+		Curve: currentCurve,
 		HP:    MaxHP(1),
 		XP:    map[string]int{},
 		Inv:   make([]*Stack, content.InvSize),
@@ -47,6 +48,7 @@ func (c *Char) fill() {
 		c.Boat = n.Boat
 	}
 	c.renameItems()
+	c.updateXP()
 	if content.MapByID[c.Map] == nil {
 		c.Map, c.X, c.Y = n.Map, n.X, n.Y
 	}

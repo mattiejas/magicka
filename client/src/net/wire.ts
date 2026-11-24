@@ -160,7 +160,7 @@ export function mergeEntity(known: Entity | undefined, delta: PbEntity): Entity 
   const entity: Entity = isNew
     ? { id: clientId(delta.id), kind: KINDS[delta.id & 7], x: 0, y: 0 }
     : { ...known };
-  for (const field of ['x', 'y', 'name', 'type', 'hp', 'maxHp', 'level', 'rooted', 'qty'] as const)
+  for (const field of ['x', 'y', 'name', 'type', 'hp', 'maxHp', 'level', 'rooted', 'qty', 'glowing'] as const)
     if (delta[field] !== undefined) Object.assign(entity, { [field]: delta[field] });
   // An empty text or zero target means "none".
   if (delta.act !== undefined) entity.action = delta.act || undefined;

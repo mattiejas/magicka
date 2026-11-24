@@ -416,6 +416,7 @@
    "y": 34,
    "r": 6
   },
+  "methods": false,
   "labels": [
    {
     "name": "Camp",
@@ -1210,6 +1211,78 @@
     "type": "plant_5",
     "x": 34,
     "y": 26
+   },
+   {
+    "id": "mainland:n116",
+    "type": "big_rock_1",
+    "x": 67,
+    "y": 70
+   },
+   {
+    "id": "mainland:n117",
+    "type": "big_rock_2",
+    "x": 79,
+    "y": 60
+   },
+   {
+    "id": "mainland:n118",
+    "type": "big_rock_3",
+    "x": 84,
+    "y": 48
+   },
+   {
+    "id": "mainland:n119",
+    "type": "big_rock_4",
+    "x": 82,
+    "y": 31
+   },
+   {
+    "id": "mainland:n120",
+    "type": "big_rock_5",
+    "x": 76,
+    "y": 17
+   },
+   {
+    "id": "mainland:n121",
+    "type": "big_essence_rock",
+    "x": 69,
+    "y": 64
+   },
+   {
+    "id": "mainland:n122",
+    "type": "tree_4",
+    "x": 15,
+    "y": 27
+   },
+   {
+    "id": "mainland:n123",
+    "type": "tree_4",
+    "x": 17,
+    "y": 29
+   },
+   {
+    "id": "mainland:n124",
+    "type": "tree_4",
+    "x": 15,
+    "y": 31
+   },
+   {
+    "id": "mainland:n125",
+    "type": "tree_5",
+    "x": 18,
+    "y": 25
+   },
+   {
+    "id": "mainland:n126",
+    "type": "tree_5",
+    "x": 20,
+    "y": 23
+   },
+   {
+    "id": "mainland:n127",
+    "type": "tree_5",
+    "x": 18,
+    "y": 22
    }
   ],
   "stations": [
@@ -1446,6 +1519,36 @@
     "type": "colossus",
     "x": 47,
     "y": 19
+   },
+   {
+    "type": "golem",
+    "x": 79,
+    "y": 40
+   },
+   {
+    "type": "golem",
+    "x": 76,
+    "y": 42
+   },
+   {
+    "type": "drake",
+    "x": 71,
+    "y": 29
+   },
+   {
+    "type": "drake",
+    "x": 72,
+    "y": 33
+   },
+   {
+    "type": "seer",
+    "x": 63,
+    "y": 16
+   },
+   {
+    "type": "seer",
+    "x": 63,
+    "y": 20
    }
   ],
   "spawn": {
@@ -1461,6 +1564,7 @@
    "y": 76,
    "r": 7
   },
+  "methods": true,
   "labels": [
    {
     "name": "Landing",

@@ -9,7 +9,11 @@ const (
 
 func Ticks(seconds float64) int { return int(math.Ceil(seconds * 1000 / TickMS)) }
 
-func XPForLevel(n int) int { return int(math.Floor(25 * math.Pow(float64(n-1), 2.2))) }
+// XPForLevel is paced by TestPace: about 15 hours to level 50 with intense methods.
+func XPForLevel(n int) int {
+	steps := float64(n - 1)
+	return int(math.Floor(60*steps + 1.4*math.Pow(steps, 3.6)))
+}
 
 func MaxHP(vitality int) int { return 20 + 3*vitality }
 

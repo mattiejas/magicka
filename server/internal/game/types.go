@@ -52,6 +52,7 @@ type Char struct {
 	Y        int               `json:"y"`
 	HP       int               `json:"hp"`
 	XP       map[string]int    `json:"xp"`
+	Curve    int               `json:"xpCurve"` // the experience table XP was earned with
 	Inv      []*Stack          `json:"inv"`
 	Equip    map[string]*Stack `json:"equip"`
 	Bank     []*Stack          `json:"bank"`
@@ -102,6 +103,8 @@ type Player struct {
 	path       []Point
 	via        []Point // tiles walked this tick
 	nextAct    int     // tick of the next attempt at work
+	lastInput  int     // tick of the last message
+	lastGlow   glow    // the last one that gave its bonus
 	nextAttack int
 	rooted     int    // tick until which the player cannot walk
 	lastCombat int    // tick of the last blow given or taken
@@ -192,7 +195,12 @@ type Node struct {
 	Map           *content.Map
 	X, Y          int
 	depletedUntil int
+	glowingUntil  int
 }
+
+func (n *Node) rect() Rect { return Rect{n.X, n.Y, n.Def.Size, n.Def.Size} }
+
+func (n *Node) isGlowing(tick int) bool { return n.glowingUntil > tick }
 
 type Drop struct {
 	ID                uint32

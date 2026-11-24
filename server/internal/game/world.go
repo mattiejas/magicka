@@ -47,6 +47,7 @@ type World struct {
 	monsters []*Monster
 	nodes    []*Node
 	stations []station
+	glows    []*glowGroup
 	drops    []*Drop
 	dropSeq  int
 	occupied map[spot]*Monster
@@ -90,6 +91,7 @@ func NewWorld(store Store, rnd func() float64, dev bool, bossPeriod int) *World 
 			w.addMonster(m, s)
 		}
 	}
+	w.glows = findGlowGroups(w.nodes)
 	return w
 }
 

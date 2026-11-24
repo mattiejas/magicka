@@ -66,6 +66,8 @@ message Entity {
   // An empty text or zero target means "none".
   optional string act = 10; optional uint32 target = 11; optional string tool = 12;
   Gear gear = 13; Look look = 14; optional uint32 level = 15; optional bool rooted = 16; optional uint32 qty = 17; BossView boss = 18;
+  // Nodes are only reported while they are depleted or glowing.
+  optional bool glowing = 19;
 }
 message Gear { string weapon = 1; string head = 2; string body = 3; string legs = 4; }
 message BossView { BossState state = 1; string attack = 2; repeated uint32 tiles = 3; uint32 start = 4; uint32 end = 5; uint32 target = 6; }

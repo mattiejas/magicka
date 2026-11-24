@@ -50,11 +50,15 @@ type Recipe struct {
 type Node struct {
 	ID, Name, Kind, Skill, Item, Tool string
 	Tier, Level                       int
+	Difficulty                        int // skill level that counts as a beginner's
+	Interval                          int // ticks between attempts
+	Size                              int // width in tiles
 	XP, Respawn, Deplete              float64
+	Glows                             bool
 }
 
 // HasGems reports whether gathering sometimes turns up a gem.
-func (n *Node) HasGems() bool { return n.Kind == "rock" && n.ID != "essence_rock" }
+func (n *Node) HasGems() bool { return n.Kind == "rock" && n.Item != "essence" }
 
 // Range is an item with a random quantity.
 type Range struct {
@@ -119,6 +123,14 @@ type Economy struct {
 // Sells reports whether shops have an item in stock.
 func (e *Economy) Sells(item string) bool { return slices.Contains(e.ShopStock, item) }
 
+// MethodRules are about ways to train beyond the basic one. They work from a skill level.
+type MethodRules struct {
+	Level     int
+	GlowTicks int     // how long one node of a group glows
+	GlowBonus float64 // experience of the first strike on a glowing node, as a multiple of the usual
+	GlowGroup int     // fewer nodes than this together do not glow
+}
+
 type Part struct {
 	ID, Name, Item string
 	Qty            int
@@ -141,11 +153,20 @@ type Map struct {
 	Nodes, Stations, Spawns []Placed
 	Spawn, Landing          Point
 	Safe                    struct{ X, Y, R int }
+	Methods                 bool   // whether methods beyond the basic one are found here
 	Blocked                 []bool `json:"-"`
 }
 
 func (m *Map) Walkable(x, y int) bool {
 	return x >= 0 && y >= 0 && x < m.Size && y < m.Size && !m.Blocked[y*m.Size+x]
+}
+
+func (m *Map) block(x, y, size int) {
+	for j := range size {
+		for i := range size {
+			m.Blocked[(y+j)*m.Size+x+i] = true
+		}
+	}
 }
 
 // Station returns the map's station of a type, or nil.
@@ -167,6 +188,7 @@ var (
 	Monsters   = map[string]*Monster{}
 	BoatParts  []Part
 	Prices     Economy
+	Methods    MethodRules
 	Metals     []string
 	Haircuts   int
 	HairColors int
@@ -207,6 +229,7 @@ func init() {
 		Haircuts   []named
 		HairColors []struct{ Name string }
 		Economy    Economy
+		Methods    MethodRules
 	}
 	must(json.Unmarshal(Raw("content.json"), &d))
 	for _, i := range d.Items {
@@ -223,7 +246,7 @@ func init() {
 	for _, m := range d.Monsters {
 		Monsters[m.ID] = m
 	}
-	BoatParts, Metals, Prices = d.BoatParts, d.Metals, d.Economy
+	BoatParts, Metals, Prices, Methods = d.BoatParts, d.Metals, d.Economy, d.Methods
 	Haircuts, HairColors = len(d.Haircuts), len(d.HairColors)
 	must(json.Unmarshal(Raw("maps.json"), &Maps))
 	for _, m := range Maps {
@@ -234,10 +257,11 @@ func init() {
 				m.Blocked[y*m.Size+x] = row[x] == '0'
 			}
 		}
-		for _, l := range [][]Placed{m.Nodes, m.Stations} {
-			for _, o := range l {
-				m.Blocked[o.Y*m.Size+o.X] = true
-			}
+		for _, n := range m.Nodes {
+			m.block(n.X, n.Y, Nodes[n.Type].Size)
+		}
+		for _, s := range m.Stations {
+			m.block(s.X, s.Y, 1)
 		}
 	}
 }

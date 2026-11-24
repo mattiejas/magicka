@@ -32,6 +32,7 @@ func (w *World) Join(account int64, name string, load func() (*Char, error), con
 		w.order = append(w.order, p)
 	}
 	p.attach(conn)
+	p.lastInput = w.Tick
 	conn.Send(&pb.ServerMessage{Msg: &pb.ServerMessage_Self{Self: w.self(p)}})
 	if fresh {
 		w.info(p, "Welcome to "+GameName+". Click a copper rock or an ash tree to begin.", plain)
@@ -97,6 +98,26 @@ func (p *Player) attach(conn Conn) {
 	p.conn, p.leftAt = conn, connected
 	p.known, p.knownMap = map[uint32]int{}, ""
 	p.dirty = true
+}
+
+// logOutIdle disconnects players who have not done anything for a long time.
+func (w *World) logOutIdle() {
+	for _, p := range w.order {
+		if p.conn == nil {
+			continue
+		}
+		switch w.Tick - p.lastInput {
+		case idleWarning:
+			w.info(p, "You will be logged out in a minute unless you do something.", pb.InfoKind_INFO_KIND_BAD)
+		case idleLimit:
+			w.kick(p, "You were logged out after half an hour without doing anything.")
+		}
+	}
+}
+
+func (w *World) kick(p *Player, reason string) {
+	p.conn.Send(&pb.ServerMessage{Msg: &pb.ServerMessage_Kicked{Kicked: reason}})
+	p.conn, p.leftAt = nil, w.Tick
 }
 
 // removeGone lets disconnected players go: at once, or after a while when they were fighting.

@@ -68,6 +68,7 @@ export function build(): Record<string, string> {
       haircuts: c.HAIRCUTS,
       hairColors: c.HAIR_COLORS,
       economy: c.ECONOMY,
+      methods: c.METHODS,
     }),
     'maps.json': line(maps),
     'vectors.json': line(vectors),

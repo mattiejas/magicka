@@ -32,6 +32,8 @@ export interface GameMap {
   spawn: { x: number; y: number };
   landing: { x: number; y: number };
   safe: { x: number; y: number; r: number };
+  /** Whether methods beyond the basic one are found here. */
+  methods: boolean;
   labels: { name: string; x: number; y: number }[];
 }
 
@@ -65,6 +67,7 @@ class Builder {
       spawn: { x: c, y: c },
       landing: { x: c, y: c },
       safe: { x: c, y: c, r: 0 },
+      methods: false,
       labels: [],
     };
     for (let y = 0; y < size; y++)
@@ -138,6 +141,16 @@ class Builder {
       k++;
     }
   }
+  place(type: string, x: number, y: number) {
+    const { size } = NODES[type];
+    for (let j = 0; j < size; j++)
+      for (let i = 0; i < size; i++) {
+        const k = (y + j) * this.m.size + x + i;
+        if (!this.m.tiles[k] || this.used.has(k)) throw new Error(`${type} does not fit at ${x},${y}`);
+        this.used.add(k);
+      }
+    this.m.nodes.push({ id: `${this.m.id}:n${this.m.nodes.length}`, type, x, y });
+  }
   keep(x: number, y: number, r: number) {
     for (let j = -r; j <= r; j++) for (let i = -r; i <= r; i++) this.used.add((y + j) * this.m.size + x + i);
   }
@@ -146,7 +159,9 @@ class Builder {
     for (let i = 0; i < m.tiles.length; i++) if (m.tiles[i] === T.WATER) m.blocked[i] = 1;
     for (const n of m.nodes) {
       if (!NODES[n.type]) throw new Error(n.type);
-      m.blocked[n.y * m.size + n.x] = 1;
+      const { size } = NODES[n.type];
+      for (let j = 0; j < size; j++)
+        for (let i = 0; i < size; i++) m.blocked[(n.y + j) * m.size + n.x + i] = 1;
     }
     for (const s of m.stations) m.blocked[s.y * m.size + s.x] = 1;
     return m;
@@ -209,6 +224,7 @@ function mainland() {
   b.road(48, 40, 74, 34);
   m.spawn = { x: 48, y: 77 };
   m.landing = { x: 48, y: 86 };
+  m.methods = true;
   m.safe = { x: 48, y: 76, r: 7 };
   b.station('bank', 44, 74);
   b.station('furnace', 49, 71);
@@ -250,6 +266,35 @@ function mainland() {
   b.mobs('stag', 4, 32, 22, 4);
   b.mobs('seer', 4, 62, 24, 4);
   m.spawns.push({ type: 'colossus', x: 47, y: 19 });
+  // Relaxed methods, out of reach of anything that attacks.
+  b.place('big_rock_1', 67, 70);
+  b.place('big_rock_2', 79, 60);
+  b.place('big_rock_3', 84, 48);
+  b.place('big_rock_4', 82, 31);
+  b.place('big_rock_5', 76, 17);
+  b.place('big_essence_rock', 69, 64);
+  for (const [x, y] of [
+    [15, 27],
+    [17, 29],
+    [15, 31],
+  ])
+    b.place('tree_4', x, y);
+  for (const [x, y] of [
+    [18, 25],
+    [20, 23],
+    [18, 22],
+  ])
+    b.place('tree_5', x, y);
+  // Danger beside the glowing rocks.
+  for (const [type, x, y] of [
+    ['golem', 79, 40],
+    ['golem', 76, 42],
+    ['drake', 71, 29],
+    ['drake', 72, 33],
+    ['seer', 63, 16],
+    ['seer', 63, 20],
+  ] as const)
+    m.spawns.push({ type, x, y });
   m.labels.push(
     { name: 'Landing', x: 48, y: 76 },
     { name: 'Iron shelf', x: 76, y: 56 },

@@ -38,7 +38,7 @@ export interface BossView {
 }
 
 export type EntityKind = 'player' | 'monster' | 'node' | 'drop' | 'grave';
-/** Anything the server reports at a position. Nodes are only reported while depleted. */
+/** Anything the server reports at a position. Nodes are only reported while they are depleted or glowing. */
 export interface Entity {
   id: string;
   kind: EntityKind;
@@ -58,6 +58,7 @@ export interface Entity {
   look?: Look;
   level?: number;
   rooted?: boolean;
+  glowing?: boolean;
   tool?: string;
   qty?: number;
   boss?: BossView;

@@ -1,5 +1,5 @@
 // Suggestions for what to do next, shown to newer players.
-import { ITEMS, type SelfState, xpForLevel } from '@driftwake/shared';
+import { ITEMS, METHODS, type SelfState, xpForLevel } from '@driftwake/shared';
 import { myTrack, state } from '../net/state';
 import { byId } from './dom';
 
@@ -30,6 +30,17 @@ function isNearBoss(): boolean {
   );
 }
 
+const NEW_TO_METHODS = ['mining', 'woodcutting'] as const;
+/** Levels during which glowing nodes are explained. */
+const EXPLAIN_LEVELS = 5;
+
+function isNewToMethods({ xp }: SelfState, skill: (typeof NEW_TO_METHODS)[number]): boolean {
+  const { level } = METHODS;
+  return xp[skill] >= xpForLevel(level) && xp[skill] < xpForLevel(level + EXPLAIN_LEVELS);
+}
+
+const isGlowNear = () => [...state.entities.values()].some(({ entity }) => entity.glowing);
+
 const ANYWHERE: Hint[] = [
   {
     applies: self => self.kept.length > 0,
@@ -42,6 +53,12 @@ const ANYWHERE: Hint[] = [
   {
     applies: self => isNearBoss() && self.xp.vitality < xpForLevel(VETERAN_VITALITY),
     text: 'Marked ground is about to be hit. Step off it before the attack lands.',
+  },
+];
+const ON_THE_MAINLAND: Hint[] = [
+  {
+    applies: self => isGlowNear() && NEW_TO_METHODS.some(skill => isNewToMethods(self, skill)),
+    text: 'One rock or tree of a group glows for a few seconds. Strike it in time for extra experience.',
   },
 ];
 const ON_THE_ISLAND: Hint[] = [
@@ -89,7 +106,7 @@ export function updateHint() {
   const { self } = state;
   const element = byId('hint');
   if (!self || !element) return;
-  const hints = self.map === 'island' ? [...ANYWHERE, ...ON_THE_ISLAND] : ANYWHERE;
+  const hints = [...ANYWHERE, ...(self.map === 'island' ? ON_THE_ISLAND : ON_THE_MAINLAND)];
   const text = hints.find(hint => hint.applies(self))?.text ?? '';
   element.hidden = !text;
   if (element.textContent !== text) element.textContent = text;

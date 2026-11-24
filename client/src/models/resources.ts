@@ -15,7 +15,7 @@ const MAPLE_TIER = 4;
 export function nodeGeo(type: string): NodeShape {
   const node = NODES[type];
   if (node.kind === 'tree') return node.tier === PINE_TIER ? pine(node) : leafyTree(node);
-  if (node.kind === 'rock') return rock(node);
+  if (node.kind === 'rock') return node.size > 1 ? bigRock(node) : rock(node);
   return type === 'berry_bush' ? berryBush(node) : flowers(node);
 }
 
@@ -177,6 +177,33 @@ function rock({ id, tier, color }: NodeDef): NodeShape {
   ];
   const vein = isEssence ? crystals(color) : oreShards(color);
   return { whole: merge([...stones, ...vein]), depleted: merge(stones), height: 0.95 };
+}
+
+/** How much larger the ore of an outcrop is than that of a rock. */
+const BIG = 1.6;
+
+/** A whole outcrop, two tiles wide. It is never drawn depleted. */
+function bigRock(node: NodeDef): NodeShape {
+  const isEssence = node.item === 'essence';
+  const base = isEssence ? '#7b7f92' : '#938d8c';
+  const outcrop = [
+    part(blob(0.62, 0.2, 3), base, [-0.12, 0.62, -0.1], [0, 0.6, 0.1], [1, 1.45, 0.95]),
+    part(blob(0.5, 0.22, 6), shade(base, 0.92), [0.48, 0.38, 0.12], [0, 0.4, -0.3], [0.9, 1.3, 0.95]),
+    part(blob(0.46, 0.22, 8), shade(base, 1.05), [-0.5, 0.3, 0.36], [0, 1, 0.2], [0.95, 1.1, 0.9]),
+    part(blob(0.36, 0.24, 5), shade(base, 0.96), [0.2, 0.22, 0.6], [0.3, 0, 0], [1, 0.95, 0.9]),
+    part(blob(0.34, 0.22, 9), shade(base, 0.9), [-0.1, 0.2, -0.66]),
+    ...ring(6).map((a, i) =>
+      part(blob(0.13, 0.25, i), shade(base, 0.9 + (i % 3) * 0.07), [
+        Math.cos(a + 0.5) * 0.86,
+        0.05,
+        Math.sin(a + 0.5) * 0.84,
+      ]),
+    ),
+  ];
+  const vein = isEssence ? crystals(node.color) : oreShards(node.color);
+  for (const shard of vein) shard.scale(BIG, BIG * 1.1, BIG);
+  const whole = merge([...outcrop, ...vein]);
+  return { whole, depleted: whole.clone(), height: 1.7 };
 }
 
 // --- plants
