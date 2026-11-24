@@ -1,0 +1,47 @@
+name: Check
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: check-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: npm
+      - uses: actions/setup-go@v7
+        with:
+          go-version-file: go.mod
+      - uses: bufbuild/buf-action@v1
+        with:
+          version: 1.75.0
+          setup_only: true
+
+      - run: npm ci
+      - run: npm run check
+      - run: npm run build
+
+      # --clean also catches generated files whose .proto is gone, and git status
+      # also catches new files that were never committed.
+      - name: Generated protobuf code is up to date
+        run: |
+          npm run proto -- --clean
+          if [ -n "$(git status --porcelain -- client/src/pb server/internal/pb)" ]; then
+            git status --short -- client/src/pb server/internal/pb
+            git diff -- client/src/pb server/internal/pb
+            echo "::error::Generated protobuf code is out of date. Run npm run proto and commit the result."
+            exit 1
+          fi
