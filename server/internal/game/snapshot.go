@@ -23,6 +23,7 @@ type fields struct {
 	bossSt                      pb.BossState
 	bossStart                   int
 	until                       int // tick at which a drop disappears
+	publicAt                    int // tick at which a drop becomes public; zero means never
 }
 
 // view is an entity as clients see it on this tick.
@@ -84,25 +85,27 @@ func (v *view) describe(before *fields, isNew bool) *pb.Entity {
 	f, b := &v.f, before
 	newPlayer := isNew && v.id&7 == kindPlayer
 	newNPC := isNew && v.id&7 == kindNPC
+	newDrop := isNew && v.id&7 == kindDrop
 	e := &pb.Entity{
-		Id:      v.id,
-		Full:    isNew,
-		X:       changedNumber(f.x, b.x, isNew),
-		Y:       changedNumber(f.y, b.y, isNew),
-		Name:    changed(&f.name, &b.name, newPlayer),
-		Type:    changed(&f.typ, &b.typ, false),
-		Hp:      changedNumber(f.hp, b.hp, newPlayer),
-		MaxHp:   changedNumber(f.maxHP, b.maxHP, newPlayer),
-		Level:   changedNumber(f.level, b.level, newPlayer),
-		Qty:     changedNumber(f.qty, b.qty, false),
-		Act:     changed(&f.act, &b.act, false),
-		Tool:    changed(&f.tool, &b.tool, false),
-		Target:  changed(&f.target, &b.target, false),
-		Rooted:  changed(&f.rooted, &b.rooted, false),
-		Glowing: changed(&f.glowing, &b.glowing, false),
-		Rich:    changed(&f.rich, &b.rich, false),
-		Wants:   changed(&f.wants, &b.wants, newNPC),
-		Until:   changedNumber(f.until, b.until, false),
+		Id:       v.id,
+		Full:     isNew,
+		X:        changedNumber(f.x, b.x, isNew),
+		Y:        changedNumber(f.y, b.y, isNew),
+		Name:     changed(&f.name, &b.name, newPlayer),
+		Type:     changed(&f.typ, &b.typ, false),
+		Hp:       changedNumber(f.hp, b.hp, newPlayer),
+		MaxHp:    changedNumber(f.maxHP, b.maxHP, newPlayer),
+		Level:    changedNumber(f.level, b.level, newPlayer),
+		Qty:      changedNumber(f.qty, b.qty, false),
+		Act:      changed(&f.act, &b.act, false),
+		Tool:     changed(&f.tool, &b.tool, false),
+		Target:   changed(&f.target, &b.target, false),
+		Rooted:   changed(&f.rooted, &b.rooted, false),
+		Glowing:  changed(&f.glowing, &b.glowing, false),
+		Rich:     changed(&f.rich, &b.rich, false),
+		Wants:    changed(&f.wants, &b.wants, newNPC),
+		Until:    changedNumber(f.until, b.until, false),
+		PublicAt: changedNumber(f.publicAt, b.publicAt, newDrop),
 	}
 	if f.gear != b.gear || newPlayer {
 		e.Gear = f.pbGear()
@@ -155,7 +158,11 @@ func (w *World) views() (out []*view) {
 		out = append(out, &view{id: n.ID, m: n.Map, owner: n.owner, f: f})
 	}
 	for _, d := range w.drops {
-		v := &view{id: d.ID, m: d.Map, f: fields{x: d.X, y: d.Y, typ: d.Item, qty: d.Qty, until: d.expires}}
+		publicAt := 0
+		if !d.personal {
+			publicAt = d.publicAt
+		}
+		v := &view{id: d.ID, m: d.Map, f: fields{x: d.X, y: d.Y, typ: d.Item, qty: d.Qty, until: d.expires, publicAt: publicAt}}
 		if !d.visibleTo(0, w.Tick) {
 			v.owner = d.Owner
 		}

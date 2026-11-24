@@ -68,7 +68,7 @@ func encodings() (names []string, encoded [][]byte) {
 	isNew("genie", view{id: entityID(kindNPC, 2), f: fields{x: 5, y: 6, typ: npcGenie}})
 
 	drop := entityID(kindDrop, 9)
-	lying := fields{x: 8, y: 9, typ: coin, qty: 40, until: 500}
+	lying := fields{x: 8, y: 9, typ: coin, qty: 40, until: 500, publicAt: 400}
 	later := lying
 	later.until = 600
 	isNew("drop", view{id: drop, f: lying})

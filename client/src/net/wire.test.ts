@@ -52,7 +52,7 @@ const busyPlayer = {
 };
 const boss = { id: '26', kind: 'monster', x: 3, y: 4, type: 'gnashclaw', hp: 300, maxHp: 300 };
 const depletedNode = { id: NODE, kind: 'node', x: 20, y: 21 };
-const drop = { id: '76', kind: 'drop', x: 8, y: 9, type: 'coin', qty: 40, until: 500 };
+const drop = { id: '76', kind: 'drop', x: 8, y: 9, type: 'coin', qty: 40, until: 500, publicAt: 400 };
 
 describe('mergeEntity, with bytes recorded from the server', () => {
   it('keeps what did not change about a player', () => {
