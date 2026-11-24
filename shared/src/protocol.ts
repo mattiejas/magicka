@@ -83,6 +83,8 @@ export interface Entity {
   rich?: boolean;
   /** What a stranded trader buys. */
   wants?: string;
+  /** Tick at which a drop disappears. */
+  until?: number;
   tool?: string;
   qty?: number;
   boss?: BossView;
@@ -112,6 +114,8 @@ export interface SelfState {
   blocked: string[];
   /** Steps done of every quest begun. */
   quests: Record<string, number>;
+  /** How often each thing in the collection log was found, by "source/item". */
+  found: Record<string, number>;
   look: Look;
 }
 

@@ -22,6 +22,7 @@ type fields struct {
 	wants                       string
 	bossSt                      pb.BossState
 	bossStart                   int
+	until                       int // tick at which a drop disappears
 }
 
 // view is an entity as clients see it on this tick.
@@ -96,7 +97,7 @@ func (v *view) fullBytes() []byte {
 		case kindNPC:
 			e.Type, e.Wants = &f.typ, &f.wants
 		case kindDrop:
-			e.Type, e.Qty = &f.typ, u32(f.qty)
+			e.Type, e.Qty, e.Until = &f.typ, u32(f.qty), u32(f.until)
 		}
 		if f.target != 0 {
 			e.Target = &f.target
@@ -152,6 +153,9 @@ func (v *view) diff(o *fields) {
 	if f.glowing != o.glowing {
 		e.Glowing = &f.glowing
 	}
+	if f.until != o.until {
+		e.Until = u32(f.until)
+	}
 	if v.boss != nil && (f.bossSt != o.bossSt || f.bossStart != o.bossStart) {
 		e.Boss = v.bossView()
 	}
@@ -179,7 +183,7 @@ func (w *World) views() (out []*view) {
 		out = append(out, &view{id: n.ID, m: n.Map, owner: n.owner, f: f})
 	}
 	for _, d := range w.drops {
-		v := &view{id: d.ID, m: d.Map, f: fields{x: d.X, y: d.Y, typ: d.Item, qty: d.Qty}}
+		v := &view{id: d.ID, m: d.Map, f: fields{x: d.X, y: d.Y, typ: d.Item, qty: d.Qty, until: d.expires}}
 		if !d.visibleTo(0, w.Tick) {
 			v.owner = d.Owner
 		}

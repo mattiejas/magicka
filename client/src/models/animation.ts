@@ -99,6 +99,30 @@ function walking(pose: Pose): PlayerJoints {
 /** Feet apart, ready to work or fight. */
 const STANCE = { leftLeg: -0.3, rightLeg: 0.26, leftKnee: 0.2, rightKnee: 0.1, drop: -0.03 };
 
+const BOB_MS = 250;
+const SWAY_MS = 610;
+
+/** A fighter between blows: light on bent knees, weight shifting from foot to foot. */
+function poised({ time }: Pose) {
+  const bob = (1 - Math.cos(time / BOB_MS)) / 2;
+  const sway = Math.sin(time / SWAY_MS);
+  return {
+    bob,
+    sway,
+    // The knees give way as far as the hips sink, so the feet stay on the ground.
+    stance: {
+      leftLeg: STANCE.leftLeg - bob * 0.11,
+      leftKnee: STANCE.leftKnee + bob * 0.24,
+      rightLeg: STANCE.rightLeg - bob * 0.04,
+      rightKnee: STANCE.rightKnee + bob * 0.17,
+      drop: STANCE.drop - bob * 0.017,
+      lean: 0.07 + bob * 0.035,
+      twist: sway * 0.09,
+      nod: bob * 0.03,
+    },
+  };
+}
+
 type ActionPose = (pose: Pose, base: PlayerJoints) => Partial<PlayerJoints>;
 
 const overheadStroke =
@@ -156,42 +180,69 @@ const eating: ActionPose = ({ time }) => ({
   nod: 0.12,
 });
 
-const shooting: ActionPose = ({ hit, moving }) => ({
-  ...(moving ? {} : STANCE),
-  twist: 0.55,
-  leftArm: -1.5,
-  leftElbow: -0.06,
-  leftSpread: -0.45,
-  rightArm: -1.45,
+const shooting: ActionPose = pose => {
+  const { stance, bob, sway } = poised(pose);
   // Draws the string back again after a shot.
-  rightElbow: mix(-0.7, -1.9, ease(Math.min(1, (1 - hit) * 1.6))),
-  rightSpread: -0.35,
-});
+  const drawn = ease(Math.min(1, (1 - pose.hit) * 1.6));
+  return {
+    ...(pose.moving ? {} : stance),
+    twist: 0.55 + sway * 0.04,
+    leftArm: -1.5 + bob * 0.05 + sway * 0.03,
+    leftElbow: -0.06,
+    leftSpread: -0.45,
+    rightArm: -1.45 + bob * 0.05,
+    rightElbow: mix(-0.7, -1.9 + bob * 0.1, drawn),
+    rightSpread: -0.35,
+  };
+};
 
-const casting: ActionPose = ({ hit, moving }) => ({
-  ...(moving ? {} : STANCE),
-  rightArm: mix(-1.25, -1.75, hit),
-  rightElbow: mix(-0.5, -0.05, hit),
-  leftArm: mix(-0.5, -1.6, hit),
-  leftElbow: mix(-0.7, -0.15, hit),
-  lean: hit * 0.14,
-});
+const casting: ActionPose = pose => {
+  const { stance, bob, sway } = poised(pose);
+  const { hit, moving } = pose;
+  return {
+    ...(moving ? {} : stance),
+    rightArm: mix(-1.25 - bob * 0.12, -1.75, hit),
+    rightElbow: mix(-0.5 + sway * 0.1, -0.05, hit),
+    leftArm: mix(-0.5 - sway * 0.16, -1.6, hit),
+    leftElbow: mix(-0.7 - bob * 0.15, -0.15, hit),
+    lean: mix(stance.lean, 0.14, hit),
+  };
+};
 
-const GUARD = { rightArm: -0.7, rightElbow: -0.75, leftArm: -0.5, leftElbow: -0.9 };
+/** Weapon up and off hand forward, both circling a little. */
+function guarding(pose: Pose) {
+  const { stance, bob, sway } = poised(pose);
+  return {
+    ...stance,
+    rightArm: -0.7 - bob * 0.1 + sway * 0.12,
+    rightElbow: -0.75 - bob * 0.14,
+    leftArm: -0.5 - bob * 0.08 - sway * 0.12,
+    leftElbow: -0.9 - bob * 0.12,
+  };
+}
 
-const slashing: ActionPose = ({ hit, moving }, base) => {
-  const guard = { ...(moving ? {} : STANCE), ...GUARD };
-  if (hit <= 0) return guard;
-  const progress = 1 - hit;
-  const through = (rest: number, raised: number, down: number) => slash(progress, rest, raised, down);
+/** The blow starts and ends wherever the guard is at that moment, so that nothing jumps. */
+const slashing: ActionPose = (pose, base) => {
+  const rest = guarding(pose);
+  const guard = pose.moving
+    ? {
+        rightArm: rest.rightArm,
+        rightElbow: rest.rightElbow,
+        leftArm: rest.leftArm,
+        leftElbow: rest.leftElbow,
+      }
+    : rest;
+  if (pose.hit <= 0) return guard;
+  const through = (joint: keyof typeof rest, raised: number, down: number) =>
+    slash(1 - pose.hit, { ...base, ...guard }[joint], raised, down);
   return {
     ...guard,
-    rightArm: through(GUARD.rightArm, -2.5, -0.45),
-    rightElbow: through(GUARD.rightElbow, -0.8, 0),
-    twist: through(0, 0.4, -0.45),
-    lean: through(base.lean, -0.08, 0.26),
-    leftArm: through(GUARD.leftArm, -0.8, 0.2),
-    nod: through(0, 0.05, 0.1),
+    rightArm: through('rightArm', -2.5, -0.45),
+    rightElbow: through('rightElbow', -0.8, 0),
+    twist: through('twist', 0.4, -0.45),
+    lean: through('lean', -0.08, 0.26),
+    leftArm: through('leftArm', -0.8, 0.2),
+    nod: through('nod', 0.05, 0.1),
   };
 };
 

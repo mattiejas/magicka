@@ -57,13 +57,19 @@ interface SlotOptions {
   label?: string;
   onClick?: () => void;
   menu?: () => MenuItem[];
+  /** Added to the description. */
+  note?: string;
+  className?: string;
 }
 
-export function itemSlot(stack: Stack | null | undefined, { label, onClick, menu }: SlotOptions = {}) {
+export function itemSlot(
+  stack: Stack | null | undefined,
+  { label, onClick, menu, note, className }: SlotOptions = {},
+) {
   return h('button', {
-    class: 'slot',
+    class: className ? `slot ${className}` : 'slot',
     disabled: !stack,
-    'aria-label': stack ? ITEMS[stack.id].name : (label ?? 'Empty'),
+    'aria-label': stack ? [ITEMS[stack.id].name, note].filter(Boolean).join(', ') : (label ?? 'Empty'),
     html: stack ? slotContent(stack) : label && `<small>${label}</small>`,
     onclick:
       onClick &&
@@ -76,7 +82,8 @@ export function itemSlot(stack: Stack | null | undefined, { label, onClick, menu
       if (stack && menu) showMenu(event.clientX, event.clientY, menu());
     },
     onmousemove: (event: MouseEvent) =>
-      stack && showTooltip(describe(stack.id), event.clientX, event.clientY),
+      stack &&
+      showTooltip([describe(stack.id), note].filter(Boolean).join('\n'), event.clientX, event.clientY),
     onmouseleave: hideTooltip,
   });
 }

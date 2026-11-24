@@ -202,6 +202,7 @@ export function mergeEntity(known: Entity | undefined, delta: PbEntity): Entity 
     'glowing',
     'rich',
     'wants',
+    'until',
   ] as const)
     if (delta[field] !== undefined) Object.assign(entity, { [field]: delta[field] });
   // An empty text or zero target means "none".
@@ -239,6 +240,7 @@ function selfState(self: PbSelf): SelfState {
     kept: self.kept.map(stack),
     blocked: self.blocked,
     quests: { ...self.quests },
+    found: { ...self.found },
     look: { cut: self.look?.cut ?? 0, color: self.look?.color ?? 0 },
   };
 }

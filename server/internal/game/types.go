@@ -62,7 +62,8 @@ type Char struct {
 	Grave    *Grave            `json:"grave"`
 	Kept     []*Stack          `json:"kept,omitempty"` // uniques nobody picked up, waiting with the reaper
 	Look     *Look             `json:"look"`
-	Quests   map[string]int    `json:"quests"` // steps done
+	Quests   map[string]int    `json:"quests"`          // steps done
+	Found    map[string]int    `json:"found,omitempty"` // the collection log: how often, by logKey
 	// Ticks of really playing, and how many there were when a genie last came.
 	PlayTicks int      `json:"playTicks"`
 	GenieAt   int      `json:"genieAt"`
