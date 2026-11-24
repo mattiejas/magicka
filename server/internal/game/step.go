@@ -11,9 +11,6 @@ func (w *World) Step() {
 	}
 	for _, p := range w.order {
 		w.actPlayer(p)
-		if p.dirty {
-			w.advanceQuests(p)
-		}
 	}
 	for _, m := range w.monsters {
 		w.actMonster(m)
@@ -36,6 +33,9 @@ func (w *World) Step() {
 	}
 	w.logOutIdle()
 	w.endBrokenTrades()
+	for _, p := range w.order { // after everything that can change a character, and before anyone goes
+		w.advanceQuests(p)
+	}
 	w.removeGone()
 	if w.Tick%saveInterval == 0 {
 		for _, p := range w.order {
@@ -83,7 +83,6 @@ func (w *World) regenerate() {
 		full := MaxHP(p.level("vitality"))
 		if p.C.HP < full {
 			p.C.HP = min(full, p.C.HP+1+full/60)
-			p.dirty = true
 		}
 	}
 }

@@ -113,6 +113,15 @@ func setup(t *testing.T) *env {
 	return &env{t, NewWorld(s, Mulberry(5), false, 1000), s, map[int64]*client{}}
 }
 
+// savedChar is what a crash would leave of a character.
+func (e *env) savedChar(account int64) *Char {
+	c := &Char{}
+	if err := json.Unmarshal(e.saved.chars[account], c); err != nil {
+		e.t.Fatal(err)
+	}
+	return c
+}
+
 func (e *env) player(n int64) *Player {
 	c := &client{}
 	e.c[n] = c
@@ -129,7 +138,7 @@ func (e *env) run(n int) {
 	}
 }
 
-// do sends a message through the wire format, then runs ticks.
+// do sends a message through the wire format, then runs ticks. Whatever it was, the last Self must equal the character.
 func (e *env) do(p *Player, m *pb.ClientMessage, ticks int) {
 	e.t.Helper()
 	b, _ := proto.Marshal(m)
@@ -139,6 +148,9 @@ func (e *env) do(p *Player, m *pb.ClientMessage, ticks int) {
 	}
 	e.w.Enqueue(p.ID, d)
 	e.run(ticks)
+	if ticks > 0 && p.conn != nil {
+		e.selfIsCurrent(p, m)
+	}
 }
 
 func (e *env) at(p *Player, x, y int, m string) {

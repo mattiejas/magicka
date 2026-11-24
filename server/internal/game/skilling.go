@@ -165,7 +165,6 @@ func (w *World) buildBoat(p *Player) {
 		w.tell(p, "You have nothing the boat needs.")
 		return
 	}
-	p.dirty = true
 	if done {
 		p.C.BoatDone = true
 		w.info(p, "Your boat is finished. You can sail to the mainland.", pb.InfoKind_INFO_KIND_LEVEL)

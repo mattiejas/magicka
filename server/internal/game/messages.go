@@ -70,7 +70,6 @@ func (w *World) sendBossStatus(p *Player) {
 func (w *World) addXP(p *Player, skill string, amount float64) {
 	before, gained := p.level(skill), round(amount)
 	p.C.XP[skill] = min(xpTable[MaxLevel], p.C.XP[skill]+gained)
-	p.dirty = true
 	w.send(p, &pb.ServerMessage{Msg: &pb.ServerMessage_Xp{Xp: &pb.Xp{Skill: skill, Amount: uint32(gained)}}})
 	now := p.level(skill)
 	if now == before {

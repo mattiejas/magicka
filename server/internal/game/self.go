@@ -1,6 +1,9 @@
 package game
 
 import (
+	"maps"
+	"slices"
+
 	"driftwake/content"
 	"driftwake/server/internal/pb"
 )
@@ -35,7 +38,7 @@ func (w *World) self(p *Player) *pb.Self {
 		Boat:     map[string]uint32{},
 		BoatDone: c.BoatDone,
 		Bank:     pbStacks(c.Bank),
-		Blocked:  c.Blocked,
+		Blocked:  slices.Clone(c.Blocked), // which is changed in place
 		Quests:   map[string]uint32{},
 		Found:    map[string]uint32{},
 		Look:     &pb.Look{Cut: uint32(l.Cut), Color: uint32(l.Color)},
@@ -67,6 +70,60 @@ func (w *World) self(p *Player) *pb.Self {
 		s.Reaper = pbStacks(c.Grave.Items)
 	}
 	return s
+}
+
+// isCurrent reports whether s is what self would make: whatever self holds is compared here.
+// It allocates nothing, since it runs for every player and tick.
+func (p *Player) isCurrent(s *pb.Self) bool {
+	c, l := p.C, p.look()
+	var reaper []*Stack
+	if c.Grave != nil {
+		reaper = c.Grave.Items
+	}
+	return s.Map == pbMap(c.Map) && s.BoatDone == c.BoatDone &&
+		int(s.Look.Cut) == l.Cut && int(s.Look.Color) == l.Color &&
+		sameCounts(s.Xp, c.XP) && sameCounts(s.Boat, c.Boat) && sameCounts(s.Quests, c.Quests) &&
+		sameCounts(s.Found, c.Found) && slices.Equal(s.Blocked, c.Blocked) &&
+		sameInventory(s.Inventory, c.Inv) && sameEquipment(s.Equipment, c.Equip) &&
+		sameStacks(s.Bank, c.Bank) && sameStacks(s.Kept, c.Kept) && sameStacks(s.Reaper, reaper)
+}
+
+func sameCounts(told map[string]uint32, now map[string]int) bool {
+	return maps.EqualFunc(told, now, func(a uint32, b int) bool { return a == uint32(b) })
+}
+
+func sameStack(told *pb.Stack, now *Stack) bool {
+	return told.Item == now.ID && told.Qty == uint32(now.Qty)
+}
+
+func sameStacks(told []*pb.Stack, now []*Stack) bool { return slices.EqualFunc(told, now, sameStack) }
+
+func sameInventory(told []*pb.InvSlot, now []*Stack) bool {
+	for i, s := range now {
+		if s == nil {
+			continue
+		}
+		if len(told) == 0 || int(told[0].Index) != i || !sameStack(told[0].Stack, s) {
+			return false
+		}
+		told = told[1:]
+	}
+	return len(told) == 0
+}
+
+func sameEquipment(told []*pb.EquipSlot, now map[string]*Stack) bool {
+	worn := 0
+	for _, s := range now {
+		if s != nil {
+			worn++
+		}
+	}
+	for _, slot := range told {
+		if s := now[slotName(slot.Slot)]; s == nil || !sameStack(slot.Stack, s) {
+			return false
+		}
+	}
+	return worn == len(told)
 }
 
 // look is what the player chose, or a default that depends on their name.

@@ -55,7 +55,6 @@ func (p *Player) spend(amount int) {
 			p.C.Inv[i] = nil
 		}
 	}
-	p.dirty = true
 }
 
 func withoutEmpty(list []*Stack) []*Stack {

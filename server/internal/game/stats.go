@@ -41,7 +41,6 @@ func (p *Player) useAmmo(kind string, maxTier int) (power float64, ok bool) {
 			if e.Qty--; e.Qty <= 0 {
 				delete(p.C.Equip, "ammo")
 			}
-			p.dirty = true
 			return i.Power, true
 		}
 	}

@@ -23,7 +23,6 @@ func (w *World) startQuest(p *Player, id string) {
 		return
 	}
 	p.C.Quests[id] = 0
-	p.dirty = true
 	w.save(p)
 }
 
@@ -42,7 +41,6 @@ func (w *World) advanceQuests(p *Player) {
 			continue
 		}
 		p.C.Quests[id] = done
-		p.dirty = true
 		if done == len(q.Steps) {
 			w.finishQuest(p, q)
 		}
@@ -54,8 +52,7 @@ func (w *World) advanceQuests(p *Player) {
 func (w *World) finishQuest(p *Player, q *content.Quest) {
 	w.info(p, q.Thanks+" You completed "+q.Name+".", pb.InfoKind_INFO_KIND_LEVEL)
 	for _, r := range q.Reward {
-		if left := r.Qty - p.give(r.Item, r.Qty); left > 0 {
-			p.C.Kept = addTo(p.C.Kept, r.Item, left)
+		if p.giveOrKeep(r.Item, r.Qty) > 0 {
 			w.tell(p, "The reaper is keeping the rest of your reward.")
 		}
 	}

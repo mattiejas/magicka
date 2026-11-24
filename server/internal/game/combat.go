@@ -106,7 +106,5 @@ func (w *World) hurt(p *Player, from uint32, damage int, style string) {
 	w.emitHit(w.mapOf(p), p.C.X, p.C.Y, hit)
 	if p.C.HP <= 0 {
 		w.die(p)
-	} else {
-		p.dirty = true
 	}
 }

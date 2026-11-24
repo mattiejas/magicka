@@ -1,8 +1,6 @@
 package game
 
 import (
-	"encoding/json"
-	"log"
 	"strings"
 
 	"driftwake/server/internal/pb"
@@ -38,7 +36,7 @@ func (w *World) Join(account int64, name string, load func() (*Char, error), con
 	}
 	p.attach(conn)
 	p.lastInput = w.Tick
-	conn.Send(&pb.ServerMessage{Msg: &pb.ServerMessage_Self{Self: w.self(p)}})
+	w.sendSelf(p)
 	if fresh {
 		w.info(p, "Welcome to "+GameName+". Click a copper rock or an ash tree to begin.", plain)
 	}
@@ -93,27 +91,11 @@ func (w *World) Online() int {
 	return len(w.order)
 }
 
-func (w *World) save(p *Player) { w.saveTogether(p) }
-
-// saveTogether saves players so that a crash cannot keep one change without the other.
-func (w *World) saveTogether(players ...*Player) {
-	batch := make(map[int64][]byte, len(players))
-	for _, p := range players {
-		b, err := json.Marshal(p.C)
-		if err != nil {
-			log.Printf("saving %s: %v", p.Name, err)
-			return
-		}
-		batch[p.Account] = b
-	}
-	w.store.Save(batch)
-}
-
 // attach makes conn the player's connection, which knows nothing of the world yet.
 func (p *Player) attach(conn Conn) {
 	p.conn, p.leftAt = conn, connected
 	p.known, p.knownMap = map[uint32]int{}, ""
-	p.dirty = true
+	p.told = nil
 }
 
 // logOutIdle disconnects players who have not done anything for a long time.
