@@ -1,0 +1,3 @@
+{ "name":"@magicka/server","version":"0.1.0","private":true,"type":"module",
+ "scripts":{"dev":"MAGICKA_DEV=1 tsx watch src/index.ts","build":"esbuild src/index.ts --bundle --platform=node --format=esm --outfile=dist/index.js --external:better-sqlite3 --external:ws"},
+ "dependencies":{"@magicka/shared":"0.1.0","better-sqlite3":"^12.0.0","ws":"^8.18.0"} }
