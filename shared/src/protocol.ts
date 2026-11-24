@@ -83,6 +83,8 @@ export interface Entity {
   rich?: boolean;
   /** What a stranded trader buys. */
   wants?: string;
+  /** Tick at which a drop disappears. */
+  until?: number;
   tool?: string;
   qty?: number;
   boss?: BossView;

@@ -93,6 +93,8 @@ message Entity {
   optional bool glowing = 19;
   // A rock with a rich vein. What a stranded trader buys.
   optional bool rich = 20; optional string wants = 21;
+  // Tick at which a drop disappears.
+  optional uint32 until = 22;
 }
 message Gear { string weapon = 1; string head = 2; string body = 3; string legs = 4; string cape = 5; }
 message BossView { BossState state = 1; string attack = 2; repeated uint32 tiles = 3; uint32 start = 4; uint32 end = 5; uint32 target = 6; }

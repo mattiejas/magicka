@@ -2763,8 +2763,10 @@ type Entity struct {
 	// Nodes are only reported while they are depleted or glowing.
 	Glowing *bool `protobuf:"varint,19,opt,name=glowing,proto3,oneof" json:"glowing,omitempty"`
 	// A rock with a rich vein. What a stranded trader buys.
-	Rich          *bool   `protobuf:"varint,20,opt,name=rich,proto3,oneof" json:"rich,omitempty"`
-	Wants         *string `protobuf:"bytes,21,opt,name=wants,proto3,oneof" json:"wants,omitempty"`
+	Rich  *bool   `protobuf:"varint,20,opt,name=rich,proto3,oneof" json:"rich,omitempty"`
+	Wants *string `protobuf:"bytes,21,opt,name=wants,proto3,oneof" json:"wants,omitempty"`
+	// Tick at which a drop disappears.
+	Until         *uint32 `protobuf:"varint,22,opt,name=until,proto3,oneof" json:"until,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -2944,6 +2946,13 @@ func (x *Entity) GetWants() string {
 		return *x.Wants
 	}
 	return ""
+}
+
+func (x *Entity) GetUntil() uint32 {
+	if x != nil && x.Until != nil {
+		return *x.Until
+	}
+	return 0
 }
 
 type Gear struct {
@@ -3507,7 +3516,7 @@ const file_driftwake_v1_game_proto_rawDesc = "" +
 	"\x05reset\x18\x03 \x01(\bR\x05reset\x120\n" +
 	"\bentities\x18\x04 \x03(\v2\x14.driftwake.v1.EntityR\bentities\x12\x12\n" +
 	"\x04gone\x18\x05 \x03(\rR\x04gone\x12+\n" +
-	"\x06events\x18\x06 \x03(\v2\x13.driftwake.v1.EventR\x06events\"\xba\x05\n" +
+	"\x06events\x18\x06 \x03(\v2\x13.driftwake.v1.EventR\x06events\"\xdf\x05\n" +
 	"\x06Entity\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\rR\x02id\x12\x12\n" +
 	"\x04full\x18\x02 \x01(\bR\x04full\x12\x11\n" +
@@ -3531,7 +3540,8 @@ const file_driftwake_v1_game_proto_rawDesc = "" +
 	"\x04boss\x18\x12 \x01(\v2\x16.driftwake.v1.BossViewR\x04boss\x12\x1d\n" +
 	"\aglowing\x18\x13 \x01(\bH\fR\aglowing\x88\x01\x01\x12\x17\n" +
 	"\x04rich\x18\x14 \x01(\bH\rR\x04rich\x88\x01\x01\x12\x19\n" +
-	"\x05wants\x18\x15 \x01(\tH\x0eR\x05wants\x88\x01\x01B\x04\n" +
+	"\x05wants\x18\x15 \x01(\tH\x0eR\x05wants\x88\x01\x01\x12\x19\n" +
+	"\x05until\x18\x16 \x01(\rH\x0fR\x05until\x88\x01\x01B\x04\n" +
 	"\x02_xB\x04\n" +
 	"\x02_yB\a\n" +
 	"\x05_nameB\a\n" +
@@ -3547,7 +3557,8 @@ const file_driftwake_v1_game_proto_rawDesc = "" +
 	"\n" +
 	"\b_glowingB\a\n" +
 	"\x05_richB\b\n" +
-	"\x06_wants\"n\n" +
+	"\x06_wantsB\b\n" +
+	"\x06_until\"n\n" +
 	"\x04Gear\x12\x16\n" +
 	"\x06weapon\x18\x01 \x01(\tR\x06weapon\x12\x12\n" +
 	"\x04head\x18\x02 \x01(\tR\x04head\x12\x12\n" +

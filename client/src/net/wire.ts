@@ -202,6 +202,7 @@ export function mergeEntity(known: Entity | undefined, delta: PbEntity): Entity 
     'glowing',
     'rich',
     'wants',
+    'until',
   ] as const)
     if (delta[field] !== undefined) Object.assign(entity, { [field]: delta[field] });
   // An empty text or zero target means "none".
