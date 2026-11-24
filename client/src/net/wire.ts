@@ -98,6 +98,11 @@ function payload(msg: ClientMsg): { case: string; value: unknown } {
       return { case: msg.type, value: { name: msg.name, password: msg.password } };
     case 'resume':
       return { case: 'resumeToken', value: msg.token };
+    case 'changePassword':
+      return {
+        case: 'changePassword',
+        value: { oldPassword: msg.oldPassword, newPassword: msg.newPassword },
+      };
     case 'logout':
     case 'grave':
     case 'depositAll':
@@ -157,7 +162,7 @@ function payload(msg: ClientMsg): { case: string; value: unknown } {
   }
 }
 
-const SECRET = new Set<string>(['login', 'register', 'resume']);
+const SECRET = new Set<string>(['login', 'register', 'resume', 'changePassword']);
 
 export function encode(msg: ClientMsg): Uint8Array<ArrayBuffer> {
   const message = create(ClientMessageSchema, { msg: payload(msg) } as never);

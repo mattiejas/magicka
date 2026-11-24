@@ -112,7 +112,9 @@ func TestDecodeRefusesMalformed(t *testing.T) {
 		{Msg: &pb.ClientMessage_Look{Look: &pb.Look{Cut: 4}}},
 		{Msg: &pb.ClientMessage_Look{Look: &pb.Look{Color: 8}}},
 		{Msg: &pb.ClientMessage_Register{Register: &pb.Credentials{Name: "a b", Password: "long enough"}}},
-		{Msg: &pb.ClientMessage_Login{Login: &pb.Credentials{Name: "abc", Password: "short"}}}}
+		{Msg: &pb.ClientMessage_Login{Login: &pb.Credentials{Name: "abc", Password: "short"}}},
+		{Msg: &pb.ClientMessage_ChangePassword{ChangePassword: &pb.ChangePassword{OldPassword: "short", NewPassword: "long enough"}}},
+		{Msg: &pb.ClientMessage_ChangePassword{ChangePassword: &pb.ChangePassword{OldPassword: "long enough", NewPassword: "short"}}}}
 	for _, m := range bad {
 		b, _ := proto.Marshal(m)
 		_, ok := Decode(b)

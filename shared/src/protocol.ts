@@ -12,6 +12,7 @@ export interface Stack {
 export type ClientMsg =
   | { type: 'register' | 'login'; name: string; password: string }
   | { type: 'resume'; token: string }
+  | { type: 'changePassword'; oldPassword: string; newPassword: string }
   | { type: 'logout' | 'grave' | 'depositAll' | 'askFees' }
   /** Without an item: everything. */
   | { type: 'claim'; item?: string }
