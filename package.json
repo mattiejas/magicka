@@ -14,6 +14,7 @@
     "typecheck": "tsc --noEmit -p .",
     "loadtest": "go build -o bin/server ./server/cmd/server && go run ./server/cmd/loadtest",
     "content": "tsx content/build.ts",
+    "record": "go test ./server/internal/game -run TestRecordedEntities -record",
     "proto": "buf generate",
     "dev:server": "go build -o bin/server ./server/cmd/server && cd server && PORT=3000 DRIFTWAKE_DEV=1 exec ../bin/server",
     "lint": "biome check . && test -z \"$(gofmt -l content server)\" && go vet ./...",

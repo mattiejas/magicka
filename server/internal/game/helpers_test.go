@@ -59,6 +59,9 @@ func (c *client) SendRaw(b []byte) {
 	if s.Reset_ || c.ents == nil {
 		c.ents = map[uint32]*pb.Entity{}
 	}
+	for _, o := range c.ents { // Full marks entities that are new this tick, and steps never carry over
+		o.Full, o.Via = false, nil
+	}
 	for _, id := range s.Gone {
 		if c.ents[id] == nil {
 			panic(fmt.Sprintf("gone without being known: %d", id))
@@ -74,7 +77,7 @@ func (c *client) SendRaw(b []byte) {
 		if o == nil {
 			panic(fmt.Sprintf("delta for unknown entity %d", e.Id))
 		}
-		o.Via, o.Gear, o.Look, o.Boss = nil, orGear(e.Gear, o.Gear), orLook(e.Look, o.Look), orBoss(e.Boss, o.Boss)
+		o.Gear, o.Look, o.Boss = orGear(e.Gear, o.Gear), orLook(e.Look, o.Look), orBoss(e.Boss, o.Boss)
 		e.Gear, e.Look, e.Boss = nil, nil, nil
 		proto.Merge(o, e)
 	}
