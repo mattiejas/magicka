@@ -42,7 +42,6 @@ func (w *World) devCommand(p *Player, line string) {
 	case "die": // at the next blow
 		p.C.HP = 1
 	}
-	p.dirty = true
 }
 
 // devNumber reads a quantity, which is 1 when left out.

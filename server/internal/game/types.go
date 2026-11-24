@@ -124,7 +124,7 @@ type Player struct {
 
 	conn     Conn
 	leftAt   int            // tick of disconnecting
-	dirty    bool           // Self has to be sent
+	told     *pb.Self       // the last one this connection was sent
 	known    map[uint32]int // entities the client knows, and the tick it last heard of them
 	knownMap string
 	graveAt  Point // where the client thinks the grave is

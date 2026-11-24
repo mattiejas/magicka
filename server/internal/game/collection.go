@@ -1,7 +1,6 @@
 package game
 
 import (
-	"log"
 	"slices"
 
 	"driftwake/content"
@@ -64,23 +63,18 @@ func (w *World) logLoot(m *content.Monster, winner uint32, loot []rolled) {
 	if len(found) == 0 {
 		return
 	}
-	p := w.players[winner]
-	if p == nil {
-		record := func(c *Char) {
-			for _, item := range found {
-				c.logFind(m.ID, item)
+	var firsts []string
+	p := w.change(winner, "logging finds", func(c *Char) {
+		for _, item := range found {
+			if c.logFind(m.ID, item) {
+				firsts = append(firsts, item)
 			}
 		}
-		if err := w.store.Update(accountOf(winner), record); err != nil {
-			log.Printf("logging finds for account %d: %v", accountOf(winner), err)
-		}
+	})
+	if p == nil {
 		return
 	}
-	for _, item := range found {
-		if p.C.logFind(m.ID, item) {
-			w.info(p, "New in your collection log: "+content.Items[item].Name+".", pb.InfoKind_INFO_KIND_UNIQUE)
-		}
+	for _, item := range firsts {
+		w.info(p, "New in your collection log: "+content.Items[item].Name+".", pb.InfoKind_INFO_KIND_UNIQUE)
 	}
-	p.dirty = true
-	w.save(p)
 }

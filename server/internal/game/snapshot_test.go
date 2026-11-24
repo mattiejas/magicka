@@ -198,7 +198,6 @@ func BenchmarkSnapshots(b *testing.B) {
 	for b.Loop() {
 		w.Tick++
 		for i, p := range w.order {
-			p.dirty = false // Self is not measured
 			p.C.X, p.C.Y = 10+(w.Tick+i*7)%50, 10+(i*3)%50
 			p.C.HP = 5 + (w.Tick+i)%5
 			p.via = []Point{p.at()}

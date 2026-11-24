@@ -222,10 +222,7 @@ func (w *World) sendSnapshots() {
 		if p.conn == nil {
 			continue
 		}
-		if p.dirty {
-			p.dirty = false
-			w.send(p, &pb.ServerMessage{Msg: &pb.ServerMessage_Self{Self: w.self(p)}})
-		}
+		w.sendSelf(p)
 		p.conn.SendRaw(w.snapshotFor(p, visible[w.mapOf(p)], events))
 		if w.Tick%bossBarInterval == 0 {
 			w.sendBossStatus(p)

@@ -34,7 +34,6 @@ func (w *World) handle(p *Player, msg *pb.ClientMessage) {
 	case *pb.ClientMessage_Swap:
 		inv := p.C.Inv
 		inv[m.Swap.A], inv[m.Swap.B] = inv[m.Swap.B], inv[m.Swap.A]
-		p.dirty = true
 	case *pb.ClientMessage_EatSlot:
 		w.eat(p, int(m.EatSlot))
 	case *pb.ClientMessage_DropSlot:
@@ -51,7 +50,6 @@ func (w *World) handle(p *Player, msg *pb.ClientMessage) {
 		w.useDock(p, m.Boat.Sail)
 	case *pb.ClientMessage_Look:
 		p.C.Look = &Look{Cut: int(m.Look.Cut), Color: int(m.Look.Color)}
-		p.dirty = true
 		w.save(p)
 	case *pb.ClientMessage_Trade:
 		p.begin(action{typ: actTrade, id: m.Trade})
@@ -124,7 +122,7 @@ func (w *World) eat(p *Player, slot int) {
 	p.C.Inv[slot] = nil
 	p.C.HP = min(MaxHP(p.level("vitality")), p.C.HP+content.Items[s.ID].Heal)
 	p.nextAttack = max(p.nextAttack, w.Tick) + eatDelay
-	p.doing, p.nextAct, p.dirty = eating, w.Tick+eatDelay, true
+	p.doing, p.nextAct = eating, w.Tick+eatDelay
 }
 
 func (p *Player) isEating(tick int) bool { return p.doing == eating && p.nextAct > tick }
@@ -139,7 +137,6 @@ func (w *World) dropSlot(p *Player, slot int) {
 		return
 	}
 	p.C.Inv[slot] = nil
-	p.dirty = true
 	w.drop(w.mapOf(p), p.at(), s.ID, s.Qty, p.ID, playerDrop)
 }
 
@@ -202,7 +199,7 @@ func (w *World) takePassage(p *Player) {
 func (w *World) arrive(p *Player, mapID string, x, y int) {
 	p.C.Map, p.C.X, p.C.Y = mapID, x, y
 	w.stop(p)
-	p.via, p.dirty = nil, true
+	p.via = nil
 }
 
 func (w *World) chat(p *Player, text string) {

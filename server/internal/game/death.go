@@ -30,7 +30,7 @@ func (w *World) die(p *Player) {
 	spawn := w.mapOf(p).Spawn
 	c.X, c.Y, c.HP = spawn.X, spawn.Y, MaxHP(p.level("vitality"))
 	w.stop(p)
-	p.via, p.rooted, p.lastCombat, p.dirty = nil, 0, longAgo, true
+	p.via, p.rooted, p.lastCombat = nil, 0, longAgo
 	w.forget(p)
 	w.halveContributions(p)
 	w.info(p, text, pb.InfoKind_INFO_KIND_BAD)

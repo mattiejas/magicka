@@ -21,6 +21,5 @@ func (w *World) block(p *Player, m *pb.Block) {
 		p.C.Blocked = append(p.C.Blocked, name)
 		w.tell(p, "You will not hear from "+m.Name+" any more. Settings lists everyone you have blocked.")
 	}
-	p.dirty = true
 	w.save(p)
 }

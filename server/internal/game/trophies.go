@@ -13,12 +13,10 @@ func (w *World) grantCapes(p *Player) {
 			continue
 		}
 		text := "You received the " + content.Items[cape].Name + "."
-		if p.give(cape, 1) == 0 {
-			p.C.Kept = addTo(p.C.Kept, cape, 1)
+		if p.giveOrKeep(cape, 1) > 0 {
 			text = "The reaper is keeping your " + content.Items[cape].Name + "."
 		}
 		p.C.logFind(skillSource, cape)
-		p.dirty = true
 		w.info(p, text, pb.InfoKind_INFO_KIND_UNIQUE)
 		w.save(p)
 	}

@@ -1,7 +1,6 @@
 package game
 
 import (
-	"log"
 	"math"
 
 	"driftwake/content"
@@ -75,17 +74,9 @@ func (d *Drop) visibleTo(player uint32, tick int) bool {
 // keepForOwner hands an unclaimed unique to the reaper, whether or not its owner is here.
 func (w *World) keepForOwner(d *Drop) {
 	keep := func(c *Char) { c.Kept = addTo(c.Kept, d.Item, d.Qty) }
-	p := w.players[d.Owner]
-	if p == nil {
-		if err := w.store.Update(accountOf(d.Owner), keep); err != nil {
-			log.Printf("keeping %s for account %d: %v", d.Item, accountOf(d.Owner), err)
-		}
-		return
+	if p := w.change(d.Owner, "keeping "+d.Item, keep); p != nil {
+		w.info(p, "The reaper is keeping your "+content.Items[d.Item].Name+".", pb.InfoKind_INFO_KIND_UNIQUE)
 	}
-	keep(p.C)
-	p.dirty = true
-	w.info(p, "The reaper is keeping your "+content.Items[d.Item].Name+".", pb.InfoKind_INFO_KIND_UNIQUE)
-	w.save(p)
 }
 
 // dropLoot rolls a dead monster's loot for one winner.

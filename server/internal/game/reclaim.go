@@ -28,7 +28,6 @@ func (w *World) claim(p *Player, item string) {
 	if full {
 		w.tell(p, "Your inventory is full. The rest is kept for you.")
 	}
-	p.dirty = true
 	w.save(p)
 }
 

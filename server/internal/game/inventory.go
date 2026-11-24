@@ -133,7 +133,6 @@ func (p *Player) give(id string, qty int) int {
 		} else {
 			return 0
 		}
-		p.dirty = true
 		return qty
 	}
 	n := 0
@@ -145,9 +144,6 @@ func (p *Player) give(id string, qty int) int {
 			p.C.Inv[i] = &Stack{id, 1}
 			n++
 		}
-	}
-	if n > 0 {
-		p.dirty = true
 	}
 	return n
 }
@@ -171,7 +167,6 @@ func (p *Player) take(id string, qty int) bool {
 			p.C.Inv[i] = nil
 		}
 	}
-	p.dirty = true
 	return true
 }
 
@@ -198,7 +193,6 @@ func (p *Player) equip(i int) string {
 	if why := p.unmet(s.ID); why != "" {
 		return why
 	}
-	p.dirty = true
 	p.C.Inv[i] = nil
 	old := p.C.Equip[item.Slot]
 	if old != nil && old.ID == s.ID && item.Stack {
@@ -228,7 +222,6 @@ func (p *Player) unequip(slot string) string {
 		return "Your inventory is full."
 	}
 	delete(p.C.Equip, slot)
-	p.dirty = true
 	return ""
 }
 
@@ -247,7 +240,6 @@ func (p *Player) withdraw(id string, qty int) {
 		if s.Qty == 0 {
 			p.C.Bank = append(p.C.Bank[:i:i], p.C.Bank[i+1:]...)
 		}
-		p.dirty = true
 		return
 	}
 }
