@@ -16,6 +16,7 @@ Use the words in [GLOSSARY.md](GLOSSARY.md). What the game should become is in [
 | What players can do | `server/internal/game/intents.go`, then `actions.go` | |
 | A boss attack | `content/src/items.ts`, `server/internal/game/bosses.go`, `client/src/scene/telegraphs.ts` | |
 | A model | `client/src/models` | look at it in `/gallery.html` |
+| What a click, label or menu offers for a thing in the world | `client/src/things.ts` | add a case in `things.test.ts` |
 | A panel | `client/src/ui/panels` | |
 
 ## How it fits together
