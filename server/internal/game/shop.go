@@ -47,18 +47,24 @@ func (w *World) sell(p *Player, item *content.Item, qty int) {
 		w.tell(p, "The shop does not buy that.")
 		return
 	}
-	price := SellPrice(item.Value, n, content.Prices.SellPercent)
+	w.sellFor(p, item, n, content.Prices.SellPercent)
+}
+
+// sellFor swaps items for coins, if they are worth any and the coins fit.
+func (w *World) sellFor(p *Player, item *content.Item, n, percent int) bool {
+	price := SellPrice(item.Value, n, percent)
 	if price == 0 {
 		w.tell(p, "That is not worth a coin. Try selling more at once.")
-		return
+		return false
 	}
 	before := copyStacks(p.C.Inv)
 	p.take(item.ID, n)
 	if p.give(coin, price) < price {
 		p.C.Inv = before
 		w.tell(p, "You have no room for the coins.")
-		return
+		return false
 	}
 	w.tell(p, "Sold for "+coinsText(price)+".")
 	w.save(p)
+	return true
 }

@@ -44,7 +44,7 @@ Start the server with `MODERATORS=name,name` for players who have already regist
 
 ## Dev commands
 
-Only with `DRIFTWAKE_DEV=1` (set by `npm run dev`; refused in production): `/give item n`, `/level skill|all n`, `/tp x y`, `/map island|mainland`, `/boss`, `/heal`, `/die`. The world boss also spawns every two minutes instead of ten.
+Only with `DRIFTWAKE_DEV=1` (set by `npm run dev`; refused in production): `/give item n`, `/level skill|all n`, `/tp x y`, `/map island|mainland`, `/map mine`, `/encounter vein|trader|stampede`, `/genie`, `/boss`, `/heal`, `/die`. The world boss also spawns every two minutes instead of ten.
 
 See [CONTRIBUTING.md](CONTRIBUTING.md) before changing code.
 

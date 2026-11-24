@@ -1,5 +1,5 @@
 // Suggestions for what to do next, shown to newer players.
-import { ITEMS, METHODS, type SelfState, xpForLevel } from '@driftwake/shared';
+import { ITEMS, type MapId, METHODS, QUESTS, type SelfState, xpForLevel } from '@driftwake/shared';
 import { myTrack, state } from '../net/state';
 import { byId } from './dom';
 
@@ -102,12 +102,23 @@ const ON_THE_ISLAND: Hint[] = [
   },
 ];
 
+/** Quests are about the island so far. */
+function questHint({ quests, map }: SelfState): string | undefined {
+  if (map !== 'island') return;
+  for (const { id, name, steps } of QUESTS) {
+    const step = steps[quests[id]];
+    if (step) return `${name}: ${step.text}`;
+  }
+}
+
+const HINTS: Record<MapId, Hint[]> = { island: ON_THE_ISLAND, mainland: ON_THE_MAINLAND, mine: [] };
+
 export function updateHint() {
   const { self } = state;
   const element = byId('hint');
   if (!self || !element) return;
-  const hints = [...ANYWHERE, ...(self.map === 'island' ? ON_THE_ISLAND : ON_THE_MAINLAND)];
-  const text = hints.find(hint => hint.applies(self))?.text ?? '';
+  const textOf = (hints: Hint[]) => hints.find(hint => hint.applies(self))?.text;
+  const text = textOf(ANYWHERE) ?? questHint(self) ?? textOf(HINTS[self.map]) ?? '';
   element.hidden = !text;
   if (element.textContent !== text) element.textContent = text;
 }

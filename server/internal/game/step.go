@@ -11,6 +11,9 @@ func (w *World) Step() {
 	}
 	for _, p := range w.order {
 		w.actPlayer(p)
+		if p.dirty {
+			w.advanceQuests(p)
+		}
 	}
 	for _, m := range w.monsters {
 		w.actMonster(m)
@@ -19,6 +22,14 @@ func (w *World) Step() {
 		w.nextBoss = w.Tick + w.bossPeriod
 		w.spawnWorldBoss()
 	}
+	if w.Tick >= w.nextEncounter {
+		w.startEncounter()
+	}
+	w.countPlay()
+	if w.Tick%genieCheck == 0 {
+		w.visitSomeone()
+	}
+	w.removeLeavingNPCs()
 	w.removeExpiredDrops()
 	if w.Tick%regenInterval == 0 {
 		w.regenerate()

@@ -73,6 +73,9 @@ func (w *World) damageMonster(p *Player, m *Monster, damage int, style string) {
 func (w *World) kill(m *Monster) {
 	m.Dead, m.HP, m.target = true, 0, 0
 	m.respawnAt = w.Tick + Ticks(m.Def.Respawn)
+	if m.Def.Herd {
+		m.respawnAt = math.MaxInt
+	}
 	w.emitDeath(m.Map, m.X, m.Y, m.ID)
 	w.vacate(m)
 	if monsterIsWorldBoss(m.Def) {

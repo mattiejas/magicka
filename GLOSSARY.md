@@ -66,6 +66,14 @@ _Avoid_: Infinite rock, AFK rock
 A short, unannounced event in the world, open to whoever is nearby.
 _Avoid_: Random event, adventure
 
+**Rich vein**:
+An encounter in which an ordinary rock gives more ore and does not run out for a while.
+_Avoid_: Bonus rock
+
+**Genie**:
+A spirit that now and then visits one player and gives a lamp.
+_Avoid_: Random event
+
 **Quest**:
 An authored, linear series of steps with a reward.
 _Avoid_: Mission, task

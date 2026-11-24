@@ -144,7 +144,7 @@ func TestRelaxedSpotsAreOutOfReach(t *testing.T) {
 		safe := true
 		for _, m := range e.w.monsters {
 			reach := wanderRange + m.Def.Aggro
-			if m.Map == n.Map && m.Def.Aggro > 0 && RectDist(m.home.X, m.home.Y, n.rect()) < reach {
+			if m.Map == n.Map && m.Def.Aggro > 0 && !m.Def.Herd && RectDist(m.home.X, m.home.Y, n.rect()) < reach {
 				safe = false
 			}
 		}

@@ -62,7 +62,7 @@ Each step ends playable, tested and committed.
 2. ~~Coins, shops, worn tools, chickens, death fees, reaper total~~ done
 3. ~~Skilling pace and methods, idle logout~~ done
 4. ~~Trading, trophies, safety tools~~ done
-5. Stranded, encounters and genie, mine dungeon
+5. ~~Stranded, encounters and genie, mine dungeon~~ done
 6. Collection log, then the market board
 
 Existing characters are kept until one restart at the public launch.
@@ -80,4 +80,8 @@ Existing characters are kept until one restart at the public launch.
 - Dropped items stay visible to their owner for three minutes and are then gone.
 - Any change to an offer takes back both acceptances, and offers can only be accepted two seconds after a change.
 - Blocking hides a player's chat and trade requests. Reports keep the last things the reported player said. Moderators are named in the server's settings and type `/mod` in chat.
+- Stranded pays 300 coins and 5 trail rations, and is offered until the boat is finished. Steps may be done in any order, but are ticked off in order.
+- A rich vein never runs out for three minutes and gives two ore per strike. A stranded trader stays four minutes and buys up to 50 of one material from each player at double its value. A stampede crosses the main road within two minutes. Encounters only start while someone is on the mainland.
+- Only time with input in the last five minutes counts as play for the genie.
+- The old mine's boss is Deepstone, which drops mithril, cobalt and, 1 in 100, the Stoneheart. Whoever dies in the mine wakes up in the mainland town; their grave stays in the mine.
 - The big rock also exists for essence; there is no relaxed or intense variant of smithing and crafting yet.

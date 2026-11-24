@@ -17,7 +17,8 @@ const shortQuantity = (qty: number) => (qty >= 10_000 ? `${Math.floor(qty / 1000
 
 export const coins = (amount: number) => `${amount.toLocaleString('en')} ${amount === 1 ? 'coin' : 'coins'}`;
 
-export const isTradable = (itemId: string) => !ITEMS[itemId].basic && !ITEMS[itemId].trophy;
+export const isTradable = (itemId: string) =>
+  !ITEMS[itemId].basic && !ITEMS[itemId].trophy && !ITEMS[itemId].bound;
 
 export const isSellable = (itemId: string) => isTradable(itemId) && itemId !== 'coin';
 

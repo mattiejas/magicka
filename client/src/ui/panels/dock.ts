@@ -1,4 +1,4 @@
-import { BOAT_PARTS, ITEMS, MAPS, type SelfState } from '@driftwake/shared';
+import { BOAT_PARTS, ITEMS, MAPS, QUESTS, type SelfState } from '@driftwake/shared';
 import { send } from '../../net/connection';
 import { button, h } from '../dom';
 import { icon } from '../icons';
@@ -18,6 +18,18 @@ function partRow({ id, name, item, qty }: (typeof BOAT_PARTS)[number], self: Sel
   );
 }
 
+const QUEST = QUESTS.find(quest => quest.id === 'stranded')!;
+
+function questOffer({ quests, boatDone }: SelfState): HTMLElement[] {
+  if (boatDone || quests[QUEST.id] !== undefined) return [];
+  const reward = QUEST.reward.map(([item, qty]) => `${qty} ${ITEMS[item].name.toLowerCase()}`).join(' and ');
+  return [
+    h('p', {}, QUEST.offer),
+    h('p', { class: 'mute' }, `Optional. Reward: ${reward}.`),
+    button(`Begin ${QUEST.name}`, () => send({ type: 'startQuest', id: QUEST.id })),
+  ];
+}
+
 function sail() {
   send({ type: 'boat', op: 'sail' });
   closePanel();
@@ -30,6 +42,10 @@ export const dockPanel: Panel = {
     const action = self.boatDone
       ? button(`Sail to ${destination.name}`, sail)
       : button('Add what I am carrying', () => send({ type: 'boat', op: 'build' }));
-    return [...BOAT_PARTS.map(part => partRow(part, self)), h('div', { class: 'actions' }, action)];
+    return [
+      ...questOffer(self),
+      ...BOAT_PARTS.map(part => partRow(part, self)),
+      h('div', { class: 'actions' }, action),
+    ];
   },
 };

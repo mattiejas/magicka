@@ -6,12 +6,13 @@ import { CameraRig } from './cameraRig';
 import { Effects, PROJECTILE_MS } from './effects';
 import { EntityLayer } from './entityLayer';
 import { Overlay } from './overlay';
-import { SKY_COLOR } from './palette';
+import { CAVE_COLOR, SKY_COLOR } from './palette';
 import { entityPicks, type Pick, picksOnRay, rayAt, tileOnRay } from './picking';
 import { TileMarker } from './tileMarkers';
 import { WorldView } from './worldView';
 
 const MAX_PIXEL_RATIO = 2;
+const SUNLIGHT = 2.5;
 /** Half the width of the area around the camera that casts shadows. */
 const SHADOW_RANGE = 24;
 
@@ -20,6 +21,7 @@ export class Scene {
   readonly renderer: THREE.WebGLRenderer;
   private scene = new THREE.Scene();
   private sun = createSun();
+  private sky = new THREE.HemisphereLight('#fff6ee', '#d0b8a4');
   private world: WorldView | null = null;
   private effects = new Effects(this.scene);
   private entities = new EntityLayer(this.scene, this.effects);
@@ -30,9 +32,7 @@ export class Scene {
 
   constructor(canvas: HTMLCanvasElement, overlayRoot: HTMLElement) {
     this.renderer = createRenderer(canvas);
-    this.scene.background = new THREE.Color(SKY_COLOR);
-    this.scene.fog = new THREE.Fog(SKY_COLOR, 32, 66);
-    this.scene.add(new THREE.HemisphereLight('#fff6ee', '#d0b8a4', 2.2), this.sun, this.sun.target);
+    this.scene.add(this.sky, this.sun, this.sun.target);
     this.scene.add(this.hover.mesh, this.destination.mesh, this.ownTile.mesh);
     this.overlay = new Overlay(overlayRoot, this.project, id => this.entities.heightOf(id));
     this.resize();
@@ -103,7 +103,17 @@ export class Scene {
     this.entities.clear();
     this.world = new WorldView(MAPS[id]);
     this.scene.add(this.world.group);
+    this.setMood(this.world.map.cave);
     return this.world;
+  }
+
+  /** Daylight, or the dim of a cave. */
+  private setMood(cave: boolean) {
+    const color = new THREE.Color(cave ? CAVE_COLOR : SKY_COLOR);
+    this.scene.background = color;
+    this.scene.fog = cave ? new THREE.Fog(color, 18, 40) : new THREE.Fog(color, 32, 66);
+    this.sky.intensity = cave ? 1.2 : 2.2;
+    this.sun.intensity = cave ? 1.3 : SUNLIGHT;
   }
 
   private followPlayer(dt: number) {
@@ -149,7 +159,7 @@ function createRenderer(canvas: HTMLCanvasElement): THREE.WebGLRenderer {
 }
 
 function createSun(): THREE.DirectionalLight {
-  const sun = new THREE.DirectionalLight('#fff0d6', 2.5);
+  const sun = new THREE.DirectionalLight('#fff0d6', SUNLIGHT);
   sun.castShadow = true;
   sun.shadow.mapSize.set(2048, 2048);
   sun.shadow.bias = -0.001;

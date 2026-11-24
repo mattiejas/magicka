@@ -27,13 +27,14 @@ type Item struct {
 	Acc, Power, Armour                float64
 	Stack, Unique                     bool
 	Trophy                            bool // can never be traded, sold or dropped
+	Bound                             bool // can never be traded or sold
 	Basic                             bool // sold in every shop, and never bought back
 	Value                             int  // in coins
 	Req                               map[string]int
 }
 
 // Tradable items can change hands between players.
-func (i *Item) Tradable() bool { return !i.Basic && !i.Trophy }
+func (i *Item) Tradable() bool { return !i.Basic && !i.Trophy && !i.Bound }
 
 // Amount is a quantity of one item, written as ["id", n] in the data.
 type Amount struct {
@@ -114,6 +115,7 @@ type Monster struct {
 	ID, Name, Style                  string
 	Level, Speed, Range, Aggro, Size int
 	HP, Acc, Power, Armour, Respawn  float64
+	Herd                             bool // only comes with a stampede
 	Loot                             Loot
 	Boss                             *Boss
 }
@@ -135,6 +137,19 @@ type MethodRules struct {
 	GlowGroup int     // fewer nodes than this together do not glow
 }
 
+// Need is what a step of a quest asks for. Everything given has to be true.
+type Need struct {
+	XP   string   // any experience in this skill
+	Own  []string // one of these
+	Boat string   // this part of the boat, complete
+}
+
+type Quest struct {
+	ID, Name, Thanks string
+	Steps            []struct{ Need Need }
+	Reward           []Amount
+}
+
 type Part struct {
 	ID, Name, Item string
 	Qty            int
@@ -150,6 +165,12 @@ type Placed struct {
 
 type Point struct{ X, Y int }
 
+// Passage is where a map's mine entrance leads.
+type Passage struct {
+	To   string
+	X, Y int
+}
+
 type Map struct {
 	ID, Name                string
 	Size                    int
@@ -157,6 +178,9 @@ type Map struct {
 	Nodes, Stations, Spawns []Placed
 	Spawn, Landing          Point
 	Safe                    struct{ X, Y, R int }
+	Cave                    bool
+	Town                    string // where players wake up after dying here
+	Passage                 *Passage
 	Methods                 bool   // whether methods beyond the basic one are found here
 	Blocked                 []bool `json:"-"`
 }
@@ -193,6 +217,7 @@ var (
 	BoatParts  []Part
 	Prices     Economy
 	Methods    MethodRules
+	Quests     []*Quest
 	Metals     []string
 	Haircuts   int
 	HairColors int
@@ -234,6 +259,7 @@ func init() {
 		HairColors []struct{ Name string }
 		Economy    Economy
 		Methods    MethodRules
+		Quests     []*Quest
 	}
 	must(json.Unmarshal(Raw("content.json"), &d))
 	for _, i := range d.Items {
@@ -251,6 +277,7 @@ func init() {
 		Monsters[m.ID] = m
 	}
 	BoatParts, Metals, Prices, Methods = d.BoatParts, d.Metals, d.Economy, d.Methods
+	Quests = d.Quests
 	Haircuts, HairColors = len(d.Haircuts), len(d.HairColors)
 	must(json.Unmarshal(Raw("maps.json"), &Maps))
 	for _, m := range Maps {

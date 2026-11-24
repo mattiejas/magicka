@@ -9,6 +9,10 @@ const SUBDIVISIONS = 2;
 const WET_SAND = new THREE.Color('#e0bf88');
 const DEEP = new THREE.Color('#2a6c8c');
 const FOAM = new THREE.Color('#ffffff');
+/** Cave walls: how high they stand, and their colour at the foot and on top. */
+const WALL_HEIGHT = 1.15;
+const WALL_FOOT = new THREE.Color('#6a635f');
+const WALL_TOP = new THREE.Color('#2b2830');
 const TILE_LINE_HEIGHT = 0.012;
 
 export function terrain(map: GameMap): THREE.Group {
@@ -54,6 +58,9 @@ function groundHeight(land: number): number {
   return -0.16 - (0.5 - land) * 1.6;
 }
 
+/** A cave's floor is flat up to a short, steep wall. */
+const wallHeight = (floor: number) => WALL_HEIGHT * THREE.MathUtils.smoothstep(1 - floor, 0.3, 0.8);
+
 const sharpBlend = (t: number) => THREE.MathUtils.smoothstep(t, 0.42, 0.58);
 
 function groundColor(map: GameMap, x: number, y: number, land: number): THREE.Color {
@@ -68,7 +75,13 @@ function groundColor(map: GameMap, x: number, y: number, land: number): THREE.Co
     total += weight;
   }
   if (total) color.multiplyScalar(1 / total);
-  else color.copy(WET_SAND);
+  if (map.cave) {
+    color.multiplyScalar(0.75);
+    if (land < 1) color.lerp(WALL_FOOT, 0.8);
+    if (land < 0.7) color.lerp(WALL_TOP, 1 - land / 0.7);
+    return color.multiplyScalar(0.97 + noise(x * 2.3, y * 2.3, 4) * 0.08);
+  }
+  if (!total) color.copy(WET_SAND);
   if (land < 1) color.lerp(WET_SAND, (1 - land) * 0.6);
   if (land < 0.5) color.lerp(DEEP, (0.5 - land) * 1.8);
   if (land >= 0.25 && land < 0.5) color.lerp(FOAM, 0.8);
@@ -87,7 +100,8 @@ function ground(map: GameMap): THREE.Mesh {
       const worldZ = row / SUBDIVISIONS;
       // Tile centres sit half a tile in from the corner.
       const land = landShare(map, worldX - 0.5, worldZ - 0.5);
-      positions.push(worldX, groundHeight(land), worldZ);
+      const uneven = map.cave && land < 0.4 ? noise(worldX * 1.7, worldZ * 1.7, 6) * 0.22 : 0;
+      positions.push(worldX, (map.cave ? wallHeight(land) : groundHeight(land)) + uneven, worldZ);
       colors.push(...groundColor(map, worldX - 0.5, worldZ - 0.5, land).toArray());
     }
   const index: number[] = [];

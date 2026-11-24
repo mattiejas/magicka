@@ -6,8 +6,8 @@ option go_package = "driftwake/server/internal/pb;pb";
 enum Slot { SLOT_UNSPECIFIED = 0; SLOT_WEAPON = 1; SLOT_HEAD = 2; SLOT_BODY = 3; SLOT_LEGS = 4; SLOT_NECK = 5; SLOT_AMMO = 6; SLOT_CAPE = 7; }
 enum TradeAction { TRADE_ACTION_UNSPECIFIED = 0; TRADE_ACTION_OFFER = 1; TRADE_ACTION_TAKE_BACK = 2; TRADE_ACTION_ACCEPT = 3; TRADE_ACTION_DECLINE = 4; }
 enum ReportReason { REPORT_REASON_UNSPECIFIED = 0; REPORT_REASON_LANGUAGE = 1; REPORT_REASON_SCAM = 2; REPORT_REASON_CHEATING = 3; REPORT_REASON_OTHER = 4; }
-enum MapId { MAP_ID_UNSPECIFIED = 0; MAP_ID_ISLAND = 1; MAP_ID_MAINLAND = 2; }
-enum EntityKind { ENTITY_KIND_UNSPECIFIED = 0; ENTITY_KIND_PLAYER = 1; ENTITY_KIND_MONSTER = 2; ENTITY_KIND_NODE = 3; ENTITY_KIND_DROP = 4; ENTITY_KIND_GRAVE = 5; ENTITY_KIND_STATION = 6; }
+enum MapId { MAP_ID_UNSPECIFIED = 0; MAP_ID_ISLAND = 1; MAP_ID_MAINLAND = 2; MAP_ID_MINE = 3; }
+enum EntityKind { ENTITY_KIND_UNSPECIFIED = 0; ENTITY_KIND_PLAYER = 1; ENTITY_KIND_MONSTER = 2; ENTITY_KIND_NODE = 3; ENTITY_KIND_DROP = 4; ENTITY_KIND_GRAVE = 5; ENTITY_KIND_STATION = 6; ENTITY_KIND_NPC = 7; }
 enum BossState { BOSS_STATE_UNSPECIFIED = 0; BOSS_STATE_CHOOSE = 1; BOSS_STATE_WINDUP = 2; BOSS_STATE_EXECUTE = 3; }
 enum InfoKind { INFO_KIND_UNSPECIFIED = 0; INFO_KIND_UNIQUE = 1; INFO_KIND_BOSS = 2; INFO_KIND_LEVEL = 3; INFO_KIND_BAD = 4; }
 
@@ -20,6 +20,8 @@ message ClientMessage {
     Bank bank = 18; Empty deposit_all = 19; Boat boat = 20; Look look = 21; string chat = 22; Shop shop = 23; Empty ask_fees = 24;
     // Asks a player to trade, or agrees to.
     uint32 trade = 25; TradeStep trade_step = 26; Block block = 27; Report report = 28;
+    // npc: walks to someone and speaks to them. use_lamp: the skill to train.
+    string start_quest = 29; uint32 npc = 30; uint32 sell_to_trader = 31; string use_lamp = 32;
   }
 }
 message Empty {}
@@ -69,6 +71,8 @@ message Self {
   repeated Stack reaper = 10; repeated Stack kept = 12;
   // Names of players whose chat and trade requests are hidden.
   repeated string blocked = 13;
+  // Steps done of every quest begun.
+  map<string, uint32> quests = 14;
 }
 // `entities` hold only what changed, except for entities the browser did not know yet.
 message Snapshot { uint32 tick = 1; MapId map = 2; bool reset = 3; repeated Entity entities = 4; repeated uint32 gone = 5; repeated Event events = 6; }
@@ -85,6 +89,8 @@ message Entity {
   Gear gear = 13; Look look = 14; optional uint32 level = 15; optional bool rooted = 16; optional uint32 qty = 17; BossView boss = 18;
   // Nodes are only reported while they are depleted or glowing.
   optional bool glowing = 19;
+  // A rock with a rich vein. What a stranded trader buys.
+  optional bool rich = 20; optional string wants = 21;
 }
 message Gear { string weapon = 1; string head = 2; string body = 3; string legs = 4; string cape = 5; }
 message BossView { BossState state = 1; string attack = 2; repeated uint32 tiles = 3; uint32 start = 4; uint32 end = 5; uint32 target = 6; }

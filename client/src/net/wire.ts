@@ -65,6 +65,7 @@ const KINDS: Record<number, EntityKind> = {
   [PbKind.NODE]: 'node',
   [PbKind.DROP]: 'drop',
   [PbKind.GRAVE]: 'grave',
+  [PbKind.NPC]: 'npc',
 };
 const BOSS_STATES = {
   [BossState.UNSPECIFIED]: 'choose',
@@ -85,7 +86,8 @@ const TRADE_ACTIONS = {
   accept: TradeAction.ACCEPT,
   decline: TradeAction.DECLINE,
 };
-const mapId = (map: PbMap): MapId => (map === PbMap.MAINLAND ? 'mainland' : 'island');
+const MAP_IDS: Partial<Record<PbMap, MapId>> = { [PbMap.MAINLAND]: 'mainland', [PbMap.MINE]: 'mine' };
+const mapId = (map: PbMap): MapId => MAP_IDS[map] ?? 'island';
 
 // --- client to server
 /** The message's case and value, as the generated code names them. */
@@ -130,6 +132,14 @@ function payload(msg: ClientMsg): { case: string; value: unknown } {
       return { case: 'shop', value: { buy: msg.op === 'buy', item: msg.item, qty: msg.qty } };
     case 'trade':
       return { case: 'trade', value: Number(msg.id) };
+    case 'npc':
+      return { case: 'npc', value: Number(msg.id) };
+    case 'startQuest':
+      return { case: 'startQuest', value: msg.id };
+    case 'sellToTrader':
+      return { case: 'sellToTrader', value: msg.qty };
+    case 'useLamp':
+      return { case: 'useLamp', value: msg.skill };
     case 'tradeStep': {
       const { item, qty } = { item: '', qty: 0, ...msg };
       return { case: 'tradeStep', value: { action: TRADE_ACTIONS[msg.action], item, qty } };
@@ -179,7 +189,20 @@ export function mergeEntity(known: Entity | undefined, delta: PbEntity): Entity 
   const entity: Entity = isNew
     ? { id: clientId(delta.id), kind: KINDS[delta.id & 7], x: 0, y: 0 }
     : { ...known };
-  for (const field of ['x', 'y', 'name', 'type', 'hp', 'maxHp', 'level', 'rooted', 'qty', 'glowing'] as const)
+  for (const field of [
+    'x',
+    'y',
+    'name',
+    'type',
+    'hp',
+    'maxHp',
+    'level',
+    'rooted',
+    'qty',
+    'glowing',
+    'rich',
+    'wants',
+  ] as const)
     if (delta[field] !== undefined) Object.assign(entity, { [field]: delta[field] });
   // An empty text or zero target means "none".
   if (delta.act !== undefined) entity.action = delta.act || undefined;
@@ -215,6 +238,7 @@ function selfState(self: PbSelf): SelfState {
     reaper: self.reaper.map(stack),
     kept: self.kept.map(stack),
     blocked: self.blocked,
+    quests: { ...self.quests },
     look: { cut: self.look?.cut ?? 0, color: self.look?.color ?? 0 },
   };
 }
@@ -275,7 +299,7 @@ export function decode(data: ArrayBuffer): ServerMsg | null {
     case 'xp':
       return { type: 'xp', skill: msg.value.skill as Skill, amount: msg.value.amount };
     case 'openStation':
-      return { type: 'open', station: msg.value as StationType | 'grave' };
+      return { type: 'open', station: msg.value as StationType | 'grave' | 'trader' };
     case 'tradeRequest':
       return { type: 'tradeRequest', id: clientId(msg.value.player), name: msg.value.name };
     case 'trade':

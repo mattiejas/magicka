@@ -1742,6 +1742,31 @@
    "slot": "cape",
    "unique": true,
    "trophy": true
+  },
+  {
+   "value": 20000,
+   "id": "stoneheart",
+   "name": "Stoneheart",
+   "icon": "amulet",
+   "color": "#8fa3ad",
+   "tier": 3,
+   "slot": "neck",
+   "acc": 10,
+   "power": 6,
+   "armour": 10,
+   "req": {
+    "vitality": 25
+   },
+   "unique": true
+  },
+  {
+   "value": 1,
+   "id": "genie_lamp",
+   "name": "Genie's lamp",
+   "icon": "lamp",
+   "color": "#d9b25b",
+   "tier": 1,
+   "bound": true
   }
  ],
  "recipes": [
@@ -4361,6 +4386,199 @@
    }
   },
   {
+   "acc": 32,
+   "power": 28.8,
+   "armour": 19.2,
+   "speed": 5,
+   "range": 1,
+   "respawn": 120,
+   "size": 2,
+   "id": "deepstone",
+   "name": "Deepstone",
+   "style": "melee",
+   "level": 32,
+   "hp": 320,
+   "aggro": 0,
+   "color": "#6f7480",
+   "shape": "golem",
+   "loot": {
+    "always": [
+     [
+      "mithril_ore",
+      3,
+      6
+     ],
+     [
+      "coin",
+      200,
+      400
+     ]
+    ],
+    "common": [
+     [
+      "cobalt_ore",
+      2,
+      4
+     ],
+     [
+      "mithril_bar",
+      1,
+      3
+     ],
+     [
+      "feast",
+      1,
+      2
+     ]
+    ],
+    "rare": [
+     [
+      "gem_3",
+      1,
+      0.3
+     ],
+     [
+      "gem_4",
+      1,
+      0.1
+     ]
+    ],
+    "unique": [
+     [
+      "stoneheart",
+      0.01
+     ]
+    ]
+   },
+   "boss": {
+    "baseHp": 320,
+    "regen": 0.002,
+    "arena": 7,
+    "world": false,
+    "attacks": [
+     {
+      "id": "melee",
+      "name": "Fist",
+      "weight": 4,
+      "windup": 4,
+      "execute": 1,
+      "damage": [
+       12,
+       20
+      ]
+     },
+     {
+      "id": "boulder",
+      "name": "Falling rock",
+      "weight": 3,
+      "windup": 5,
+      "execute": 2,
+      "damage": [
+       22,
+       32
+      ],
+      "count": 2
+     },
+     {
+      "id": "quake",
+      "name": "Tremor",
+      "weight": 3,
+      "windup": 6,
+      "execute": 2,
+      "damage": [
+       16,
+       26
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "acc": 14,
+   "power": 12.6,
+   "armour": 8.4,
+   "speed": 5,
+   "range": 1,
+   "respawn": 15,
+   "size": 1,
+   "id": "stampede_boar",
+   "name": "Stampeding boar",
+   "style": "melee",
+   "level": 14,
+   "hp": 45,
+   "aggro": 2,
+   "color": "#6d5138",
+   "shape": "beast",
+   "looksLike": "boar",
+   "herd": true,
+   "loot": {
+    "always": [
+     [
+      "hide_2",
+      1,
+      2
+     ],
+     [
+      "coin",
+      9,
+      28
+     ]
+    ],
+    "common": [
+     [
+      "meat",
+      1,
+      3
+     ]
+    ]
+   }
+  },
+  {
+   "acc": 24,
+   "power": 21.6,
+   "armour": 14.399999999999999,
+   "speed": 5,
+   "range": 1,
+   "respawn": 15,
+   "size": 1,
+   "id": "stampede_leader",
+   "name": "Great tusker",
+   "style": "melee",
+   "level": 24,
+   "hp": 160,
+   "aggro": 3,
+   "color": "#4a3a34",
+   "shape": "beast",
+   "looksLike": "boar",
+   "herd": true,
+   "loot": {
+    "always": [
+     [
+      "hide_3",
+      3,
+      5
+     ],
+     [
+      "coin",
+      120,
+      240
+     ],
+     [
+      "coin",
+      15,
+      48
+     ]
+    ],
+    "rare": [
+     [
+      "gem_3",
+      1,
+      0.3
+     ]
+    ]
+   }
+  },
+  {
    "acc": 45,
    "power": 40.5,
    "armour": 27,
@@ -4605,5 +4823,85 @@
   "glowTicks": 12,
   "glowBonus": 1.5,
   "glowGroup": 4
- }
+ },
+ "quests": [
+  {
+   "id": "stranded",
+   "name": "Stranded",
+   "offer": "My ship broke on these rocks, as yours did. Help me build one boat, and you may have it.",
+   "thanks": "She floats! Take this for the crossing.",
+   "steps": [
+    {
+     "text": "Mine copper ore on the rise north-east of camp.",
+     "need": {
+      "xp": "mining"
+     }
+    },
+    {
+     "text": "Chop 20 ash logs in the grove north-west of camp, and bring them to the shipwright.",
+     "need": {
+      "boat": "hull"
+     }
+    },
+    {
+     "text": "Smelt 8 copper bars at the furnace in camp, from two ore each, and bring them.",
+     "need": {
+      "boat": "fittings"
+     }
+    },
+    {
+     "text": "Pick 12 flax in the meadow south-west of camp, and bring it for the sail.",
+     "need": {
+      "boat": "sail"
+     }
+    },
+    {
+     "text": "Smith a copper sword at the anvil, from three bars and an ash log. You will need it.",
+     "need": {
+      "own": [
+       "copper_sword",
+       "iron_sword",
+       "mithril_sword",
+       "cobalt_sword",
+       "adamantite_sword"
+      ]
+     }
+    },
+    {
+     "text": "Make a trail ration at the workbench, from boar meat and berries.",
+     "need": {
+      "own": [
+       "ration",
+       "feast",
+       "ships_wheel"
+      ]
+     }
+    },
+    {
+     "text": "Defeat Old Gnashclaw on the eastern sand. He swallowed the ship's wheel. Step off marked ground.",
+     "need": {
+      "own": [
+       "ships_wheel"
+      ]
+     }
+    },
+    {
+     "text": "Bring the ship's wheel to the shipwright.",
+     "need": {
+      "boat": "wheel"
+     }
+    }
+   ],
+   "reward": [
+    [
+     "coin",
+     300
+    ],
+    [
+     "ration",
+     5
+    ]
+   ]
+  }
+ ]
 }

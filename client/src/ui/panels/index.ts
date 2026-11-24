@@ -7,9 +7,11 @@ import { bankPanel } from './bank';
 import { craftingPanel } from './crafting';
 import { dockPanel } from './dock';
 import { hairPanel } from './hair';
+import { lampPanel } from './lamp';
 import { gravePanel, reaperPanel } from './reclaim';
 import { shopPanel } from './shop';
 import { tradePanel } from './trade';
+import { traderInSight, traderPanel } from './trader';
 
 export { clickQuantity } from './quantity';
 
@@ -21,7 +23,10 @@ export interface Panel {
   /** When given, the panel is only redrawn when this changes, so updates never swallow a click or the focus. */
   key?: (self: SelfState) => string;
 }
-export type PanelId = StationType | 'grave' | 'hair' | 'trade';
+/** The mine entrance is walked through, not opened. */
+export type PanelId = Exclude<StationType, 'mine'> | 'grave' | 'hair' | 'trade' | 'trader' | 'lamp';
+/** Panels that do not belong to a place. */
+const ANYWHERE: PanelId[] = ['hair', 'trade', 'lamp'];
 
 const PANELS: Record<PanelId, Panel> = {
   bank: bankPanel,
@@ -34,6 +39,8 @@ const PANELS: Record<PanelId, Panel> = {
   dock: dockPanel,
   hair: hairPanel,
   trade: tradePanel,
+  trader: traderPanel,
+  lamp: lampPanel,
 };
 /** How far a player may walk from a station before its panel closes. */
 const STATION_REACH = 2;
@@ -100,11 +107,15 @@ export function updatePanel() {
   if (focused) drawn.querySelector<HTMLElement>(`[data-focus="${focused}"]`)?.focus();
 }
 
-const openStation = (map: MapId) => MAPS[map].stations.find(s => s.type === openPanelId);
+function placeOf(panel: PanelId, map: MapId) {
+  if (panel === 'grave') return state.entities.get('grave')?.entity;
+  if (panel === 'trader') return traderInSight();
+  return MAPS[map].stations.find(station => station.type === panel);
+}
 
 export function closePanelWhenFar() {
   const me = myTrack()?.entity;
-  if (!openPanelId || openPanelId === 'hair' || openPanelId === 'trade' || !state.self || !me) return;
-  const place = openPanelId === 'grave' ? state.entities.get('grave')?.entity : openStation(state.self.map);
+  if (!openPanelId || ANYWHERE.includes(openPanelId) || !state.self || !me) return;
+  const place = placeOf(openPanelId, state.self.map);
   if (!place || Math.max(Math.abs(me.x - place.x), Math.abs(me.y - place.y)) > STATION_REACH) closePanel();
 }

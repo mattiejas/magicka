@@ -32,17 +32,24 @@ func (w *World) gather(p *Player, n *Node) {
 	} else if !w.workReady(p, d.Interval) || w.rnd() > GatherChance(p.gatherLevel(d), d.Difficulty, tier) {
 		return
 	}
-	p.give(d.Item, 1)
+	p.give(d.Item, yieldOf(n, w.Tick))
 	if d.Skill != "" {
 		w.addXP(p, d.Skill, xp)
 	}
 	if d.HasGems() && w.rnd() < gemChance {
 		p.give(fmt.Sprintf("gem_%d", d.Tier), 1)
 	}
-	if !n.isGlowing(w.Tick) && w.rnd() < d.Deplete {
+	if !n.isGlowing(w.Tick) && !n.isRich(w.Tick) && w.rnd() < d.Deplete {
 		n.depletedUntil = w.Tick + Ticks(d.Respawn)
 		w.stop(p)
 	}
+}
+
+func yieldOf(n *Node, tick int) int {
+	if n.isRich(tick) {
+		return veinYield
+	}
+	return 1
 }
 
 // gatherLevel is 1 for nodes that need no skill.

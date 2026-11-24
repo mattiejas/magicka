@@ -8,6 +8,8 @@ func (w *World) monsterAI(m *Monster) {
 		target = w.findTarget(m)
 	}
 	switch {
+	case target == nil && m.Def.Herd:
+		w.herdOn(m)
 	case target == nil:
 		w.idle(m)
 	case !inReach(target.C.X, target.C.Y, m.rect(), m.Def.Range):

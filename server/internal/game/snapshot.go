@@ -18,7 +18,8 @@ type fields struct {
 	gear                        [5]string
 	look                        Look
 	rooted                      bool
-	boss, glowing               bool
+	boss, glowing, rich         bool
+	wants                       string
 	bossSt                      pb.BossState
 	bossStart                   int
 }
@@ -89,6 +90,11 @@ func (v *view) fullBytes() []byte {
 			if f.glowing {
 				e.Glowing = &f.glowing
 			}
+			if f.rich {
+				e.Rich = &f.rich
+			}
+		case kindNPC:
+			e.Type, e.Wants = &f.typ, &f.wants
 		case kindDrop:
 			e.Type, e.Qty = &f.typ, u32(f.qty)
 		}
@@ -140,6 +146,9 @@ func (v *view) diff(o *fields) {
 	if f.rooted != o.rooted {
 		e.Rooted = &f.rooted
 	}
+	if f.rich != o.rich {
+		e.Rich = &f.rich
+	}
 	if f.glowing != o.glowing {
 		e.Glowing = &f.glowing
 	}
@@ -160,9 +169,14 @@ func (w *World) views() (out []*view) {
 		}
 	}
 	for _, n := range w.nodes {
-		if glowing := n.isGlowing(w.Tick); glowing || n.depletedUntil > w.Tick {
-			out = append(out, &view{id: n.ID, m: n.Map, f: fields{x: n.X, y: n.Y, glowing: glowing}})
+		glowing, rich := n.isGlowing(w.Tick), n.isRich(w.Tick)
+		if glowing || rich || n.depletedUntil > w.Tick {
+			out = append(out, &view{id: n.ID, m: n.Map, f: fields{x: n.X, y: n.Y, glowing: glowing, rich: rich}})
 		}
+	}
+	for _, n := range w.npcs {
+		f := fields{x: n.X, y: n.Y, typ: n.Kind, wants: n.wants}
+		out = append(out, &view{id: n.ID, m: n.Map, owner: n.owner, f: f})
 	}
 	for _, d := range w.drops {
 		v := &view{id: d.ID, m: d.Map, f: fields{x: d.X, y: d.Y, typ: d.Item, qty: d.Qty}}
@@ -200,7 +214,7 @@ func (w *World) playerView(p *Player) *view {
 
 func (a action) hasTarget() bool {
 	switch a.typ {
-	case actGather, actStation, actAttack, actPickup, actTrade:
+	case actGather, actStation, actAttack, actPickup, actTrade, actNPC:
 		return true
 	}
 	return false

@@ -22,7 +22,11 @@ const SHAPES: Record<MonsterDef['shape'], (monster: MonsterDef) => MonsterShape>
 
 export function monsterModel(type: string): Model {
   const monster = MONSTERS[type];
-  const { parts, height, scale = 1 } = SHAPES[monster.shape](monster);
+  const {
+    parts,
+    height,
+    scale = 1,
+  } = SHAPES[monster.shape]({ ...monster, id: monster.looksLike ?? monster.id });
   const root = new THREE.Group();
   root.scale.setScalar(scale);
   for (const joint of Object.values(parts)) if (!joint.parent) root.add(joint);

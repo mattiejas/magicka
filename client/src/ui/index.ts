@@ -85,7 +85,8 @@ function handleMessage(msg: ServerMsg) {
     case 'fees':
       return updatePanel();
     case 'open':
-      return openPanel(msg.station);
+      if (msg.station !== 'mine') openPanel(msg.station);
+      return;
   }
 }
 

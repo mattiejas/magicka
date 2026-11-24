@@ -7,7 +7,10 @@ import type { MonsterShape } from './shape';
 
 const MOSS = '#7f9458';
 
-export function golem({ color: c }: MonsterDef): MonsterShape {
+const BOSS_SCALE = 1.9;
+
+export function golem({ color: c, boss }: MonsterDef): MonsterShape {
+  const scale = boss ? BOSS_SCALE : 1;
   const stone = (radius: number, position: V3, seed = 1, tint = 1) =>
     part(blob(radius, 0.2, seed), shade(c, tint), position);
   const body = pivot(
@@ -39,5 +42,9 @@ export function golem({ color: c }: MonsterDef): MonsterShape {
   };
   const leg = (x: number) =>
     pivot(merge([stone(0.2, [0, -0.06, 0], 5, 0.92), stone(0.2, [0, -0.33, 0.04], 9, 0.86)]), x, 0.5);
-  return { parts: { body, la: arm(0.56), ra: arm(-0.56), ll: leg(0.22), rl: leg(-0.22) }, height: 1.75 };
+  return {
+    parts: { body, la: arm(0.56), ra: arm(-0.56), ll: leg(0.22), rl: leg(-0.22) },
+    height: 1.75 * scale,
+    scale,
+  };
 }

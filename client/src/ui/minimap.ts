@@ -2,7 +2,7 @@
 import { type Entity, type GameMap, MAPS, MONSTERS, type TilePos } from '@driftwake/shared';
 import { send } from '../net/connection';
 import { myTrack, positionOf, state } from '../net/state';
-import { TILE_COLORS } from '../scene/palette';
+import { CAVE_COLOR, TILE_COLORS } from '../scene/palette';
 import { byId, h } from './dom';
 
 const CANVAS_SIZE = 416;
@@ -19,6 +19,7 @@ const COLORS = {
   boss: '#c9604a',
   drop: '#e3c274',
   grave: '#222a30',
+  npc: '#b48fd0',
   station: '#2a343b',
   tree: '#54703f',
   plant: '#b8bf6a',
@@ -71,7 +72,7 @@ const toCanvas = ([x, y]: TilePos, [centreX, centreY]: TilePos): TilePos => [
 function drawPicture(context: CanvasRenderingContext2D, map: GameMap, [x, y]: TilePos) {
   if (picture?.mapId !== map.id) picture = { mapId: map.id, canvas: paintMap(map) };
   context.imageSmoothingEnabled = false;
-  context.fillStyle = TILE_COLORS[0];
+  context.fillStyle = emptyColor(map);
   context.fillRect(0, 0, CANVAS_SIZE, CANVAS_SIZE);
   const left = (x + 0.5 - RANGE) * PICTURE_SCALE;
   const top = (y + 0.5 - RANGE) * PICTURE_SCALE;
@@ -89,12 +90,14 @@ function paintMap(map: GameMap): HTMLCanvasElement {
     context.fillRect(x * PICTURE_SCALE - grow, y * PICTURE_SCALE - grow, size, size);
   };
   map.tiles.forEach((tile, i) => {
-    fill(i % map.size, Math.floor(i / map.size), TILE_COLORS[tile]);
+    fill(i % map.size, Math.floor(i / map.size), tile ? TILE_COLORS[tile] : emptyColor(map));
   });
   for (const node of map.nodes) fill(node.x, node.y, nodeColor(node.type));
   for (const station of map.stations) fill(station.x, station.y, COLORS.station, 1);
   return canvas;
 }
+
+const emptyColor = ({ cave }: GameMap) => (cave ? CAVE_COLOR : TILE_COLORS[0]);
 
 function nodeColor(type: string): string {
   if (type.startsWith('tree')) return COLORS.tree;
@@ -115,6 +118,8 @@ function drawEntity(context: CanvasRenderingContext2D, entity: Entity, position:
       return drawDot(context, at, entity.id === state.me ? COLORS.self : COLORS.player, 5);
     case 'drop':
       return drawDot(context, at, COLORS.drop, 3);
+    case 'npc':
+      return drawDot(context, at, COLORS.npc, 6);
     case 'grave':
       return drawDot(context, at, COLORS.grave, 6);
   }

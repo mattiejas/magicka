@@ -10,6 +10,7 @@ import {
   mesh,
   monsterModel,
   nodeGeo,
+  npcModel,
   playerModel,
   poseMonster,
   posePlayer,
@@ -166,12 +167,13 @@ const SETS: Record<string, GallerySet> = {
     columns: 4,
     gap: 2.6,
     exhibits: () => [
-      ...['bank', 'furnace', 'anvil', 'workbench', 'reaper', 'dock', 'shop'].map(id => {
+      ...['bank', 'furnace', 'anvil', 'workbench', 'reaper', 'dock', 'shop', 'mine'].map(id => {
         const object = mesh(stationGeo(id));
         const keeper = keeperOf(id);
         if (keeper) object.add(keeper);
         return { object, turn: 0.3 };
       }),
+      ...['trader', 'genie'].map(kind => ({ object: npcModel(kind).root, turn: 0.3 })),
       ...[0.3, 1].map(progress => ({ object: mesh(boatGeo(() => progress)), turn: 0.9 })),
     ],
   },

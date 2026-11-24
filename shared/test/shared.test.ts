@@ -55,7 +55,7 @@ describe('content graph', () => {
     const gathered = maps.flatMap(map => map.nodes.map(node => NODES[node.type].item));
     const looted = maps.flatMap(map => map.spawns.flatMap(spawn => lootItems(MONSTERS[spawn.type].loot)));
     const capes = SKILLS.map(skill => `cape_${skill}`);
-    const have = new Set([...ECONOMY.shopStock, ...capes, ...gathered, ...looted]);
+    const have = new Set(['genie_lamp', ...ECONOMY.shopStock, ...capes, ...gathered, ...looted]);
     const craftable = () => RECIPES.filter(r => !have.has(r.out) && r.in.every(([item]) => have.has(item)));
     for (let next = craftable(); next.length; next = craftable())
       for (const recipe of next) have.add(recipe.out);

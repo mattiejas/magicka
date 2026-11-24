@@ -4,6 +4,7 @@ export { dropModel, graveModel } from './ground';
 export { heldGeo } from './held';
 export { type Model, mesh } from './model';
 export { monsterModel } from './monsters';
+export { npcModel } from './npcs';
 export { modelKey, playerModel } from './player';
 export { nodeGeo } from './resources';
 export { keeperOf, stationGeo } from './stations';

@@ -203,6 +203,7 @@ const (
 	MapId_MAP_ID_UNSPECIFIED MapId = 0
 	MapId_MAP_ID_ISLAND      MapId = 1
 	MapId_MAP_ID_MAINLAND    MapId = 2
+	MapId_MAP_ID_MINE        MapId = 3
 )
 
 // Enum value maps for MapId.
@@ -211,11 +212,13 @@ var (
 		0: "MAP_ID_UNSPECIFIED",
 		1: "MAP_ID_ISLAND",
 		2: "MAP_ID_MAINLAND",
+		3: "MAP_ID_MINE",
 	}
 	MapId_value = map[string]int32{
 		"MAP_ID_UNSPECIFIED": 0,
 		"MAP_ID_ISLAND":      1,
 		"MAP_ID_MAINLAND":    2,
+		"MAP_ID_MINE":        3,
 	}
 )
 
@@ -256,6 +259,7 @@ const (
 	EntityKind_ENTITY_KIND_DROP        EntityKind = 4
 	EntityKind_ENTITY_KIND_GRAVE       EntityKind = 5
 	EntityKind_ENTITY_KIND_STATION     EntityKind = 6
+	EntityKind_ENTITY_KIND_NPC         EntityKind = 7
 )
 
 // Enum value maps for EntityKind.
@@ -268,6 +272,7 @@ var (
 		4: "ENTITY_KIND_DROP",
 		5: "ENTITY_KIND_GRAVE",
 		6: "ENTITY_KIND_STATION",
+		7: "ENTITY_KIND_NPC",
 	}
 	EntityKind_value = map[string]int32{
 		"ENTITY_KIND_UNSPECIFIED": 0,
@@ -277,6 +282,7 @@ var (
 		"ENTITY_KIND_DROP":        4,
 		"ENTITY_KIND_GRAVE":       5,
 		"ENTITY_KIND_STATION":     6,
+		"ENTITY_KIND_NPC":         7,
 	}
 )
 
@@ -447,6 +453,10 @@ type ClientMessage struct {
 	//	*ClientMessage_TradeStep
 	//	*ClientMessage_Block
 	//	*ClientMessage_Report
+	//	*ClientMessage_StartQuest
+	//	*ClientMessage_Npc
+	//	*ClientMessage_SellToTrader
+	//	*ClientMessage_UseLamp
 	Msg           isClientMessage_Msg `protobuf_oneof:"msg"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
@@ -741,6 +751,42 @@ func (x *ClientMessage) GetReport() *Report {
 	return nil
 }
 
+func (x *ClientMessage) GetStartQuest() string {
+	if x != nil {
+		if x, ok := x.Msg.(*ClientMessage_StartQuest); ok {
+			return x.StartQuest
+		}
+	}
+	return ""
+}
+
+func (x *ClientMessage) GetNpc() uint32 {
+	if x != nil {
+		if x, ok := x.Msg.(*ClientMessage_Npc); ok {
+			return x.Npc
+		}
+	}
+	return 0
+}
+
+func (x *ClientMessage) GetSellToTrader() uint32 {
+	if x != nil {
+		if x, ok := x.Msg.(*ClientMessage_SellToTrader); ok {
+			return x.SellToTrader
+		}
+	}
+	return 0
+}
+
+func (x *ClientMessage) GetUseLamp() string {
+	if x != nil {
+		if x, ok := x.Msg.(*ClientMessage_UseLamp); ok {
+			return x.UseLamp
+		}
+	}
+	return ""
+}
+
 type isClientMessage_Msg interface {
 	isClientMessage_Msg()
 }
@@ -858,6 +904,23 @@ type ClientMessage_Report struct {
 	Report *Report `protobuf:"bytes,28,opt,name=report,proto3,oneof"`
 }
 
+type ClientMessage_StartQuest struct {
+	// npc: walks to someone and speaks to them. use_lamp: the skill to train.
+	StartQuest string `protobuf:"bytes,29,opt,name=start_quest,json=startQuest,proto3,oneof"`
+}
+
+type ClientMessage_Npc struct {
+	Npc uint32 `protobuf:"varint,30,opt,name=npc,proto3,oneof"`
+}
+
+type ClientMessage_SellToTrader struct {
+	SellToTrader uint32 `protobuf:"varint,31,opt,name=sell_to_trader,json=sellToTrader,proto3,oneof"`
+}
+
+type ClientMessage_UseLamp struct {
+	UseLamp string `protobuf:"bytes,32,opt,name=use_lamp,json=useLamp,proto3,oneof"`
+}
+
 func (*ClientMessage_Register) isClientMessage_Msg() {}
 
 func (*ClientMessage_Login) isClientMessage_Msg() {}
@@ -913,6 +976,14 @@ func (*ClientMessage_TradeStep) isClientMessage_Msg() {}
 func (*ClientMessage_Block) isClientMessage_Msg() {}
 
 func (*ClientMessage_Report) isClientMessage_Msg() {}
+
+func (*ClientMessage_StartQuest) isClientMessage_Msg() {}
+
+func (*ClientMessage_Npc) isClientMessage_Msg() {}
+
+func (*ClientMessage_SellToTrader) isClientMessage_Msg() {}
+
+func (*ClientMessage_UseLamp) isClientMessage_Msg() {}
 
 type Empty struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
@@ -2437,7 +2508,9 @@ type Self struct {
 	Reaper []*Stack `protobuf:"bytes,10,rep,name=reaper,proto3" json:"reaper,omitempty"`
 	Kept   []*Stack `protobuf:"bytes,12,rep,name=kept,proto3" json:"kept,omitempty"`
 	// Names of players whose chat and trade requests are hidden.
-	Blocked       []string `protobuf:"bytes,13,rep,name=blocked,proto3" json:"blocked,omitempty"`
+	Blocked []string `protobuf:"bytes,13,rep,name=blocked,proto3" json:"blocked,omitempty"`
+	// Steps done of every quest begun.
+	Quests        map[string]uint32 `protobuf:"bytes,14,rep,name=quests,proto3" json:"quests,omitempty" protobuf_key:"bytes,1,opt,name=key" protobuf_val:"varint,2,opt,name=value"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -2563,6 +2636,13 @@ func (x *Self) GetBlocked() []string {
 	return nil
 }
 
+func (x *Self) GetQuests() map[string]uint32 {
+	if x != nil {
+		return x.Quests
+	}
+	return nil
+}
+
 // `entities` hold only what changed, except for entities the browser did not know yet.
 type Snapshot struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
@@ -2672,7 +2752,10 @@ type Entity struct {
 	Qty    *uint32   `protobuf:"varint,17,opt,name=qty,proto3,oneof" json:"qty,omitempty"`
 	Boss   *BossView `protobuf:"bytes,18,opt,name=boss,proto3" json:"boss,omitempty"`
 	// Nodes are only reported while they are depleted or glowing.
-	Glowing       *bool `protobuf:"varint,19,opt,name=glowing,proto3,oneof" json:"glowing,omitempty"`
+	Glowing *bool `protobuf:"varint,19,opt,name=glowing,proto3,oneof" json:"glowing,omitempty"`
+	// A rock with a rich vein. What a stranded trader buys.
+	Rich          *bool   `protobuf:"varint,20,opt,name=rich,proto3,oneof" json:"rich,omitempty"`
+	Wants         *string `protobuf:"bytes,21,opt,name=wants,proto3,oneof" json:"wants,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -2838,6 +2921,20 @@ func (x *Entity) GetGlowing() bool {
 		return *x.Glowing
 	}
 	return false
+}
+
+func (x *Entity) GetRich() bool {
+	if x != nil && x.Rich != nil {
+		return *x.Rich
+	}
+	return false
+}
+
+func (x *Entity) GetWants() string {
+	if x != nil && x.Wants != nil {
+		return *x.Wants
+	}
+	return ""
 }
 
 type Gear struct {
@@ -3230,7 +3327,7 @@ var File_driftwake_v1_game_proto protoreflect.FileDescriptor
 
 const file_driftwake_v1_game_proto_rawDesc = "" +
 	"\n" +
-	"\x17driftwake/v1/game.proto\x12\fdriftwake.v1\"\xff\b\n" +
+	"\x17driftwake/v1/game.proto\x12\fdriftwake.v1\"\xfb\t\n" +
 	"\rClientMessage\x127\n" +
 	"\bregister\x18\x01 \x01(\v2\x19.driftwake.v1.CredentialsH\x00R\bregister\x121\n" +
 	"\x05login\x18\x02 \x01(\v2\x19.driftwake.v1.CredentialsH\x00R\x05login\x12#\n" +
@@ -3263,7 +3360,12 @@ const file_driftwake_v1_game_proto_rawDesc = "" +
 	"\n" +
 	"trade_step\x18\x1a \x01(\v2\x17.driftwake.v1.TradeStepH\x00R\ttradeStep\x12+\n" +
 	"\x05block\x18\x1b \x01(\v2\x13.driftwake.v1.BlockH\x00R\x05block\x12.\n" +
-	"\x06report\x18\x1c \x01(\v2\x14.driftwake.v1.ReportH\x00R\x06reportB\x05\n" +
+	"\x06report\x18\x1c \x01(\v2\x14.driftwake.v1.ReportH\x00R\x06report\x12!\n" +
+	"\vstart_quest\x18\x1d \x01(\tH\x00R\n" +
+	"startQuest\x12\x12\n" +
+	"\x03npc\x18\x1e \x01(\rH\x00R\x03npc\x12&\n" +
+	"\x0esell_to_trader\x18\x1f \x01(\rH\x00R\fsellToTrader\x12\x1b\n" +
+	"\buse_lamp\x18  \x01(\tH\x00R\auseLampB\x05\n" +
 	"\x03msg\"\a\n" +
 	"\x05Empty\"=\n" +
 	"\vCredentials\x12\x12\n" +
@@ -3359,7 +3461,7 @@ const file_driftwake_v1_game_proto_rawDesc = "" +
 	"\x05stack\x18\x02 \x01(\v2\x13.driftwake.v1.StackR\x05stack\"^\n" +
 	"\tEquipSlot\x12&\n" +
 	"\x04slot\x18\x01 \x01(\x0e2\x12.driftwake.v1.SlotR\x04slot\x12)\n" +
-	"\x05stack\x18\x02 \x01(\v2\x13.driftwake.v1.StackR\x05stack\"\xe9\x04\n" +
+	"\x05stack\x18\x02 \x01(\v2\x13.driftwake.v1.StackR\x05stack\"\xdc\x05\n" +
 	"\x04Self\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\rR\x02id\x12\x12\n" +
 	"\x04name\x18\x02 \x01(\tR\x04name\x12%\n" +
@@ -3374,11 +3476,15 @@ const file_driftwake_v1_game_proto_rawDesc = "" +
 	"\x06reaper\x18\n" +
 	" \x03(\v2\x13.driftwake.v1.StackR\x06reaper\x12'\n" +
 	"\x04kept\x18\f \x03(\v2\x13.driftwake.v1.StackR\x04kept\x12\x18\n" +
-	"\ablocked\x18\r \x03(\tR\ablocked\x1a5\n" +
+	"\ablocked\x18\r \x03(\tR\ablocked\x126\n" +
+	"\x06quests\x18\x0e \x03(\v2\x1e.driftwake.v1.Self.QuestsEntryR\x06quests\x1a5\n" +
 	"\aXpEntry\x12\x10\n" +
 	"\x03key\x18\x01 \x01(\tR\x03key\x12\x14\n" +
 	"\x05value\x18\x02 \x01(\rR\x05value:\x028\x01\x1a7\n" +
 	"\tBoatEntry\x12\x10\n" +
+	"\x03key\x18\x01 \x01(\tR\x03key\x12\x14\n" +
+	"\x05value\x18\x02 \x01(\rR\x05value:\x028\x01\x1a9\n" +
+	"\vQuestsEntry\x12\x10\n" +
 	"\x03key\x18\x01 \x01(\tR\x03key\x12\x14\n" +
 	"\x05value\x18\x02 \x01(\rR\x05value:\x028\x01\"\xce\x01\n" +
 	"\bSnapshot\x12\x12\n" +
@@ -3387,7 +3493,7 @@ const file_driftwake_v1_game_proto_rawDesc = "" +
 	"\x05reset\x18\x03 \x01(\bR\x05reset\x120\n" +
 	"\bentities\x18\x04 \x03(\v2\x14.driftwake.v1.EntityR\bentities\x12\x12\n" +
 	"\x04gone\x18\x05 \x03(\rR\x04gone\x12+\n" +
-	"\x06events\x18\x06 \x03(\v2\x13.driftwake.v1.EventR\x06events\"\xf3\x04\n" +
+	"\x06events\x18\x06 \x03(\v2\x13.driftwake.v1.EventR\x06events\"\xba\x05\n" +
 	"\x06Entity\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\rR\x02id\x12\x12\n" +
 	"\x04full\x18\x02 \x01(\bR\x04full\x12\x11\n" +
@@ -3409,7 +3515,9 @@ const file_driftwake_v1_game_proto_rawDesc = "" +
 	"R\x06rooted\x88\x01\x01\x12\x15\n" +
 	"\x03qty\x18\x11 \x01(\rH\vR\x03qty\x88\x01\x01\x12*\n" +
 	"\x04boss\x18\x12 \x01(\v2\x16.driftwake.v1.BossViewR\x04boss\x12\x1d\n" +
-	"\aglowing\x18\x13 \x01(\bH\fR\aglowing\x88\x01\x01B\x04\n" +
+	"\aglowing\x18\x13 \x01(\bH\fR\aglowing\x88\x01\x01\x12\x17\n" +
+	"\x04rich\x18\x14 \x01(\bH\rR\x04rich\x88\x01\x01\x12\x19\n" +
+	"\x05wants\x18\x15 \x01(\tH\x0eR\x05wants\x88\x01\x01B\x04\n" +
 	"\x02_xB\x04\n" +
 	"\x02_yB\a\n" +
 	"\x05_nameB\a\n" +
@@ -3423,7 +3531,9 @@ const file_driftwake_v1_game_proto_rawDesc = "" +
 	"\a_rootedB\x06\n" +
 	"\x04_qtyB\n" +
 	"\n" +
-	"\b_glowing\"n\n" +
+	"\b_glowingB\a\n" +
+	"\x05_richB\b\n" +
+	"\x06_wants\"n\n" +
 	"\x04Gear\x12\x16\n" +
 	"\x06weapon\x18\x01 \x01(\tR\x06weapon\x12\x12\n" +
 	"\x04head\x18\x02 \x01(\tR\x04head\x12\x12\n" +
@@ -3471,11 +3581,12 @@ const file_driftwake_v1_game_proto_rawDesc = "" +
 	"\x16REPORT_REASON_LANGUAGE\x10\x01\x12\x16\n" +
 	"\x12REPORT_REASON_SCAM\x10\x02\x12\x1a\n" +
 	"\x16REPORT_REASON_CHEATING\x10\x03\x12\x17\n" +
-	"\x13REPORT_REASON_OTHER\x10\x04*G\n" +
+	"\x13REPORT_REASON_OTHER\x10\x04*X\n" +
 	"\x05MapId\x12\x16\n" +
 	"\x12MAP_ID_UNSPECIFIED\x10\x00\x12\x11\n" +
 	"\rMAP_ID_ISLAND\x10\x01\x12\x13\n" +
-	"\x0fMAP_ID_MAINLAND\x10\x02*\xb6\x01\n" +
+	"\x0fMAP_ID_MAINLAND\x10\x02\x12\x0f\n" +
+	"\vMAP_ID_MINE\x10\x03*\xcb\x01\n" +
 	"\n" +
 	"EntityKind\x12\x1b\n" +
 	"\x17ENTITY_KIND_UNSPECIFIED\x10\x00\x12\x16\n" +
@@ -3484,7 +3595,8 @@ const file_driftwake_v1_game_proto_rawDesc = "" +
 	"\x10ENTITY_KIND_NODE\x10\x03\x12\x14\n" +
 	"\x10ENTITY_KIND_DROP\x10\x04\x12\x15\n" +
 	"\x11ENTITY_KIND_GRAVE\x10\x05\x12\x17\n" +
-	"\x13ENTITY_KIND_STATION\x10\x06*m\n" +
+	"\x13ENTITY_KIND_STATION\x10\x06\x12\x13\n" +
+	"\x0fENTITY_KIND_NPC\x10\a*m\n" +
 	"\tBossState\x12\x1a\n" +
 	"\x16BOSS_STATE_UNSPECIFIED\x10\x00\x12\x15\n" +
 	"\x11BOSS_STATE_CHOOSE\x10\x01\x12\x15\n" +
@@ -3510,7 +3622,7 @@ func file_driftwake_v1_game_proto_rawDescGZIP() []byte {
 }
 
 var file_driftwake_v1_game_proto_enumTypes = make([]protoimpl.EnumInfo, 7)
-var file_driftwake_v1_game_proto_msgTypes = make([]protoimpl.MessageInfo, 35)
+var file_driftwake_v1_game_proto_msgTypes = make([]protoimpl.MessageInfo, 36)
 var file_driftwake_v1_game_proto_goTypes = []any{
 	(Slot)(0),             // 0: driftwake.v1.Slot
 	(TradeAction)(0),      // 1: driftwake.v1.TradeAction
@@ -3554,6 +3666,7 @@ var file_driftwake_v1_game_proto_goTypes = []any{
 	(*Impact)(nil),        // 39: driftwake.v1.Impact
 	nil,                   // 40: driftwake.v1.Self.XpEntry
 	nil,                   // 41: driftwake.v1.Self.BoatEntry
+	nil,                   // 42: driftwake.v1.Self.QuestsEntry
 }
 var file_driftwake_v1_game_proto_depIdxs = []int32{
 	9,  // 0: driftwake.v1.ClientMessage.register:type_name -> driftwake.v1.Credentials
@@ -3600,20 +3713,21 @@ var file_driftwake_v1_game_proto_depIdxs = []int32{
 	20, // 41: driftwake.v1.Self.look:type_name -> driftwake.v1.Look
 	29, // 42: driftwake.v1.Self.reaper:type_name -> driftwake.v1.Stack
 	29, // 43: driftwake.v1.Self.kept:type_name -> driftwake.v1.Stack
-	3,  // 44: driftwake.v1.Snapshot.map:type_name -> driftwake.v1.MapId
-	34, // 45: driftwake.v1.Snapshot.entities:type_name -> driftwake.v1.Entity
-	37, // 46: driftwake.v1.Snapshot.events:type_name -> driftwake.v1.Event
-	35, // 47: driftwake.v1.Entity.gear:type_name -> driftwake.v1.Gear
-	20, // 48: driftwake.v1.Entity.look:type_name -> driftwake.v1.Look
-	36, // 49: driftwake.v1.Entity.boss:type_name -> driftwake.v1.BossView
-	5,  // 50: driftwake.v1.BossView.state:type_name -> driftwake.v1.BossState
-	38, // 51: driftwake.v1.Event.hit:type_name -> driftwake.v1.Hit
-	39, // 52: driftwake.v1.Event.impact:type_name -> driftwake.v1.Impact
-	53, // [53:53] is the sub-list for method output_type
-	53, // [53:53] is the sub-list for method input_type
-	53, // [53:53] is the sub-list for extension type_name
-	53, // [53:53] is the sub-list for extension extendee
-	0,  // [0:53] is the sub-list for field type_name
+	42, // 44: driftwake.v1.Self.quests:type_name -> driftwake.v1.Self.QuestsEntry
+	3,  // 45: driftwake.v1.Snapshot.map:type_name -> driftwake.v1.MapId
+	34, // 46: driftwake.v1.Snapshot.entities:type_name -> driftwake.v1.Entity
+	37, // 47: driftwake.v1.Snapshot.events:type_name -> driftwake.v1.Event
+	35, // 48: driftwake.v1.Entity.gear:type_name -> driftwake.v1.Gear
+	20, // 49: driftwake.v1.Entity.look:type_name -> driftwake.v1.Look
+	36, // 50: driftwake.v1.Entity.boss:type_name -> driftwake.v1.BossView
+	5,  // 51: driftwake.v1.BossView.state:type_name -> driftwake.v1.BossState
+	38, // 52: driftwake.v1.Event.hit:type_name -> driftwake.v1.Hit
+	39, // 53: driftwake.v1.Event.impact:type_name -> driftwake.v1.Impact
+	54, // [54:54] is the sub-list for method output_type
+	54, // [54:54] is the sub-list for method input_type
+	54, // [54:54] is the sub-list for extension type_name
+	54, // [54:54] is the sub-list for extension extendee
+	0,  // [0:54] is the sub-list for field type_name
 }
 
 func init() { file_driftwake_v1_game_proto_init() }
@@ -3650,6 +3764,10 @@ func file_driftwake_v1_game_proto_init() {
 		(*ClientMessage_TradeStep)(nil),
 		(*ClientMessage_Block)(nil),
 		(*ClientMessage_Report)(nil),
+		(*ClientMessage_StartQuest)(nil),
+		(*ClientMessage_Npc)(nil),
+		(*ClientMessage_SellToTrader)(nil),
+		(*ClientMessage_UseLamp)(nil),
 	}
 	file_driftwake_v1_game_proto_msgTypes[14].OneofWrappers = []any{
 		(*ServerMessage_Welcome)(nil),
@@ -3678,7 +3796,7 @@ func file_driftwake_v1_game_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_driftwake_v1_game_proto_rawDesc), len(file_driftwake_v1_game_proto_rawDesc)),
 			NumEnums:      7,
-			NumMessages:   35,
+			NumMessages:   36,
 			NumExtensions: 0,
 			NumServices:   0,
 		},

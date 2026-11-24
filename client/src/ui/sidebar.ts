@@ -2,6 +2,7 @@
 import {
   ITEMS,
   MAX_LEVEL,
+  QUESTS,
   type SelfState,
   SKILLS,
   type Skill,
@@ -13,10 +14,11 @@ import { send } from '../net/connection';
 import { state } from '../net/state';
 import { bar, button, h } from './dom';
 import { ALL_ITEMS, isSellable, isTradable, itemSlot, level } from './items';
-import { clickQuantity, isPanelOpen } from './panels';
+import { clickQuantity, isPanelOpen, openPanel } from './panels';
 import type { MenuItem } from './popups';
 
-const TABS = ['inventory', 'equipment', 'skills'] as const;
+const TABS = ['inventory', 'equipment', 'skills', 'quests'] as const;
+const LAMP = 'genie_lamp';
 type Tab = (typeof TABS)[number];
 let currentTab: Tab = 'inventory';
 
@@ -35,7 +37,7 @@ function selectTab(tab: Tab) {
   updateSidebar();
 }
 
-const RENDER: Record<Tab, (self: SelfState) => Node[]> = { inventory, equipment, skills };
+const RENDER: Record<Tab, (self: SelfState) => Node[]> = { inventory, equipment, skills, quests };
 
 export function updateSidebar() {
   const { self } = state;
@@ -66,6 +68,7 @@ function useItem({ id }: Stack, slot: number) {
   if (isPanelOpen('bank')) send({ type: 'bank', op: 'deposit', item: id, qty: clickQuantity() });
   else if (isPanelOpen('shop')) sell(id, clickQuantity());
   else if (isPanelOpen('trade')) offer(id, clickQuantity());
+  else if (id === LAMP) openPanel('lamp');
   else if (item.heal) send({ type: 'eat', slot });
   else if (item.slot) send({ type: 'equip', slot });
 }
@@ -115,6 +118,27 @@ function equipment({ equip }: SelfState): Node[] {
       `Accuracy ${total('acc')}   Power ${total('power')}   Armour ${total('armour')}`,
     ),
   ];
+}
+
+// --- quests
+function quests(self: SelfState): Node[] {
+  return QUESTS.flatMap(({ id, name, steps }) => {
+    const done = self.quests[id];
+    if (done === undefined)
+      return [
+        h('h2', {}, name),
+        h(
+          'p',
+          { class: 'mute' },
+          self.boatDone ? 'You sailed on without it.' : 'Speak to the shipwright at the dock.',
+        ),
+      ];
+    const status = done === steps.length ? 'Completed' : `${done} of ${steps.length}`;
+    const seen = steps
+      .slice(0, done + 1)
+      .map(({ text }, i) => h('li', { class: i < done ? 'mute done' : '' }, text));
+    return [h('h2', {}, `${name}: ${status}`), h('ol', { class: 'steps' }, ...seen)];
+  });
 }
 
 // --- skills

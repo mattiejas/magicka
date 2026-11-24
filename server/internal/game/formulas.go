@@ -66,6 +66,9 @@ func GatherChance(level, req, toolTier int) float64 {
 	return math.Min(0.95, 0.3+float64(level-req)*0.015+float64(toolTier)*0.08)
 }
 
+// LampXP is about ten minutes of a relaxed method at a level.
+func LampXP(level int) float64 { return 600 * (3 + 0.009*float64(level*level)) }
+
 // Mulberry is a small seeded generator, identical to the browser's.
 func Mulberry(seed uint32) func() float64 {
 	return func() float64 {

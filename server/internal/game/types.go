@@ -18,6 +18,7 @@ const (
 	kindDrop
 	kindGrave
 	kindStation
+	kindNPC
 )
 
 func entityID(kind uint32, n int) uint32 { return uint32(n)<<kindBits | kind }
@@ -61,7 +62,11 @@ type Char struct {
 	Grave    *Grave            `json:"grave"`
 	Kept     []*Stack          `json:"kept,omitempty"` // uniques nobody picked up, waiting with the reaper
 	Look     *Look             `json:"look"`
-	Blocked  []string          `json:"blocked,omitempty"` // names of players not to hear from
+	Quests   map[string]int    `json:"quests"` // steps done
+	// Ticks of really playing, and how many there were when a genie last came.
+	PlayTicks int      `json:"playTicks"`
+	GenieAt   int      `json:"genieAt"`
+	Blocked   []string `json:"blocked,omitempty"` // names of players not to hear from
 }
 
 type actionType int
@@ -76,6 +81,7 @@ const (
 	actGrave
 	actCraft
 	actTrade
+	actNPC
 )
 
 // action is what a player is doing over several ticks.
@@ -180,6 +186,7 @@ type Monster struct {
 	Map        *content.Map
 	X, Y       int
 	home       Point
+	start      Point // where it first stood
 	HP, MaxHP  float64
 	Dead       bool
 	respawnAt  int
@@ -200,9 +207,12 @@ type Node struct {
 	X, Y          int
 	depletedUntil int
 	glowingUntil  int
+	richUntil     int
 }
 
 func (n *Node) rect() Rect { return Rect{n.X, n.Y, n.Def.Size, n.Def.Size} }
+
+func (n *Node) isRich(tick int) bool { return n.richUntil > tick }
 
 func (n *Node) isGlowing(tick int) bool { return n.glowingUntil > tick }
 

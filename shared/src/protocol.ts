@@ -23,7 +23,9 @@ export type ClientMsg =
   | { type: 'unequip'; slot: Slot }
   | { type: 'swap'; a: number; b: number }
   | { type: 'bank'; op: 'deposit' | 'withdraw'; item: string; qty: number }
-  | { type: 'trade'; id: string }
+  | { type: 'trade' | 'npc' | 'startQuest'; id: string }
+  | { type: 'sellToTrader'; qty: number }
+  | { type: 'useLamp'; skill: Skill }
   | { type: 'tradeStep'; action: 'accept' | 'decline' }
   | { type: 'tradeStep'; action: 'offer' | 'takeBack'; item: string; qty: number }
   | { type: 'block'; name: string; on: boolean }
@@ -55,8 +57,8 @@ export interface BossView {
   target?: string;
 }
 
-export type EntityKind = 'player' | 'monster' | 'node' | 'drop' | 'grave';
-/** Anything the server reports at a position. Nodes are only reported while they are depleted or glowing. */
+export type EntityKind = 'player' | 'monster' | 'node' | 'drop' | 'grave' | 'npc';
+/** Anything the server reports at a position. Nodes are only reported while they are depleted, glowing or rich. */
 export interface Entity {
   id: string;
   kind: EntityKind;
@@ -77,6 +79,10 @@ export interface Entity {
   level?: number;
   rooted?: boolean;
   glowing?: boolean;
+  /** A rock with a rich vein. */
+  rich?: boolean;
+  /** What a stranded trader buys. */
+  wants?: string;
   tool?: string;
   qty?: number;
   boss?: BossView;
@@ -104,6 +110,8 @@ export interface SelfState {
   kept: Stack[];
   /** Names, in lower case, of players not to hear from. */
   blocked: string[];
+  /** Steps done of every quest begun. */
+  quests: Record<string, number>;
   look: Look;
 }
 
@@ -129,7 +137,7 @@ export type ServerMsg =
   | { type: 'chat'; from: string; text: string }
   | { type: 'info'; text: string; kind?: InfoKind }
   | { type: 'xp'; skill: Skill; amount: number }
-  | { type: 'open'; station: StationType | 'grave' }
+  | { type: 'open'; station: StationType | 'grave' | 'trader' }
   /** Coins that graves and the reaper have taken from everyone, ever. */
   | { type: 'fees'; taken: number }
   | { type: 'tradeRequest'; id: string; name: string }

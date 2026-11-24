@@ -9,9 +9,14 @@ const (
 	tradeReach    = 2  // tiles between two players who trade
 	tradePause    = 3  // after a change, before offers can be accepted
 	maxBlocked    = 200
-	stationReach  = 2 // tiles from a station at which it can be used
-	eatDelay      = 2 // before acting or attacking again
-	regenInterval = 10
+	traderPercent = 200 // of shop value, paid by a stranded trader
+	traderLimit   = 50  // items one player can sell them
+	veinYield     = 2   // items per strike at a rich vein
+
+	encounterMin, encounterMax = 5 * 60.0, 8 * 60.0 // seconds between encounters
+	stationReach               = 2                  // tiles from a station at which it can be used
+	eatDelay                   = 2                  // before acting or attacking again
+	regenInterval              = 10
 
 	defaultAttackSpeed = 4
 	defaultAttackReach = 1
@@ -32,13 +37,19 @@ const (
 )
 
 var (
-	lingerTime       = Ticks(30) // a disconnected player stays at most this long
-	combatTime       = Ticks(10) // since the last blow, to count as in combat
-	fightMemory      = Ticks(20) // a fighter stays active this long without a blow
-	saveInterval     = Ticks(30)
-	tradeRequestTime = Ticks(30)      // to answer
-	idleLimit        = Ticks(30 * 60) // without input, before being logged out
-	idleWarning      = idleLimit - Ticks(60)
+	lingerTime                         = Ticks(30) // a disconnected player stays at most this long
+	combatTime                         = Ticks(10) // since the last blow, to count as in combat
+	fightMemory                        = Ticks(20) // a fighter stays active this long without a blow
+	saveInterval                       = Ticks(30)
+	veinTime, traderTime, stampedeTime = Ticks(180), Ticks(240), Ticks(120)
+	genieInterval                      = Ticks(3 * 3600) // of play, between visits
+	genieStay                          = Ticks(60)
+	geniePatience                      = Ticks(60) // since the last input, to be visited
+	genieCheck                         = Ticks(60)
+	activeTime                         = Ticks(300)     // since the last input, for time to count as play
+	tradeRequestTime                   = Ticks(30)      // to answer
+	idleLimit                          = Ticks(30 * 60) // without input, before being logged out
+	idleWarning                        = idleLimit - Ticks(60)
 )
 
 // longAgo is a tick before any fight.

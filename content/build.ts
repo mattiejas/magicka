@@ -3,6 +3,7 @@ import { writeFileSync } from 'node:fs';
 import * as f from '../shared/src/formulas';
 import * as c from './src/items';
 import { MAPS } from './src/maps';
+import { QUESTS } from './src/quests';
 export function build(): Record<string, string> {
   const line = (o: unknown) => `${JSON.stringify(o, null, 1)}\n`;
   const maps = Object.values(MAPS).map(({ tiles, blocked: _b, ...m }) => ({
@@ -69,6 +70,7 @@ export function build(): Record<string, string> {
       hairColors: c.HAIR_COLORS,
       economy: c.ECONOMY,
       methods: c.METHODS,
+      quests: QUESTS,
     }),
     'maps.json': line(maps),
     'vectors.json': line(vectors),

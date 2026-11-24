@@ -25,12 +25,16 @@ export const pickBox = (x: number, y: number, size: number, height: number) =>
     new THREE.Vector3(x + size - BOX_INSET, height, y + size - BOX_INSET),
   );
 
+const NPC_NAMES: Record<string, string> = { trader: 'Stranded trader', genie: 'Genie' };
+
 function entityName(entity: Entity): string {
   switch (entity.kind) {
     case 'monster':
       return MONSTERS[entity.type!].name;
     case 'drop':
       return ITEMS[entity.type!].name + (entity.qty! > 1 ? ` (${entity.qty})` : '');
+    case 'npc':
+      return NPC_NAMES[entity.type!];
     case 'grave':
       return 'Your grave';
     default:

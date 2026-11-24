@@ -58,9 +58,12 @@ type World struct {
 	events []event           // what happened during this tick
 	before map[uint32]fields // what every entity looked like on the last tick
 
-	nextBoss   int
-	feesTaken  int64 // by graves and the reaper, from everyone, ever
-	bossPeriod int
+	nextBoss                    int
+	npcs                        []*NPC
+	npcSeq                      int
+	nextEncounter, stampedeEnds int
+	feesTaken                   int64 // by graves and the reaper, from everyone, ever
+	bossPeriod                  int
 }
 type station struct {
 	m *content.Map
@@ -79,6 +82,8 @@ func NewWorld(store Store, rnd func() float64, dev bool, bossPeriod int) *World 
 		nextBoss:   bossPeriod,
 		bossPeriod: bossPeriod,
 		feesTaken:  store.Total(feesTotal),
+
+		nextEncounter: Ticks(encounterMin),
 	}
 	for _, m := range content.Maps {
 		for _, n := range m.Nodes {
@@ -92,6 +97,7 @@ func NewWorld(store Store, rnd func() float64, dev bool, bossPeriod int) *World 
 			w.addMonster(m, s)
 		}
 	}
+	w.addHerd()
 	w.glows = findGlowGroups(w.nodes)
 	return w
 }
@@ -105,6 +111,7 @@ func (w *World) addMonster(m *content.Map, at content.Placed) {
 		X:         at.X,
 		Y:         at.Y,
 		home:      Point{X: at.X, Y: at.Y},
+		start:     Point{X: at.X, Y: at.Y},
 		HP:        def.HP,
 		MaxHP:     def.HP,
 		Dead:      monsterIsWorldBoss(def), // world bosses rise on a schedule
@@ -143,9 +150,10 @@ func (w *World) vacate(m *Monster)            { delete(w.occupied, spot{m.Map, m
 func (w *World) mapOf(p *Player) *content.Map { return content.MapByID[p.C.Map] }
 
 // safe reports whether a player is in town, where nothing attacks.
-func (w *World) safe(p *Player) bool {
-	s := w.mapOf(p).Safe
-	return math.Hypot(float64(p.C.X-s.X), float64(p.C.Y-s.Y)) <= float64(s.R)
+func (w *World) safe(p *Player) bool { return w.inTown(w.mapOf(p), p.C.X, p.C.Y) }
+
+func (w *World) inTown(m *content.Map, x, y int) bool {
+	return m.Safe.R > 0 && math.Hypot(float64(x-m.Safe.X), float64(y-m.Safe.Y)) <= float64(m.Safe.R)
 }
 
 func (w *World) nearStation(p *Player, kind string) bool {

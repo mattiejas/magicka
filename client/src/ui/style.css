@@ -251,13 +251,13 @@ h2 {
 }
 #side .tabs {
   display: grid;
-  grid-template-columns: 1fr 1fr 1fr;
+  grid-template-columns: auto auto auto auto;
   border-bottom: 1px solid var(--line);
 }
 #side .tabs button {
   border: 0;
   background: none;
-  padding: 8px;
+  padding: 8px 4px;
   font-size: 13px;
   color: var(--mute);
   border-right: 1px solid var(--line);
@@ -685,4 +685,23 @@ h2 {
 #chat .log button {
   padding: 1px 8px;
   font-size: 12px;
+}
+.steps {
+  margin: 8px 0 0;
+  padding-left: 20px;
+}
+.steps li {
+  margin-bottom: 6px;
+}
+.steps .done {
+  text-decoration: line-through;
+}
+.choices {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4px;
+}
+.choices button {
+  text-transform: capitalize;
+  text-align: left;
 }

@@ -22,16 +22,20 @@ interface Interaction {
 
 function interactionWith({ kind, id, type, entity }: Pick): Interaction | null {
   if (kind === 'node') {
-    const glowing = state.entities.get(id)?.entity.glowing;
+    const node = state.entities.get(id)?.entity;
     const verb = GATHER_VERBS[NODES[type].kind];
-    return { verb: glowing ? `${verb} glowing` : verb, run: () => send({ type: 'gather', id }) };
+    const special = node?.rich ? ' rich' : node?.glowing ? ' glowing' : '';
+    return { verb: verb + special, run: () => send({ type: 'gather', id }) };
   }
-  if (kind === 'station') return { verb: 'Use', run: () => send({ type: 'station', id }) };
+  if (kind === 'station')
+    return { verb: type === 'mine' ? 'Enter' : 'Use', run: () => send({ type: 'station', id }) };
   switch (entity!.kind) {
     case 'monster':
       return { verb: 'Attack', run: () => send({ type: 'attack', id }) };
     case 'drop':
       return { verb: 'Take', run: () => send({ type: 'pickup', id }) };
+    case 'npc':
+      return { verb: 'Talk to', run: () => send({ type: 'npc', id }) };
     case 'grave':
       return { verb: 'Recover', run: () => send({ type: 'grave' }) };
     default:

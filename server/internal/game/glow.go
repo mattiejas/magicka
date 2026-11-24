@@ -51,7 +51,7 @@ func (w *World) moveGlow(g *glowGroup) {
 	}
 	var ready []*Node
 	for _, n := range g.nodes {
-		if n != g.last && n.depletedUntil <= w.Tick {
+		if n != g.last && n.depletedUntil <= w.Tick && !n.isRich(w.Tick) {
 			ready = append(ready, n)
 		}
 	}

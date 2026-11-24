@@ -269,7 +269,19 @@ const goods = () => [
   part(rbox(0.07, 0.06, 0.2, 0.02), IRON, [0.63, 0.95, 0.38], [0, 0.5, 0]),
 ];
 
-const SHAPES: Record<string, () => Geometry> = { bank, furnace, anvil, workbench, reaper, dock, shop };
+/** A timbered hole in the rock. */
+const mine = () =>
+  merge([
+    part(blob(0.75, 0.16, 3), shade(STONE, 0.9), [0, 0.5, -0.5], [0, 0, 0], [1.3, 1.4, 0.8]),
+    part(blob(0.4, 0.2, 6), STONE, [0.75, 0.25, -0.2]),
+    part(blob(0.45, 0.2, 8), shade(STONE, 0.95), [-0.75, 0.3, -0.25]),
+    part(rbox(0.78, 1.15, 0.1, 0.02), '#15131a', [0, 0.57, 0.02]),
+    ...[-1, 1].map(side => part(rbox(0.16, 1.25, 0.18, 0.03), WOOD, [side * 0.44, 0.62, 0.1])),
+    part(rbox(1.16, 0.18, 0.22, 0.03), shade(WOOD, 1.1), [0, 1.3, 0.1]),
+    part(rbox(0.5, 0.16, 0.05, 0.02), shade(WOOD, 1.25), [0, 1.08, 0.2], [0, 0, 0.06]),
+  ]);
+
+const SHAPES: Record<string, () => Geometry> = { bank, furnace, anvil, workbench, reaper, dock, shop, mine };
 
 /** The person at a station, if there is one. */
 export function keeperOf(type: string): THREE.Object3D | null {

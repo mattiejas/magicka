@@ -26,6 +26,10 @@ func (w *World) goal(p *Player) (g goal, ok bool) {
 		if d := w.findDrop(a.id); d != nil && d.Map == m && d.visibleTo(p.ID, w.Tick) {
 			return goal{tile(d.X, d.Y), 0}, true
 		}
+	case actNPC:
+		if n := w.npcByID(a.id); n != nil && n.Map == m && (n.owner == 0 || n.owner == p.ID) {
+			return goal{tile(n.X, n.Y), 1}, true
+		}
 	case actTrade:
 		if o := w.players[a.id]; o != nil && o != p && o.C.Map == p.C.Map {
 			return goal{tile(o.C.X, o.C.Y), tradeReach}, true
@@ -102,10 +106,16 @@ func (w *World) performAction(p *Player) {
 		w.playerAttack(p, lookup(w.monsters, kindMonster, id))
 	case actStation:
 		w.stop(p)
-		w.open(p, w.station(id).s.Type)
+		if s := w.station(id).s; s.Type == "mine" {
+			w.takePassage(p)
+		} else {
+			w.open(p, s.Type)
+		}
 	case actGrave:
 		w.stop(p)
 		w.open(p, "grave")
+	case actNPC:
+		w.speakTo(p, w.npcByID(id))
 	case actTrade:
 		w.askToTrade(p, w.players[id])
 	case actPickup:

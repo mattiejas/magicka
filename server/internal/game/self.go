@@ -6,8 +6,11 @@ import (
 )
 
 func pbMap(id string) pb.MapId {
-	if id == "mainland" {
+	switch id {
+	case "mainland":
 		return pb.MapId_MAP_ID_MAINLAND
+	case "mine":
+		return pb.MapId_MAP_ID_MINE
 	}
 	return pb.MapId_MAP_ID_ISLAND
 }
@@ -33,7 +36,11 @@ func (w *World) self(p *Player) *pb.Self {
 		BoatDone: c.BoatDone,
 		Bank:     pbStacks(c.Bank),
 		Blocked:  c.Blocked,
+		Quests:   map[string]uint32{},
 		Look:     &pb.Look{Cut: uint32(l.Cut), Color: uint32(l.Color)},
+	}
+	for id, done := range c.Quests {
+		s.Quests[id] = uint32(done)
 	}
 	for skill, xp := range c.XP {
 		s.Xp[skill] = uint32(xp)

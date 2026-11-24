@@ -58,6 +58,8 @@ func Decode(b []byte) (*pb.ClientMessage, bool) {
 		moves := a == pb.TradeAction_TRADE_ACTION_OFFER || a == pb.TradeAction_TRADE_ACTION_TAKE_BACK
 		ok = a >= pb.TradeAction_TRADE_ACTION_OFFER && a <= pb.TradeAction_TRADE_ACTION_DECLINE &&
 			(!moves || qty(m.TradeStep.GetQty(), 1_000_000))
+	case *pb.ClientMessage_SellToTrader:
+		ok = qty(m.SellToTrader, 1_000_000)
 	case *pb.ClientMessage_Block:
 		ok = nameRE.MatchString(m.Block.GetName())
 	case *pb.ClientMessage_Report:

@@ -1,8 +1,8 @@
 // Authoring source for the maps. Run `npm run content` after editing.
 import { NODES } from './items';
-export type MapId = 'island' | 'mainland';
+export type MapId = 'island' | 'mainland' | 'mine';
 export const T = { WATER: 0, SAND: 1, GRASS: 2, DIRT: 3, STONE: 4, WOOD: 5 } as const;
-export type StationType = 'bank' | 'furnace' | 'anvil' | 'workbench' | 'reaper' | 'dock' | 'shop';
+export type StationType = 'bank' | 'furnace' | 'anvil' | 'workbench' | 'reaper' | 'dock' | 'shop' | 'mine';
 export interface MapNode {
   id: string;
   type: string;
@@ -34,6 +34,12 @@ export interface GameMap {
   safe: { x: number; y: number; r: number };
   /** Whether methods beyond the basic one are found here. */
   methods: boolean;
+  /** Underground: what is not floor is rock instead of water. */
+  cave: boolean;
+  /** Where players wake up after dying here. */
+  town: MapId;
+  /** Where the mine entrance leads. */
+  passage?: { to: MapId; x: number; y: number };
   labels: { name: string; x: number; y: number }[];
 }
 
@@ -68,6 +74,8 @@ class Builder {
       landing: { x: c, y: c },
       safe: { x: c, y: c, r: 0 },
       methods: false,
+      cave: false,
+      town: id,
       labels: [],
     };
     for (let y = 0; y < size; y++)
@@ -266,6 +274,8 @@ function mainland() {
   b.mobs('stag', 4, 32, 22, 4);
   b.mobs('seer', 4, 62, 24, 4);
   m.spawns.push({ type: 'colossus', x: 47, y: 19 });
+  b.station('mine', 81, 46);
+  m.passage = { to: 'mine', x: 24, y: 42 };
   // Relaxed methods, out of reach of anything that attacks.
   b.place('big_rock_1', 67, 70);
   b.place('big_rock_2', 79, 60);
@@ -299,10 +309,43 @@ function mainland() {
     { name: 'Landing', x: 48, y: 76 },
     { name: 'Iron shelf', x: 76, y: 56 },
     { name: 'Mithril shelf', x: 78, y: 42 },
+    { name: 'Old mine', x: 81, y: 46 },
     { name: 'Cobalt ridge', x: 74, y: 30 },
     { name: 'Ebony stand', x: 30, y: 20 },
     { name: 'Rooted arena', x: 48, y: 20 },
   );
   return b.done();
 }
-export const MAPS: Record<MapId, GameMap> = { island: island(), mainland: mainland() };
+function mine() {
+  const NOTHING = 0.001;
+  const b = new Builder('mine', 'Old mine', 48, 5, NOTHING, NOTHING),
+    m = b.m;
+  m.cave = true;
+  m.town = 'mainland';
+  m.passage = { to: 'mainland', x: 81, y: 47 };
+  b.disc(24, 41, 4, T.DIRT);
+  b.disc(11, 29, 6, T.STONE);
+  b.disc(37, 27, 6, T.STONE);
+  b.disc(24, 10, 8, T.STONE);
+  b.rect(23, 14, 3, 26, T.DIRT);
+  b.rect(12, 29, 12, 3, T.DIRT);
+  b.rect(25, 26, 11, 3, T.DIRT);
+  m.spawn = { x: 24, y: 42 };
+  m.landing = { x: 24, y: 42 };
+  b.station('mine', 24, 44);
+  b.keep(24, 10, 4);
+  b.scatter('rock_3', 7, 11, 29, 6);
+  b.scatter('rock_4', 6, 37, 27, 6);
+  b.mobs('golem', 4, 12, 30, 4);
+  b.mobs('golem', 2, 24, 25, 2);
+  b.mobs('stalker', 3, 37, 27, 4);
+  m.spawns.push({ type: 'deepstone', x: 23, y: 9 });
+  m.labels.push(
+    { name: 'Way out', x: 24, y: 44 },
+    { name: 'Mithril seam', x: 11, y: 29 },
+    { name: 'Cobalt seam', x: 37, y: 27 },
+    { name: 'Deepstone', x: 24, y: 10 },
+  );
+  return b.done();
+}
+export const MAPS: Record<MapId, GameMap> = { island: island(), mainland: mainland(), mine: mine() };

@@ -9,14 +9,15 @@ import (
 // NewChar is a character as it starts out.
 func NewChar() *Char {
 	c := &Char{
-		Map:   "island",
-		Curve: currentCurve,
-		HP:    MaxHP(1),
-		XP:    map[string]int{},
-		Inv:   make([]*Stack, content.InvSize),
-		Equip: map[string]*Stack{},
-		Bank:  []*Stack{},
-		Boat:  map[string]int{},
+		Map:    "island",
+		Curve:  currentCurve,
+		HP:     MaxHP(1),
+		XP:     map[string]int{},
+		Inv:    make([]*Stack, content.InvSize),
+		Equip:  map[string]*Stack{},
+		Bank:   []*Stack{},
+		Boat:   map[string]int{},
+		Quests: map[string]int{},
 	}
 	spawn := content.MapByID[c.Map].Spawn
 	c.X, c.Y = spawn.X, spawn.Y
@@ -46,6 +47,9 @@ func (c *Char) fill() {
 	}
 	if c.Boat == nil {
 		c.Boat = n.Boat
+	}
+	if c.Quests == nil {
+		c.Quests = n.Quests
 	}
 	c.renameItems()
 	c.updateXP()

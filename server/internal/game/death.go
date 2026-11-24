@@ -26,6 +26,7 @@ func (w *World) die(p *Player) {
 		w.endTrade(p.trade, p.Name+" died.")
 	}
 	w.emitDeath(w.mapOf(p), c.X, c.Y, p.ID)
+	c.Map = w.mapOf(p).Town
 	spawn := w.mapOf(p).Spawn
 	c.X, c.Y, c.HP = spawn.X, spawn.Y, MaxHP(p.level("vitality"))
 	w.stop(p)

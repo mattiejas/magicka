@@ -29,6 +29,12 @@ func (w *World) devCommand(p *Player, line string) {
 		if content.MapByID[first] != nil {
 			w.travel(p, first)
 		}
+	case "encounter":
+		if start := map[string]func(){"vein": w.startVein, "trader": w.startTrader, "stampede": w.startStampede}[first]; start != nil {
+			start()
+		}
+	case "genie":
+		w.sendGenie(p)
 	case "boss":
 		w.spawnWorldBoss()
 	case "heal":

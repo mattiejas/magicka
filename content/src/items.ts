@@ -54,6 +54,8 @@ export interface Item {
   basic?: boolean;
   /** Can never be traded, sold or dropped. */
   trophy?: boolean;
+  /** Can never be traded or sold. */
+  bound?: boolean;
 }
 export const ITEMS: Record<string, Item> = {};
 /** Items that are made get their value from what goes into them; see valueCraftedItems. */
@@ -476,6 +478,30 @@ add({
   trophy: true,
 });
 
+add({
+  id: 'stoneheart',
+  name: 'Stoneheart',
+  icon: 'amulet',
+  color: '#8fa3ad',
+  tier: 3,
+  slot: 'neck',
+  acc: 10,
+  power: 6,
+  armour: 10,
+  req: { vitality: 25 },
+  value: 20_000,
+  unique: true,
+});
+add({
+  id: 'genie_lamp',
+  name: "Genie's lamp",
+  icon: 'lamp',
+  color: '#d9b25b',
+  tier: 1,
+  value: 1,
+  bound: true,
+});
+
 // Resource nodes
 export interface NodeDef {
   id: string;
@@ -646,6 +672,10 @@ export interface MonsterDef {
   size: number;
   color: string;
   shape: 'beast' | 'bird' | 'wisp' | 'plant' | 'golem' | 'crab' | 'treant';
+  /** Another monster whose model it shares. */
+  looksLike?: string;
+  /** Only comes with a stampede. */
+  herd?: boolean;
   loot: LootTable;
   boss?: BossDef;
 }
@@ -906,6 +936,77 @@ mon({
         count: 1,
       },
     ],
+  },
+});
+mon({
+  id: 'deepstone',
+  name: 'Deepstone',
+  style: 'melee',
+  level: 32,
+  hp: 320,
+  aggro: 0,
+  respawn: 120,
+  size: 2,
+  color: '#6f7480',
+  shape: 'golem',
+  loot: {
+    always: [
+      ['mithril_ore', 3, 6],
+      ['coin', 200, 400],
+    ],
+    common: [
+      ['cobalt_ore', 2, 4],
+      ['mithril_bar', 1, 3],
+      ['feast', 1, 2],
+    ],
+    rare: [
+      ['gem_3', 1, 0.3],
+      ['gem_4', 1, 0.1],
+    ],
+    unique: [['stoneheart', 1 / 100]],
+  },
+  boss: {
+    baseHp: 320,
+    regen: 0.002,
+    arena: 7,
+    world: false,
+    attacks: [
+      { id: 'melee', name: 'Fist', weight: 4, windup: 4, execute: 1, damage: [12, 20] },
+      { id: 'boulder', name: 'Falling rock', weight: 3, windup: 5, execute: 2, damage: [22, 32], count: 2 },
+      { id: 'quake', name: 'Tremor', weight: 3, windup: 6, execute: 2, damage: [16, 26] },
+    ],
+  },
+});
+mon({
+  id: 'stampede_boar',
+  name: 'Stampeding boar',
+  style: 'melee',
+  level: 14,
+  hp: 45,
+  aggro: 2,
+  color: '#6d5138',
+  shape: 'beast',
+  looksLike: 'boar',
+  herd: true,
+  loot: { always: [['hide_2', 1, 2]], common: [['meat', 1, 3]] },
+});
+mon({
+  id: 'stampede_leader',
+  name: 'Great tusker',
+  style: 'melee',
+  level: 24,
+  hp: 160,
+  aggro: 3,
+  color: '#4a3a34',
+  shape: 'beast',
+  looksLike: 'boar',
+  herd: true,
+  loot: {
+    always: [
+      ['hide_3', 3, 5],
+      ['coin', 120, 240],
+    ],
+    rare: [['gem_3', 1, 0.3]],
   },
 });
 mon({

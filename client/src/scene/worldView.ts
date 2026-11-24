@@ -27,6 +27,7 @@ const STATION_NAMES: Record<StationType, string> = {
   workbench: 'Workbench',
   reaper: 'Reaper',
   shop: 'Shopkeeper',
+  mine: 'Old mine',
   dock: 'Shipwright',
 };
 const HIDDEN = new THREE.Matrix4().makeScale(0, 0, 0);
@@ -53,7 +54,8 @@ export class WorldView {
   readonly picks: Pick[] = [];
   private nodes = new Map<string, NodeInstance>();
   private water: THREE.Mesh;
-  private glows = new Glows();
+  private glows = new Glows('#ffd27a');
+  private veins = new Glows('#7fd0ff');
   private fallingTrees = new FallingTrees();
   private boat: THREE.Mesh | null = null;
   private boatKey = '';
@@ -61,10 +63,11 @@ export class WorldView {
   constructor(readonly map: GameMap) {
     const random = mulberry(3);
     this.water = water(map);
+    this.water.visible = !map.cave;
     this.group.add(terrain(map), this.water);
     this.addNodes(random);
     for (const station of map.stations) this.addStation(station);
-    this.group.add(...groundDetail(map, random), this.glows.group, this.fallingTrees.group);
+    this.group.add(...groundDetail(map, random), this.glows.group, this.veins.group, this.fallingTrees.group);
   }
 
   dispose() {
@@ -81,18 +84,21 @@ export class WorldView {
     return this.nodes.get(nodeId)?.isDepleted ?? false;
   }
 
-  /** `reported` are the nodes that are depleted or glowing. */
+  /** `reported` are the nodes that are depleted, glowing or rich. */
   update(now: number, reported: Entity[], self: SelfState, me?: Entity) {
     this.water.position.y = WATER_LEVEL + Math.sin(now / 1600) * 0.03;
     const glowing = new Set(reported.filter(node => node.glowing).map(node => node.id));
-    const depleted = new Set(reported.filter(node => !node.glowing).map(node => node.id));
+    const rich = new Set(reported.filter(node => node.rich).map(node => node.id));
+    const depleted = new Set(reported.map(node => node.id).filter(id => !glowing.has(id) && !rich.has(id)));
     for (const [id, node] of this.nodes) {
       if (depleted.has(id) && !node.isDepleted && me && isTree(node.node) && isNear(node.node, me))
         this.fallingTrees.add(node.whole.geometry, node.placement, node.node.x - me.x, node.node.y - me.y);
       setDepleted(node, depleted.has(id));
     }
     this.glows.show(glowing, id => this.nodes.get(id)!);
+    this.veins.show(rich, id => this.nodes.get(id)!);
     this.glows.update(now);
+    this.veins.update(now);
     this.fallingTrees.update(now);
     this.updateBoat(self);
   }
@@ -125,11 +131,13 @@ export class WorldView {
     this.group.add(mesh);
     const keeper = keeperOf(type);
     if (keeper) mesh.add(keeper);
-    this.picks.push({ kind: 'station', id, name: STATION_NAMES[type], type, box: pickBox(x, y, 1, 1.5) });
+    const name = type === 'mine' && this.map.cave ? 'Daylight' : STATION_NAMES[type];
+    this.picks.push({ kind: 'station', id, name, type, box: pickBox(x, y, 1, 1.5) });
   }
 
   /** Rebuilds the boat when its parts change. */
   private updateBoat(self: SelfState) {
+    const dock = this.map.stations.find(station => station.type === 'dock');
     const key = JSON.stringify(self.boat);
     if (key === this.boatKey) return;
     this.boatKey = key;
@@ -138,7 +146,7 @@ export class WorldView {
       this.boat.geometry.dispose();
     }
     const required = (id: string) => BOAT_PARTS.find(p => p.id === id)!.qty;
-    const dock = this.map.stations.find(station => station.type === 'dock')!;
+    if (!dock) return;
     this.boat = new THREE.Mesh(
       boatGeo(id => Math.min(1, (self.boat[id] ?? 0) / required(id))),
       MAT,

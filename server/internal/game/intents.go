@@ -59,6 +59,14 @@ func (w *World) handle(p *Player, msg *pb.ClientMessage) {
 		w.stepTrade(p, m.TradeStep)
 	case *pb.ClientMessage_Block:
 		w.block(p, m.Block)
+	case *pb.ClientMessage_StartQuest:
+		w.startQuest(p, m.StartQuest)
+	case *pb.ClientMessage_Npc:
+		p.begin(action{typ: actNPC, id: m.Npc})
+	case *pb.ClientMessage_SellToTrader:
+		w.sellToTrader(p, int(m.SellToTrader))
+	case *pb.ClientMessage_UseLamp:
+		w.useLamp(p, m.UseLamp)
 	case *pb.ClientMessage_Chat:
 		w.chat(p, m.Chat)
 	}
@@ -180,7 +188,19 @@ func (w *World) useDock(p *Player, sail bool) {
 
 func (w *World) travel(p *Player, mapID string) {
 	l := content.MapByID[mapID].Landing
-	p.C.Map, p.C.X, p.C.Y = mapID, l.X, l.Y
+	w.arrive(p, mapID, l.X, l.Y)
+}
+
+// takePassage goes into the mine, or out of it.
+func (w *World) takePassage(p *Player) {
+	if to := w.mapOf(p).Passage; to != nil {
+		w.arrive(p, to.To, to.X, to.Y)
+		w.save(p)
+	}
+}
+
+func (w *World) arrive(p *Player, mapID string, x, y int) {
+	p.C.Map, p.C.X, p.C.Y = mapID, x, y
 	w.stop(p)
 	p.via, p.dirty = nil, true
 }

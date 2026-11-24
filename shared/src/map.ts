@@ -1,9 +1,9 @@
 // Maps, loaded from the generated data file. Edit content/src/maps.ts and run `npm run content`.
 import data from '../../content/data/maps.json';
 import { NODES } from './content';
-export type MapId = 'island' | 'mainland';
+export type MapId = 'island' | 'mainland' | 'mine';
 export const T = { WATER: 0, SAND: 1, GRASS: 2, DIRT: 3, STONE: 4, WOOD: 5 } as const;
-export type StationType = 'bank' | 'furnace' | 'anvil' | 'workbench' | 'reaper' | 'dock' | 'shop';
+export type StationType = 'bank' | 'furnace' | 'anvil' | 'workbench' | 'reaper' | 'dock' | 'shop' | 'mine';
 export interface MapNode {
   id: string;
   type: string;
@@ -35,6 +35,8 @@ export interface GameMap {
   safe: { x: number; y: number; r: number };
   /** Whether methods beyond the basic one are found here. */
   methods: boolean;
+  /** Underground: what is not floor is rock instead of water. */
+  cave: boolean;
   labels: { name: string; x: number; y: number }[];
 }
 

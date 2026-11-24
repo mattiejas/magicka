@@ -7,6 +7,7 @@ import {
   type Model,
   modelKey,
   monsterModel,
+  npcModel,
   playerModel,
   poseBoss,
   poseMonster,
@@ -85,7 +86,7 @@ export class EntityLayer {
     const figure = this.figureFor(entity);
     const { root } = figure.model;
     const [x, z] = centreOf(track);
-    root.position.set(x, entity.kind === 'drop' ? 0.04 + Math.sin(now / 500) * 0.04 : 0, z);
+    root.position.set(x, floatHeight(entity, now), z);
     if (entity.kind !== 'player' && entity.kind !== 'monster') return;
 
     const moving = isMoving(track);
@@ -140,12 +141,19 @@ export class EntityLayer {
   }
 }
 
+function floatHeight({ kind, type }: Entity, now: number): number {
+  if (kind === 'drop') return 0.04 + Math.sin(now / 500) * 0.04;
+  return type === 'genie' ? 0.15 + Math.sin(now / 600) * 0.1 : 0;
+}
+
 function buildModel(entity: Entity): Model {
   switch (entity.kind) {
     case 'player':
       return playerModel(entity.name!, entity.gear!, entity.look!);
     case 'monster':
       return monsterModel(entity.type!);
+    case 'npc':
+      return npcModel(entity.type!);
     case 'drop':
       return dropModel(entity.type!);
     default:

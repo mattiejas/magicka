@@ -44,6 +44,8 @@ export interface Item {
   basic?: boolean;
   /** Can never be traded, sold or dropped. */
   trophy?: boolean;
+  /** Can never be traded or sold. */
+  bound?: boolean;
 }
 export interface Recipe {
   id: string;
@@ -102,6 +104,16 @@ export interface MonsterDef {
   shape: 'beast' | 'bird' | 'wisp' | 'plant' | 'golem' | 'crab' | 'treant';
   loot: LootTable;
   boss?: BossDef;
+  /** Another monster whose model it shares. */
+  looksLike?: string;
+}
+/** What is needed for each step is up to the server. */
+export interface Quest {
+  id: string;
+  name: string;
+  offer: string;
+  steps: { text: string }[];
+  reward: [string, number][];
 }
 export interface BossAttack {
   id: 'melee' | 'boulder' | 'vines' | 'quake';
@@ -150,6 +162,7 @@ const d = data as unknown as {
   hairColors: { name: string; color: string }[];
   economy: Economy;
   methods: Methods;
+  quests: Quest[];
 };
 export const ITEMS = byId(d.items),
   RECIPES = d.recipes,
@@ -160,7 +173,8 @@ export const ITEMS = byId(d.items),
   HAIRCUTS = d.haircuts,
   HAIR_COLORS = d.hairColors,
   ECONOMY = d.economy,
-  METHODS = d.methods;
+  METHODS = d.methods,
+  QUESTS = d.quests;
 export const nameHash = (s: string) => {
   let h = 0;
   for (const ch of s) h = (h * 31 + ch.charCodeAt(0)) % 9973;
