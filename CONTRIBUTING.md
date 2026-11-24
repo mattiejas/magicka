@@ -1,6 +1,6 @@
 # Working on this code
 
-Run `npm run check` before every commit: formatting, linting, types, and all tests. `npm run format` fixes most of what it finds.
+Run `npm run check` before every commit: formatting, linting, types, and all tests. `npm run format` fixes most of what it finds. GitHub runs the same checks on every pull request and on `main`, and also the build and a check that the generated protobuf code is up to date.
 
 Use the words in [GLOSSARY.md](GLOSSARY.md). What the game should become is in [docs/design.md](docs/design.md), and decisions with their reasons are in [docs/adr](docs/adr).
 
