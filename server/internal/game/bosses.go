@@ -1,6 +1,8 @@
 package game
 
 import (
+	"math"
+
 	"driftwake/content"
 	"driftwake/server/internal/pb"
 )
@@ -23,16 +25,29 @@ const (
 
 func (w *World) spawnWorldBoss() {
 	m := w.worldBoss()
-	if !m.Dead {
+	if m == nil || !m.Dead {
 		return
 	}
 	w.enter(m)
-	w.broadcast(infoMsg(m.Def.Name+" rises in the Rooted arena on the mainland.", pb.InfoKind_INFO_KIND_BOSS))
+	w.broadcast(infoMsg(m.Def.Name+" rises in the "+arenaName(m)+" on the "+m.Map.ID+".", pb.InfoKind_INFO_KIND_BOSS))
 }
 
 func (w *World) worldBossDied(m *Monster) {
 	w.nextBoss = max(w.nextBoss, w.Tick+1)
 	w.broadcast(infoMsg(m.Def.Name+" has fallen.", pb.InfoKind_INFO_KIND_BOSS))
+	w.scheduleNextWorldBoss(m)
+}
+
+// arenaName is the map label nearest the boss's home tile.
+func arenaName(m *Monster) string {
+	best, bestDist := "", math.MaxFloat64
+	for _, l := range m.Map.Labels {
+		d := math.Hypot(float64(l.X-m.start.X), float64(l.Y-m.start.Y))
+		if d < bestDist {
+			bestDist, best = d, l.Name
+		}
+	}
+	return best
 }
 
 // --- who takes part

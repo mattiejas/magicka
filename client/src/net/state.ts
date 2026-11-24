@@ -23,7 +23,7 @@ export const state = {
   entities: new Map<string, Track>(),
   tick: 0,
   tickAt: 0,
-  boss: { alive: false, nextTicks: 0, contribution: 0, online: 0, receivedAt: 0 },
+  boss: { alive: false, nextTicks: 0, contribution: 0, online: 0, next: '', receivedAt: 0 },
   /** Coins taken by graves and the reaper from everyone, once the reaper has been asked. */
   feesTaken: null as number | null,
   trade: null as TradeView | null,

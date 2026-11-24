@@ -58,11 +58,15 @@ func (w *World) open(p *Player, window string) {
 
 func (w *World) sendBossStatus(p *Player) {
 	boss := w.worldBoss()
+	if boss == nil {
+		return
+	}
 	w.send(p, &pb.ServerMessage{Msg: &pb.ServerMessage_Boss{Boss: &pb.BossStatus{
 		Alive:        !boss.Dead,
 		NextTicks:    uint32(max(0, w.nextBoss-w.Tick)),
 		Contribution: float32(boss.damage.get(p.ID)),
 		Online:       uint32(len(w.order)),
+		Next:         boss.Def.Name,
 	}}})
 }
 

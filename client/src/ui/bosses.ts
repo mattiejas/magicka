@@ -20,7 +20,8 @@ function updateTimer() {
   const element = byId('mapcap');
   if (!element || !self) return;
   const status = boss.alive ? 'Awake now' : timeUntilBoss();
-  renderIfChanged(element, `${status},${boss.online},${self.map}`, () => [
+  const label = boss.next || 'World boss';
+  renderIfChanged(element, `${status},${boss.online},${self.map},${label}`, () => [
     h(
       'div',
       {},
@@ -30,7 +31,7 @@ function updateTimer() {
     h(
       'div',
       {},
-      h('span', { class: 'mute' }, 'World boss'),
+      h('span', { class: 'mute' }, label),
       h('span', { class: `num ${boss.alive ? 'k-boss' : ''}` }, status),
     ),
   ]);

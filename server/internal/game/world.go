@@ -59,6 +59,7 @@ type World struct {
 	before map[uint32]fields // what every entity looked like on the last tick
 
 	nextBoss                    int
+	scheduledBoss               *Monster // the world boss that is up, or that rises next
 	npcs                        []*NPC
 	npcSeq                      int
 	nextEncounter, stampedeEnds int
@@ -99,6 +100,7 @@ func NewWorld(store Store, rnd func() float64, dev bool, bossPeriod int) *World 
 	}
 	w.addHerd()
 	w.glows = findGlowGroups(w.nodes)
+	w.scheduleNextWorldBoss(nil)
 	return w
 }
 
@@ -132,13 +134,36 @@ func lookup[T any](list []*T, kind, id uint32) *T {
 	return list[id>>kindBits]
 }
 
-func (w *World) worldBoss() *Monster {
+func (w *World) worldBosses() (out []*Monster) {
 	for _, m := range w.monsters {
 		if monsterIsWorldBoss(m.Def) {
-			return m
+			out = append(out, m)
 		}
 	}
-	return nil
+	return
+}
+
+// worldBoss is the world boss that is up, or that rises next.
+func (w *World) worldBoss() *Monster { return w.scheduledBoss }
+
+// scheduleNextWorldBoss picks who rises next. With more than one, it never repeats except.
+func (w *World) scheduleNextWorldBoss(except *Monster) {
+	bosses := w.worldBosses()
+	if len(bosses) == 0 {
+		w.scheduledBoss = nil
+		return
+	}
+	if except == nil || len(bosses) == 1 {
+		w.scheduledBoss = bosses[0]
+		return
+	}
+	var choices []*Monster
+	for _, m := range bosses {
+		if m != except {
+			choices = append(choices, m)
+		}
+	}
+	w.scheduledBoss = choices[int(w.rnd()*float64(len(choices)))]
 }
 
 func (w *World) occupy(m *Monster)            { w.occupied[spot{m.Map, m.X, m.Y}] = m }

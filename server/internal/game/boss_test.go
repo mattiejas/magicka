@@ -301,6 +301,87 @@ func TestWorldBossStaysUntilKilled(t *testing.T) {
 	check(t, !m.Dead && m.HP == 900, "healed, still there")
 }
 
+// extraWorldBoss adds another world boss for rotation tests.
+func (e *env) extraWorldBoss(name string, x, y int) *Monster {
+	base := content.Monsters["colossus"]
+	def := *base
+	def.ID, def.Name = name, name
+	boss := *base.Boss
+	def.Boss = &boss
+	m := &Monster{
+		ID:        entityID(kindMonster, len(e.w.monsters)),
+		Def:       &def,
+		Map:       content.MapByID["mainland"],
+		X:         x,
+		Y:         y,
+		start:     Point{X: x, Y: y},
+		home:      Point{X: x, Y: y},
+		Dead:      true,
+		respawnAt: math.MaxInt,
+	}
+	m.restore()
+	e.w.monsters = append(e.w.monsters, m)
+	return m
+}
+
+func lastBossInfo(c *client) string {
+	for i := len(c.msgs) - 1; i >= 0; i-- {
+		if info := c.msgs[i].GetInfo(); info != nil && info.Kind == pb.InfoKind_INFO_KIND_BOSS {
+			return info.Text
+		}
+	}
+	return ""
+}
+
+func lastBossStatus(c *client) *pb.BossStatus {
+	for i := len(c.msgs) - 1; i >= 0; i-- {
+		if b := c.msgs[i].GetBoss(); b != nil {
+			return b
+		}
+	}
+	return nil
+}
+
+func TestWorldBossArenaNameComesFromTheMap(t *testing.T) {
+	e := setup(t)
+	e.player(1)
+	e.w.spawnWorldBoss()
+	eq(t, lastBossInfo(e.c[1]), "Orrumax, the Rooted rises in the Rooted arena on the mainland.")
+	e.run(bossBarInterval)
+	status := lastBossStatus(e.c[1])
+	check(t, status != nil && status.Alive && status.Next == "Orrumax, the Rooted", status)
+}
+
+func TestWorldBossesRotateAndNeverRepeat(t *testing.T) {
+	e := setup(t)
+	first := e.w.worldBoss()
+	second := e.extraWorldBoss("Iron titan", 76, 56)
+	eq(t, len(e.w.worldBosses()), 2)
+	e.player(1)
+	e.w.spawnWorldBoss()
+	eq(t, e.w.worldBoss(), first)
+	check(t, !first.Dead && second.Dead)
+	eq(t, lastBossInfo(e.c[1]), "Orrumax, the Rooted rises in the Rooted arena on the mainland.")
+	e.w.kill(first)
+	eq(t, e.w.worldBoss(), second)
+	e.run(bossBarInterval)
+	status := lastBossStatus(e.c[1])
+	check(t, status != nil && !status.Alive && status.Next == "Iron titan", status)
+	e.w.spawnWorldBoss()
+	check(t, !second.Dead && first.Dead)
+	eq(t, lastBossInfo(e.c[1]), "Iron titan rises in the Iron shelf on the mainland.")
+	e.w.kill(second)
+	eq(t, e.w.worldBoss(), first)
+	// With one world boss the schedule keeps that boss.
+	alone := setup(t)
+	only := alone.w.worldBoss()
+	alone.w.spawnWorldBoss()
+	alone.w.kill(only)
+	eq(t, alone.w.worldBoss(), only)
+	alone.w.spawnWorldBoss()
+	check(t, !only.Dead)
+}
+
 // --- uniques
 
 func (e *env) dropUnique(owner *Player) *Drop {

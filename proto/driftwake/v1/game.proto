@@ -60,7 +60,11 @@ message TradeView {
 message Chat { string from = 1; string text = 2; }
 message Info { string text = 1; InfoKind kind = 2; }
 message Xp { string skill = 1; uint32 amount = 2; }
-message BossStatus { bool alive = 1; uint32 next_ticks = 2; float contribution = 3; uint32 online = 4; }
+message BossStatus {
+  bool alive = 1; uint32 next_ticks = 2; float contribution = 3; uint32 online = 4;
+  // Name of the world boss that is up, or that rises next.
+  string next = 5;
+}
 message Stack { string item = 1; uint32 qty = 2; }
 message InvSlot { uint32 index = 1; Stack stack = 2; }
 message EquipSlot { Slot slot = 1; Stack stack = 2; }

@@ -147,4 +147,12 @@ export type ServerMsg =
   | { type: 'tradeRequest'; id: string; name: string }
   /** Null when the trade has ended. */
   | { type: 'trade'; trade: TradeView | null }
-  | { type: 'boss'; alive: boolean; nextTicks: number; contribution: number; online: number };
+  | {
+      type: 'boss';
+      alive: boolean;
+      nextTicks: number;
+      contribution: number;
+      online: number;
+      /** Name of the world boss that is up, or that rises next. */
+      next: string;
+    };
