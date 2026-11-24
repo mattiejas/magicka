@@ -1,119 +1,213 @@
 import * as THREE from 'three';
-import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { ITEMS, MONSTERS, NODES, WOOD_COLORS } from '@magicka/shared';
-export const MAT = new THREE.MeshLambertMaterial({ vertexColors: true, flatShading: true });
-type V3 = [number, number, number];
-export function part(g: THREE.BufferGeometry, color: string, pos: V3 = [0, 0, 0], rot: V3 = [0, 0, 0], scale: V3 | number = 1): THREE.BufferGeometry {
-  const o = g.index ? g.toNonIndexed() : g.clone(); o.deleteAttribute('uv');
-  o.applyMatrix4(new THREE.Matrix4().compose(new THREE.Vector3(...pos), new THREE.Quaternion().setFromEuler(new THREE.Euler(...rot)), typeof scale === 'number' ? new THREE.Vector3(scale, scale, scale) : new THREE.Vector3(...scale)));
-  const c = new THREE.Color(color), n = o.attributes.position.count, a = new Float32Array(n * 3);
-  for (let i = 0; i < n; i += 3) { const k = 1 + (((i * 7) % 11) / 11 - 0.5) * 0.12; for (let j = 0; j < 3; j++) { a[(i + j) * 3] = c.r * k; a[(i + j) * 3 + 1] = c.g * k; a[(i + j) * 3 + 2] = c.b * k; } }
-  o.setAttribute('color', new THREE.BufferAttribute(a, 3)); return o;
-}
-export const merge = (l: THREE.BufferGeometry[]) => mergeGeometries(l)!;
-export const box = (w: number, h: number, d: number) => new THREE.BoxGeometry(w, h, d);
-export const cyl = (a: number, b: number, h: number, s = 6) => new THREE.CylinderGeometry(a, b, h, s);
-export const cone = (r: number, h: number, s = 6) => new THREE.ConeGeometry(r, h, s);
-export const ico = (r: number) => new THREE.IcosahedronGeometry(r, 0);
-export const shade = (c: string, k: number) => '#' + new THREE.Color(c).multiplyScalar(k).getHexString();
-const LEAF = ['', '#8fae62', '#4d7a58', '#6f9048', '#c07a48', '#4a5668'];
-export function nodeGeo(type: string): { full: THREE.BufferGeometry; spent: THREE.BufferGeometry; h: number } {
+import { MAT, ball, blob, capsule, cone, crystal, cyl, gem, lathe, merge, part, plate, rbox, shade, taper, torus, type V3 } from './geo';
+type G = THREE.BufferGeometry;
+const TAU = Math.PI * 2, ring = (n: number) => Array.from({ length: n }, (_, i) => (i / n) * TAU);
+const LEAF = ['', '#93b566', '#4d7a58', '#6f9048', '#c57c48', '#4d5a6c'];
+// --- resources
+export function nodeGeo(type: string): { full: G; spent: G; h: number } {
   const d = NODES[type], c = d.color;
   if (d.kind === 'tree') {
-    const w = WOOD_COLORS[d.tier], l = LEAF[d.tier], stump = part(cyl(0.2, 0.28, 0.35), w, [0, 0.17, 0]);
-    const trunk = part(cyl(0.13, 0.24, 1.5), w, [0, 0.75, 0]);
-    const full = d.tier === 2 ? [trunk, part(cone(0.85, 1.2), l, [0, 1.5, 0]), part(cone(0.65, 1.1), l, [0, 2.2, 0]), part(cone(0.4, 0.9), l, [0, 2.85, 0])]
-      : [trunk, part(ico(0.8), l, [0, 2, 0], [0.4, 0.3, 0], [1, 0.85, 1]), part(ico(0.52), l, [0.5, 1.7, 0.25]), part(ico(0.48), l, [-0.45, 1.8, -0.25]), ...(d.tier >= 3 ? [part(ico(0.5), shade(l, 1.1), [0, 2.6, 0.1])] : [])];
-    return { full: merge(full), spent: stump, h: 2.8 };
+    const w = WOOD_COLORS[d.tier], l = LEAF[d.tier];
+    const roots = ring(5).map((a, i) => part(taper([[Math.cos(a) * 0.1, 0.24, Math.sin(a) * 0.1], [Math.cos(a) * 0.26, 0.09, Math.sin(a) * 0.26], [Math.cos(a) * (0.42 + (i % 2) * 0.08), -0.02, Math.sin(a) * 0.44]], 0.1, 0.03, 8, 7), shade(w, 0.85)));
+    const stump = [part(lathe([[0.31, 0], [0.24, 0.12], [0.21, 0.36]]), w), part(cyl(0.21, 0.21, 0.03, 20), shade(w, 1.45), [0, 0.37, 0]), part(torus(0.12, 0.008), shade(w, 1.1), [0, 0.39, 0], [Math.PI / 2, 0, 0]), ...roots];
+    const trunk = [part(lathe([[0.31, 0], [0.21, 0.18], [0.17, 0.6], [0.14, 1.2], [0.09, 1.9], [0.05, 2.3]], 14), w), ...roots];
+    if (d.tier === 2) {
+      const tiers = [0, 1, 2, 3, 4].map(i => { const r = 0.92 - i * 0.16, y = 0.95 + i * 0.46, g = lathe([[0.02, 0.75], [r * 0.4, 0.4], [r * 0.82, 0.08], [r, 0], [r * 0.6, 0.06], [0.06, 0.12]], 22), p = g.attributes.position; for (let k = 0; k < p.count; k++) { const x = p.getX(k), z = p.getZ(k), q = Math.hypot(x, z) / r, f = 1 + 0.09 * q * Math.sin(Math.atan2(z, x) * 8 + i); p.setXYZ(k, x * f, p.getY(k) - 0.07 * q * Math.sin(Math.atan2(z, x) * 8 + i), z * f); } g.computeVertexNormals(); return part(g, shade(l, 0.88 + i * 0.06), [0, y, 0], [0, i, 0]); });
+      return { full: merge([...trunk, ...tiers]), spent: merge(stump), h: 3.3 };
+    }
+    const spread = d.tier === 4 ? 1.1 : 1, limbs = ring(4).map((a, i) => part(taper([[0, 1 + i * 0.12, 0], [Math.cos(a) * 0.3, 1.45 + i * 0.1, Math.sin(a) * 0.3], [Math.cos(a) * 0.55, 1.85, Math.sin(a) * 0.55]], 0.08, 0.03, 8, 7), w));
+    const crown = [part(blob(0.72, 4, 0.2, d.tier), l, [0, 2.35, 0], [0, 0, 0], [spread, 0.85, spread]), ...ring(6).map((a, i) => part(blob(0.44, 3, 0.22, i + d.tier), shade(l, 0.9 + (i % 3) * 0.08), [Math.cos(a) * 0.58 * spread, 2 + (i % 2) * 0.26, Math.sin(a) * 0.58 * spread])), part(blob(0.4, 3, 0.22, 9), shade(l, 1.1), [0.12, 2.82, -0.08])];
+    return { full: merge([...trunk, ...limbs, ...crown]), spent: merge(stump), h: 2.8 };
   }
   if (d.kind === 'rock') {
-    const base = '#7d7a74', rock = [part(ico(0.55), base, [0, 0.3, 0], [0.5, 0.2, 0], [1, 0.8, 1]), part(ico(0.34), shade(base, 0.9), [0.32, 0.18, 0.2])];
-    const veins = type === 'essence_rock' ? [0, 1, 2, 3].map(i => part(cone(0.13, 0.7, 4), c, [Math.cos(i * 1.6) * 0.25, 0.75, Math.sin(i * 1.6) * 0.25], [Math.sin(i) * 0.4, 0, Math.cos(i) * 0.4]))
-      : [0, 1, 2, 3, 4].map(i => part(ico(0.17), c, [Math.cos(i * 1.3) * 0.38, 0.35 + (i % 3) * 0.16, Math.sin(i * 1.3) * 0.38]));
-    return { full: merge([...rock, ...veins]), spent: merge(rock), h: 0.95 };
+    const base = type === 'essence_rock' ? '#79808a' : '#837f78';
+    const rock = [part(blob(0.5, 4, 0.24, 2 + d.tier, true), base, [0, 0.28, 0], [0, 0, 0], [1, 0.95, 0.95]), part(blob(0.3, 3, 0.26, 7, true), shade(base, 0.92), [0.33, 0.13, 0.2]), part(blob(0.2, 3, 0.26, 4, true), shade(base, 1.06), [-0.34, 0.08, 0.24]), part(blob(0.12, 2, 0.2, 1, true), shade(base, 0.95), [-0.1, 0.04, 0.46])];
+    const vein = type === 'essence_rock'
+      ? ring(6).map((a, i) => part(crystal(0.075 + (i % 2) * 0.03, 0.5 + (i % 3) * 0.16), shade(c, 0.95 + (i % 3) * 0.1), [Math.cos(a) * 0.22, 0.62, Math.sin(a) * 0.22], [Math.sin(a) * 0.45, i, -Math.cos(a) * 0.45]))
+      : ring(9).map((a, i) => { const up = [0.22, 0.4, 0.56][i % 3], r = [0.47, 0.42, 0.27][i % 3]; return part(blob(0.1 + (i % 2) * 0.03, 2, 0.3, i, true), shade(c, 0.95 + (i % 3) * 0.13), [Math.cos(a) * r, up, Math.sin(a) * r], [a, i, 0], [1, 0.75, 1]); });
+    return { full: merge([...rock, ...vein]), spent: merge(rock), h: 0.95 };
   }
-  const stem = '#6f8a52';
-  const leaves = [0, 1, 2, 3, 4].map(i => part(cone(0.1, 0.5, 4), stem, [Math.cos(i * 1.26) * 0.2, 0.22, Math.sin(i * 1.26) * 0.2], [Math.sin(i * 1.26) * 0.5, 0, -Math.cos(i * 1.26) * 0.5]));
-  if (type === 'berry_bush') { const bush = [part(ico(0.42), '#5f8050', [0, 0.35, 0]), part(ico(0.28), '#6b8c58', [0.25, 0.25, 0.15])]; return { full: merge([...bush, ...[0, 1, 2, 3, 4, 5].map(i => part(ico(0.08), c, [Math.cos(i) * 0.36, 0.3 + (i % 3) * 0.14, Math.sin(i) * 0.36]))]), spent: merge(bush), h: 0.8 }; }
-  return { full: merge([...leaves, ...[0, 1, 2, 3].map(i => part(ico(0.13), c, [Math.cos(i * 1.6) * 0.22, 0.55 + (i % 2) * 0.12, Math.sin(i * 1.6) * 0.22]))]), spent: merge(leaves), h: 0.8 };
+  if (type === 'berry_bush') {
+    const bush = [part(blob(0.38, 4, 0.2, 1), '#5f8050', [0, 0.34, 0]), ...ring(5).map((a, i) => part(blob(0.22, 3, 0.2, i), shade('#678a55', 0.92 + (i % 3) * 0.08), [Math.cos(a) * 0.28, 0.24 + (i % 2) * 0.12, Math.sin(a) * 0.28]))];
+    return { full: merge([...bush, ...ring(12).map((a, i) => part(ball(0.055, 10), shade(c, 0.95 + (i % 2) * 0.2), [Math.cos(a) * 0.42, 0.22 + (i % 4) * 0.11, Math.sin(a) * 0.42]))]), spent: merge(bush), h: 0.8 };
+  }
+  const blades = ring(9).map((a, i) => part(taper([[Math.cos(a) * 0.06, 0, Math.sin(a) * 0.06], [Math.cos(a) * 0.12, 0.3, Math.sin(a) * 0.12], [Math.cos(a) * 0.32, 0.42 + (i % 3) * 0.08, Math.sin(a) * 0.32]], 0.032, 0.004, 8, 5), shade('#6f8a52', 0.9 + (i % 3) * 0.1)));
+  const heads = ring(6).flatMap((a, i): G[] => { const x = Math.cos(a) * 0.2, z = Math.sin(a) * 0.2, y = 0.58 + (i % 2) * 0.12; return [part(taper([[x * 0.2, 0, z * 0.2], [x * 0.7, 0.3, z * 0.7], [x, y, z]], 0.014, 0.01, 8, 5), '#7d9660'), part(ball(0.045, 8), shade(c, 0.75), [x, y, z]), ...ring(5).map(b => part(ball(0.05, 8), c, [x + Math.cos(b) * 0.07, y, z + Math.sin(b) * 0.07], [0, 0, 0], [1, 0.5, 1]))]; });
+  return { full: merge([...blades, ...heads]), spent: merge(blades), h: 0.8 };
 }
-export function stationGeo(type: string): THREE.BufferGeometry {
-  const s = '#8d8a83', w = '#8a6b48';
+// --- camp
+export function stationGeo(type: string): G {
+  const s = '#918d85', w = '#8a6b48', iron = '#5d6369';
+  const stones = (rows: number, rad: number, n: number, y0 = 0.12, sh = 1) => Array.from({ length: rows }).flatMap((_, r) => ring(n).map((a, i) => part(rbox(0.36, 0.23, 0.22, 0.06), shade(s, (0.9 + ((i * 3 + r) % 4) * 0.05) * sh), [Math.cos(a + r * 0.35) * rad, y0 + r * 0.24, Math.sin(a + r * 0.35) * rad], [0, Math.PI / 2 - (a + r * 0.35), 0])));
   switch (type) {
-    case 'bank': return merge([part(box(0.95, 0.55, 0.7), w, [0, 0.3, 0]), part(box(0.95, 0.22, 0.7), shade(w, 1.15), [0, 0.7, 0]), part(box(1, 0.08, 0.74), '#b99a5a', [0, 0.57, 0]), part(box(0.16, 0.2, 0.06), '#d4b878', [0, 0.55, 0.38])]);
-    case 'furnace': return merge([part(box(1, 1, 1), s, [0, 0.5, 0]), part(box(0.8, 0.6, 0.8), shade(s, 0.9), [0, 1.25, 0]), part(box(0.35, 0.7, 0.35), shade(s, 0.8), [0, 1.8, 0]), part(box(0.5, 0.4, 0.1), '#e08a4a', [0, 0.4, 0.48])]);
-    case 'anvil': return merge([part(cyl(0.3, 0.36, 0.45), w, [0, 0.22, 0]), part(box(0.4, 0.16, 0.34), '#565b60', [0, 0.52, 0]), part(box(0.85, 0.18, 0.36), '#656b71', [0, 0.69, 0]), part(cone(0.16, 0.35, 4), '#656b71', [0.55, 0.7, 0], [0, 0, -1.57])]);
-    case 'workbench': return merge([part(box(1, 0.12, 0.8), w, [0, 0.7, 0]), ...[[-1, -1], [1, -1], [-1, 1], [1, 1]].map(([x, z]) => part(box(0.12, 0.7, 0.12), shade(w, 0.8), [x * 0.4, 0.35, z * 0.3])), part(box(0.3, 0.1, 0.12), '#777d82', [0.2, 0.8, 0]), part(box(0.35, 0.06, 0.3), '#c9b98e', [-0.2, 0.78, 0.1])]);
-    case 'reaper': return merge([part(cone(0.45, 1.5, 7), '#3c4048', [0, 0.75, 0]), part(ico(0.26), '#33373e', [0, 1.5, 0]), part(ico(0.15), '#cfc8b8', [0, 1.46, 0.13]), part(cyl(0.03, 0.03, 1.9), w, [0.5, 0.95, 0.1]), part(box(0.5, 0.08, 0.04), '#a9aeb3', [0.3, 1.85, 0.1], [0, 0, 0.3])]);
-    default: return merge([part(cyl(0.1, 0.1, 1.5), w, [0, 0.75, 0]), part(box(0.8, 0.45, 0.06), shade(w, 1.2), [0, 1.3, 0.1])]);
+    case 'bank': return merge([part(rbox(0.95, 0.48, 0.64), w, [0, 0.28, 0]), part(new THREE.CylinderGeometry(0.32, 0.32, 0.95, 20, 1, false, 0, Math.PI), shade(w, 1.12), [0, 0.52, 0], [0, Math.PI / 2, Math.PI / 2]), ...[-0.36, 0, 0.36].flatMap(x => [part(torus(0.325, 0.025, Math.PI), '#b99a5a', [x, 0.52, 0], [0, Math.PI / 2, 0]), part(rbox(0.06, 0.48, 0.67, 0.01), '#b99a5a', [x, 0.28, 0])]), part(rbox(0.16, 0.2, 0.05, 0.02), '#d8bd7e', [0, 0.5, 0.33]), part(cyl(0.025, 0.025, 0.04), '#4a4034', [0, 0.49, 0.36], [Math.PI / 2, 0, 0])]);
+    case 'furnace': return merge([part(cyl(0.44, 0.48, 1), shade(s, 0.75), [0, 0.5, 0]), ...stones(4, 0.44, 8), ...stones(2, 0.34, 6, 1.08), part(lathe([[0.42, 1], [0.36, 1.3], [0.22, 1.6], [0.2, 2.1]]), shade(s, 0.82)), part(torus(0.21, 0.05), shade(s, 0.7), [0, 2.1, 0], [Math.PI / 2, 0, 0]), part(new THREE.SphereGeometry(0.22, 16, 8, 0, TAU, 0, Math.PI / 2), '#2c2624', [0, 0.24, 0.46], [0, 0, 0], [1, 1.25, 0.5]), part(blob(0.14, 3, 0.3, 2), '#f0a050', [0, 0.3, 0.55], [0, 0, 0], [1.1, 0.8, 0.5]), part(blob(0.09, 2, 0.3, 4), '#f7d27a', [0.02, 0.28, 0.62]), part(torus(0.25, 0.05, Math.PI), shade(s, 1.1), [0, 0.28, 0.54])]);
+    case 'anvil': return merge([part(lathe([[0.33, 0], [0.3, 0.1], [0.27, 0.35], [0.28, 0.45]]), w), part(torus(0.3, 0.02), iron, [0, 0.14, 0], [Math.PI / 2, 0, 0]), part(lathe([[0.26, 0], [0.15, 0.09], [0.13, 0.15], [0.22, 0.22]]), iron, [0, 0.45, 0], [0, 0, 0], [1.2, 1, 0.8]), part(rbox(0.62, 0.16, 0.3, 0.03), shade(iron, 1.15), [0, 0.74, 0]), part(taper([[0.28, 0.75, 0], [0.45, 0.75, 0], [0.62, 0.79, 0]], 0.1, 0.015, 8, 12), shade(iron, 1.15))]);
+    case 'workbench': return merge([...[-0.28, 0, 0.28].map((z, i) => part(rbox(1.05, 0.09, 0.26, 0.02), shade(w, 1 + i * 0.05), [0, 0.7, z])), ...([[-1, -1], [1, -1], [-1, 1], [1, 1]] as const).map(([x, z]) => part(cyl(0.06, 0.07, 0.66), shade(w, 0.8), [x * 0.42, 0.33, z * 0.3])), part(rbox(0.86, 0.07, 0.07, 0.02), shade(w, 0.75), [0, 0.22, 0.3]), part(rbox(0.86, 0.07, 0.07, 0.02), shade(w, 0.75), [0, 0.22, -0.3]), part(rbox(0.34, 0.03, 0.26, 0.01), '#d6c69a', [-0.24, 0.76, 0.08], [0, 0.3, 0]), part(cyl(0.02, 0.025, 0.34), '#7a5f42', [0.2, 0.78, 0.02], [0, 0.4, Math.PI / 2]), part(rbox(0.09, 0.09, 0.2, 0.02), iron, [0.34, 0.8, -0.04], [0, 0.4, 0]), part(lathe([[0.07, 0], [0.09, 0.1], [0.06, 0.18]]), '#a8685a', [0.1, 0.74, -0.28])]);
+    case 'reaper': return merge([part(lathe([[0.5, 0], [0.4, 0.2], [0.3, 0.75], [0.27, 1.15], [0.12, 1.4]], 22), '#3d414a'), part(new THREE.SphereGeometry(0.27, 24, 16, Math.PI * 0.75, Math.PI * 1.5, 0, 2.2), '#454a54', [0, 1.47, 0]), part(torus(0.19, 0.04), '#4d525d', [0, 1.45, 0.17], [0, 0, 0], [1, 1.2, 1]), part(ball(0.2), '#1f2126', [0, 1.46, 0]), part(ball(0.145), '#e3dccb', [0, 1.46, 0.13], [0, 0, 0], [0.9, 1.1, 0.8]), part(rbox(0.12, 0.09, 0.1, 0.03), '#d6cfbf', [0, 1.33, 0.16]), part(ball(0.038, 10), '#24262a', [0.055, 1.48, 0.225]), part(ball(0.038, 10), '#24262a', [-0.055, 1.48, 0.225]), part(ball(0.016, 8), '#24262a', [0, 1.42, 0.25]), part(taper([[0.2, 1.15, 0], [0.4, 0.98, 0.14], [0.5, 1, 0.24]], 0.12, 0.09, 10, 12), '#3a3e47'), part(ball(0.055), '#d6cfbf', [0.52, 1, 0.26]), part(taper([[0.54, 0, 0.26], [0.52, 1, 0.26], [0.55, 2, 0.26]], 0.03, 0.025, 12, 8), '#74593c'), part(plate(q => { q.moveTo(0, 0); q.quadraticCurveTo(-0.5, 0.2, -0.85, -0.28); q.quadraticCurveTo(-0.5, 0.02, 0, -0.1); q.closePath(); }, 0.02), '#b4babf', [0.56, 1.92, 0.26])]);
+    default: return merge([part(cyl(0.07, 0.09, 1.6), w, [0, 0.8, 0]), ...[0, 1].map(i => part(rbox(0.85, 0.2, 0.07, 0.02), shade(w, 1.2 - i * 0.08), [0, 1.36 - i * 0.22, 0.09])), part(torus(0.11, 0.02), iron, [0, 1.25, 0.15]), part(rbox(0.02, 0.22, 0.02, 0.005), iron, [0, 1.25, 0.15]), part(torus(0.12, 0.035), '#c9b98e', [0, 0.3, 0], [Math.PI / 2, 0, 0]), part(torus(0.12, 0.035), '#bfae82', [0, 0.36, 0], [Math.PI / 2, 0.1, 0])]);
   }
 }
-export function boatGeo(done: (p: string) => number): THREE.BufferGeometry {
-  const w = '#b08a5a', l: THREE.BufferGeometry[] = [part(box(0.1, 0.1, 3), shade(w, 0.7), [0, -0.1, 0])];
-  if (done('hull') > 0) l.push(part(box(1.1, 0.12, 2.6 * done('hull')), w, [0, -0.05, 0]));
-  if (done('hull') >= 1) l.push(part(box(0.1, 0.4, 2.6), w, [0.58, 0.15, 0], [0, 0, -0.2]), part(box(0.1, 0.4, 2.6), w, [-0.58, 0.15, 0], [0, 0, 0.2]), part(cone(0.6, 0.8, 4), w, [0, 0.1, -1.6], [-1.57, 0.78, 0], [1, 1, 0.5]));
-  if (done('fittings') >= 1) l.push(part(box(1.25, 0.07, 0.1), '#c27c4e', [0, 0.34, 0.8]), part(box(1.25, 0.07, 0.1), '#c27c4e', [0, 0.34, -0.8]));
-  if (done('sail') > 0) l.push(part(cyl(0.05, 0.06, 2.4), shade(w, 0.8), [0, 1.2, 0]), part(box(1.2, 1.3 * done('sail'), 0.04), '#e0d7bd', [0, 1.9 - 0.65 * done('sail') + 0.2, 0.06]));
-  if (done('rudder') >= 1) l.push(part(box(0.08, 0.6, 0.4), shade(w, 0.75), [0, 0.1, 1.5]));
+export function boatGeo(done: (p: string) => number): G {
+  const w = '#b08a5a', hull = done('hull'), l: G[] = [part(taper([[0, 0.2, -1.75], [0, -0.14, -1.2], [0, -0.16, 1.2], [0, 0.1, 1.5]], 0.07, 0.06, 18, 8), shade(w, 0.65))];
+  const side = (x: number, row: number): V3[] => [[0, 0.1 + row * 0.1, -1.62 - row * 0.06], [x * (0.36 + row * 0.07), -0.02 + row * 0.12, -0.9], [x * (0.5 + row * 0.07), -0.06 + row * 0.12, 0.2], [x * (0.4 + row * 0.07), -0.02 + row * 0.12, 1.4]];
+  const rows = Math.floor(hull * 4); for (let r = 0; r < rows; r++) for (const x of [-1, 1]) l.push(part(taper(side(x, r), 0.075, 0.075, 24, 8), shade(w, 0.92 + (r % 2) * 0.1)));
+  if (hull > 0.2) l.push(part(rbox(0.7, 0.06, 2 * hull, 0.02), shade(w, 0.85), [0, -0.02, 0.1]));
+  if (hull >= 1) l.push(part(rbox(0.8, 0.4, 0.08, 0.03), shade(w, 0.9), [0, 0.15, 1.38]), ...[-0.5, 0.5].map(z => part(rbox(1.05, 0.06, 0.24, 0.02), shade(w, 1.15), [0, 0.28, z])));
+  if (done('fittings') >= 1) l.push(...[-0.9, 0, 0.9].flatMap(z => [-1, 1].map(x => part(ball(0.055), '#c98554', [x * 0.62, 0.38, z]))), part(torus(0.1, 0.025), '#c98554', [0, 0.35, -1.6]));
+  if (done('sail') > 0) { const k = done('sail'), g = new THREE.PlaneGeometry(1.35, 1.4 * k, 12, 12), p = g.attributes.position; for (let i = 0; i < p.count; i++) p.setZ(i, 0.22 * (1 - (p.getX(i) / 0.7) ** 2) * (1 - (p.getY(i) / (0.75 * k)) ** 2)); g.computeVertexNormals(); const b = g.clone(); b.rotateY(Math.PI); const q = b.attributes.position; for (let i = 0; i < q.count; i++) q.setZ(i, -q.getZ(i) - 0.012); b.computeVertexNormals(); l.push(part(cyl(0.04, 0.06, 2.5), shade(w, 0.8), [0, 1.2, -0.1]), part(cyl(0.03, 0.03, 1.5), shade(w, 0.8), [0, 2.25, -0.04], [0, 0, Math.PI / 2]), part(g, '#e6dec6', [0, 2.2 - 0.7 * k, 0]), part(b, '#d8cfb4', [0, 2.2 - 0.7 * k, 0])); }
+  if (done('rudder') >= 1) l.push(part(plate(q => { q.moveTo(0, 0.5); q.lineTo(0.1, 0.5); q.lineTo(0.34, -0.15); q.quadraticCurveTo(0.2, -0.35, 0, -0.3); q.closePath(); }, 0.06), shade(w, 0.75), [0, 0.05, 1.45], [0, -Math.PI / 2, 0]));
   return merge(l);
 }
-function weaponGeo(id: string): THREE.BufferGeometry {
-  const i = ITEMS[id], c = i.color, w = '#7a5f42';
-  switch (i.icon) {
-    case 'sword': return merge([part(box(0.09, 0.8, 0.04), c, [0, 0.5, 0]), part(box(0.3, 0.06, 0.08), w, [0, 0.1, 0]), part(box(0.07, 0.2, 0.07), w, [0, 0, 0])]);
-    case 'bow': return merge([part(new THREE.TorusGeometry(0.48, 0.035, 4, 8, Math.PI), c, [0, 0, 0], [0, 1.57, -1.57]), part(box(0.015, 0.96, 0.015), '#ddd6c4')]);
-    case 'staff': return merge([part(cyl(0.04, 0.05, 1.4), c, [0, 0.3, 0]), part(new THREE.OctahedronGeometry(0.14), i.unique ? '#b7e07a' : '#8fb8d8', [0, 1.08, 0])]);
-    case 'pickaxe': return merge([part(cyl(0.03, 0.04, 0.8), w, [0, 0.3, 0]), part(box(0.6, 0.09, 0.07), c, [0, 0.68, 0])]);
-    default: return merge([part(cyl(0.03, 0.04, 0.8), w, [0, 0.3, 0]), part(box(0.28, 0.26, 0.05), c, [0.12, 0.62, 0])]);
+// --- held items. The grip is at the origin, the shaft runs along +y and the working edge faces +z.
+const SIDE: V3 = [0, -Math.PI / 2, 0];
+export function heldGeo(icon: string, c: string, unique = false): G {
+  const w = '#7d6144', wrap = '#5a4632', haft = (len: number) => [part(taper([[0, -0.16, 0], [0, len * 0.4, 0.012], [0, len, 0]], 0.03, 0.026, 12, 10), w), part(cyl(0.034, 0.034, 0.16), wrap, [0, 0, 0]), part(ball(0.036, 10), shade(w, 0.8), [0, -0.16, 0])];
+  switch (icon) {
+    case 'pickaxe': return merge([...haft(0.66), part(rbox(0.085, 0.13, 0.11, 0.02), shade(c, 0.8), [0, 0.62, 0]), part(plate(s => { s.moveTo(0, 0.07); s.quadraticCurveTo(0.22, 0.06, 0.4, -0.1); s.quadraticCurveTo(0.2, 0, 0, -0.03); s.quadraticCurveTo(-0.2, 0, -0.34, -0.06); s.lineTo(-0.36, -0.02); s.quadraticCurveTo(-0.2, 0.07, 0, 0.07); }, 0.035), c, [0, 0.63, 0], SIDE)]);
+    case 'axe': return merge([...haft(0.68), part(rbox(0.08, 0.15, 0.1, 0.02), shade(c, 0.8), [0, 0.6, 0]), part(plate(s => { s.moveTo(-0.07, 0.05); s.lineTo(0.06, 0.06); s.quadraticCurveTo(0.14, 0.08, 0.2, 0.19); s.quadraticCurveTo(0.3, 0, 0.2, -0.2); s.quadraticCurveTo(0.14, -0.08, 0.06, -0.06); s.lineTo(-0.07, -0.05); s.closePath(); }, 0.03), c, [0, 0.6, 0.02], SIDE)]);
+    case 'hammer': return merge([...haft(0.4), part(rbox(0.13, 0.14, 0.26, 0.025), c, [0, 0.42, 0]), part(rbox(0.145, 0.155, 0.05, 0.015), shade(c, 1.15), [0, 0.42, 0.12])]);
+    case 'sword': return merge([part(cyl(0.028, 0.026, 0.2), wrap, [0, 0, 0]), part(ball(0.045), shade(c, 0.8), [0, -0.13, 0]), part(taper([[0, 0.13, -0.17], [0, 0.11, 0], [0, 0.13, 0.17]], 0.028, 0.028, 12, 10), shade(c, 0.75)), part(plate(s => { const k = unique ? 0.085 : 0.055, h = unique ? 1 : 0.86; s.moveTo(-k, 0); s.quadraticCurveTo(-k * 0.75, h * 0.5, -k * 0.9, h * 0.82); s.lineTo(0, h); s.lineTo(k * 0.9, h * 0.82); s.quadraticCurveTo(k * 0.75, h * 0.5, k, 0); s.closePath(); }, 0.016, 0.012), c, [0, 0.12, 0], SIDE), part(rbox(0.045, 0.6, 0.02, 0.01), shade(c, 0.82), [0, 0.45, 0])]);
+    case 'bow': return merge([part(taper([[0, 0, 0.12], [0, 0.22, 0.1], [0, 0.44, -0.04], [0, 0.56, -0.02]], 0.034, 0.014, 18, 10), c), part(taper([[0, 0, 0.12], [0, -0.22, 0.1], [0, -0.44, -0.04], [0, -0.56, -0.02]], 0.034, 0.014, 18, 10), c), part(cyl(0.04, 0.04, 0.2), wrap, [0, 0, 0.12]), part(cyl(0.005, 0.005, 1.1, 6), '#e4dcc8', [0, 0, -0.025]), ...(unique ? [0.3, -0.3].map(y => part(cone(0.03, 0.12), shade(c, 1.2), [0, y, 0.1], [1.3, 0, 0])) : [])]);
+    case 'staff': return merge([part(taper([[0.01, -0.62, 0], [-0.015, -0.1, 0.01], [0.015, 0.4, 0], [0, 0.78, 0]], 0.03, 0.04, 20, 10), c), part(cyl(0.042, 0.042, 0.16), wrap), ...ring(3).map(a => part(taper([[0, 0.74, 0], [Math.cos(a) * 0.13, 0.86, Math.sin(a) * 0.13], [Math.cos(a) * 0.05, 1.06, Math.sin(a) * 0.05]], 0.03, 0.01, 10, 8), shade(c, 0.9))), part(gem(0.1), unique ? '#b7e07a' : '#93c4e6', [0, 0.92, 0], [0, 0.3, 0], [1, 1.3, 1])]);
   }
+  return part(rbox(0.1, 0.1, 0.1), c);
 }
+// --- characters
 export interface Model { root: THREE.Group; parts: Record<string, THREE.Object3D>; h: number; kind: string; gear?: string }
-const mesh = (g: THREE.BufferGeometry) => { const m = new THREE.Mesh(g, MAT); m.castShadow = true; return m; };
-const pivot = (g: THREE.BufferGeometry, x: number, y: number, z = 0) => { const p = new THREE.Group(); p.position.set(x, y, z); p.add(mesh(g)); return p; };
+export const mesh = (g: G) => { const m = new THREE.Mesh(g, MAT); m.castShadow = true; m.receiveShadow = true; return m; };
+const pivot = (g: G | null, x: number, y: number, z = 0) => { const p = new THREE.Group(); p.position.set(x, y, z); if (g) p.add(mesh(g)); return p; };
+const hash = (s: string) => { let h = 0; for (const ch of s) h = (h * 31 + ch.charCodeAt(0)) % 9973; return h; };
 export function playerModel(name: string, gear: (string | null)[]): Model {
-  let h = 0; for (const ch of name) h = (h * 31 + ch.charCodeAt(0)) % 997;
-  const skin = ['#e0b894', '#c99770', '#9a6b4a', '#6d4a35'][h % 4], hair = ['#4a3a2c', '#8a6a3f', '#2e2a2a', '#a8583a'][(h >> 2) % 4], cloth = ['#7d8f7a', '#8a7a94', '#7a8796', '#a08a6a'][(h >> 4) % 4];
-  const col = (i: number, d: string) => (gear[i] ? ITEMS[gear[i]!].color : d);
-  const root = new THREE.Group(), bc = col(2, cloth), lc = col(3, '#5f564c');
-  const parts: Model['parts'] = {
-    body: pivot(merge([part(box(0.46, 0.55, 0.28), bc, [0, 0.27, 0]), part(box(0.48, 0.08, 0.3), shade(bc, 0.7), [0, 0.02, 0])]), 0, 0.55),
-    head: pivot(merge([part(box(0.3, 0.3, 0.28), skin, [0, 0.17, 0]), gear[1] ? part(box(0.36, 0.22, 0.34), col(1, hair), [0, 0.29, 0]) : part(box(0.33, 0.12, 0.31), hair, [0, 0.32, 0]), part(box(0.05, 0.05, 0.02), '#2d2a28', [0.07, 0.18, 0.15]), part(box(0.05, 0.05, 0.02), '#2d2a28', [-0.07, 0.18, 0.15])]), 0, 1.12),
-    la: pivot(part(box(0.14, 0.5, 0.16), shade(bc, 0.9), [0, -0.22, 0]), 0.31, 1.06), ra: pivot(part(box(0.14, 0.5, 0.16), shade(bc, 0.9), [0, -0.22, 0]), -0.31, 1.06),
-    ll: pivot(part(box(0.19, 0.55, 0.2), lc, [0, -0.27, 0]), 0.12, 0.55), rl: pivot(part(box(0.19, 0.55, 0.2), lc, [0, -0.27, 0]), -0.12, 0.55),
+  const h = hash(name), skin = ['#e6bf9c', '#cf9f78', '#a06f4f', '#74503a'][h % 4], hair = ['#4a3a2c', '#8f6d40', '#2f2a2a', '#a65a3b'][(h >> 2) % 4], cloth = ['#7f9480', '#8d7c98', '#7a8a9e', '#a78f6c'][(h >> 4) % 4];
+  const it = (i: number) => (gear[i] ? ITEMS[gear[i]!] : null), head = it(1), body = it(2), legs = it(3);
+  const bc = body?.color ?? cloth, lc = legs?.color ?? '#645a4f', boot = '#4c4036', belt = '#5a4632';
+  const plateBody = !!body?.id.endsWith('_plate'), robe = !!body?.id.startsWith('cloth_'), skirt = !!legs?.id.startsWith('cloth_'), greaves = !!legs?.id.endsWith('_greaves');
+  const sleeve = body && !plateBody ? shade(bc, 0.9) : plateBody ? shade(bc, 0.7) : shade(bc, 1.08);
+  const parts: Model['parts'] = {}, root = new THREE.Group();
+  const upper = pivot(null, 0, 0.64);
+  parts.upper = upper;
+  parts.body = pivot(merge([
+    part(lathe([[0.17, 0], [0.18, 0.1], [0.215, 0.3], [0.2, 0.44], [0.09, 0.52]], 20), bc, [0, 0, 0], [0, 0, 0], [1.08, 1, 0.74]),
+    part(lathe([[0.185, -0.07], [0.2, 0], [0.18, 0.07]], 20), belt, [0, 0.02, 0], [0, 0, 0], [1.06, 1, 0.78]), part(rbox(0.09, 0.07, 0.03, 0.012), '#c9ad6c', [0, 0.02, 0.155]),
+    ...(plateBody ? [part(lathe([[0.19, 0.1], [0.24, 0.28], [0.21, 0.44]], 20), shade(bc, 1.1), [0, 0, 0.01], [0, 0, 0], [1.05, 1, 0.78]), part(rbox(0.02, 0.3, 0.02, 0.008), shade(bc, 0.8), [0, 0.27, 0.19]), ...[-1, 1].map(x => part(new THREE.SphereGeometry(0.13, 16, 10, 0, TAU, 0, Math.PI / 2), shade(bc, 1.12), [x * 0.27, 0.4, 0], [0, 0, -x * 0.35], [1, 0.8, 1.05]))] : []),
+    ...(robe ? [part(torus(0.12, 0.035), shade(bc, 0.75), [0, 0.47, 0], [Math.PI / 2, 0, 0], [1.1, 0.85, 1]), part(rbox(0.05, 0.42, 0.02, 0.008), shade(bc, 0.72), [0, 0.25, 0.155])] : []),
+    ...(body && !plateBody && !robe ? [part(rbox(0.04, 0.5, 0.02, 0.01), belt, [0, 0.26, 0.158], [0, 0, 0.55]), ...[-1, 1].map(x => part(rbox(0.13, 0.07, 0.2, 0.03), shade(bc, 0.8), [x * 0.2, 0.44, 0], [0, 0, -x * 0.35]))] : []),
+    part(cyl(0.065, 0.075, 0.12), skin, [0, 0.54, 0])]), 0, 0);
+  const helm: G[] = !head ? [part(new THREE.SphereGeometry(0.188, 20, 12, 0, TAU, 0, 1.75), hair, [0, 0.185, -0.02], [-0.3, 0, 0]), ...[-0.1, 0, 0.1].map((x, i) => part(blob(0.07, 2, 0.2, i), shade(hair, 1.08), [x, 0.31, 0.1], [0, 0, 0], [1.2, 0.6, 0.9]))]
+    : head.id.endsWith('_helm') ? [part(new THREE.SphereGeometry(0.205, 22, 14, 0, TAU, 0, 1.72), head.color, [0, 0.185, -0.01]), part(torus(0.2, 0.025), shade(head.color, 0.8), [0, 0.17, -0.01], [Math.PI / 2, 0, 0]), part(rbox(0.035, 0.15, 0.03, 0.01), shade(head.color, 0.85), [0, 0.14, 0.195]), part(rbox(0.04, 0.06, 0.34, 0.015), shade(head.color, 1.15), [0, 0.385, -0.01])]
+      : [part(new THREE.SphereGeometry(0.21, 22, 14, Math.PI * 0.72, Math.PI * 1.56, 0, 2.3), head.color, [0, 0.17, -0.015]), part(cone(0.1, 0.2), head.color, [0, 0.3, -0.16], [-1, 0, 0]), part(torus(0.15, 0.03), shade(head.color, 0.8), [0, 0.17, 0.12], [0, 0, 0], [1, 1.2, 1])];
+  parts.head = pivot(merge([part(ball(0.175, 20), skin, [0, 0.17, 0], [0, 0, 0], [0.95, 1.08, 0.98]), part(ball(0.03, 10), shade(skin, 0.95), [0, 0.15, 0.175]), ...[-1, 1].flatMap(x => [part(ball(0.034, 10), '#f5f0e6', [x * 0.065, 0.19, 0.142], [0, 0, 0], [1, 1.15, 0.6]), part(ball(0.019, 8), '#33291f', [x * 0.064, 0.188, 0.162]), part(rbox(0.065, 0.014, 0.02, 0.006), shade(hair, 0.9), [x * 0.065, 0.245, 0.155], [0, 0, -x * 0.12]), part(ball(0.035, 8), shade(skin, 0.95), [x * 0.168, 0.16, 0], [0, 0, 0], [0.6, 1.1, 0.8])]), part(rbox(0.07, 0.012, 0.02, 0.005), shade(skin, 0.65), [0, 0.085, 0.155]), ...helm]), 0, 0.57);
+  const arm = (n: string, x: number) => {
+    const a = pivot(merge([part(capsule(0.075, 0.15), sleeve, [0, -0.1, 0])]), x, 0.42), f = pivot(merge([part(lathe([[0.068, 0.02], [0.07, -0.06], [0.055, -0.2]], 14), plateBody ? bc : robe ? sleeve : skin, [0, 0, 0], [0, 0, 0], robe ? [1.35, 1, 1.35] : 1), ...(plateBody ? [part(torus(0.062, 0.015), shade(bc, 0.8), [0, -0.17, 0], [Math.PI / 2, 0, 0])] : []), part(ball(0.058, 12), skin, [0, -0.24, 0.005], [0, 0, 0], [0.9, 1.1, 1]), part(capsule(0.02, 0.03), skin, [x > 0 ? -0.04 : 0.04, -0.235, 0.04], [0.5, 0, 0])]), 0, -0.22);
+    a.add(f); const hand = new THREE.Group(); hand.position.set(0, -0.25, 0.02); f.add(hand); parts[n] = a; parts[n + '2'] = f; parts[n + 'h'] = hand; upper.add(a);
   };
-  if (gear[0]) { const g = mesh(weaponGeo(gear[0])); g.position.set(0, -0.44, 0.06); g.rotation.x = ITEMS[gear[0]].icon === 'bow' ? 0 : 1.1; parts.ra.add(g); parts.weapon = g; }
-  for (const p of Object.values(parts)) if (p !== parts.weapon) root.add(p);
-  for (const [k, id] of [['tool_mine', 'worn_pickaxe'], ['tool_chop', 'worn_axe']]) { const g = mesh(weaponGeo(id)); g.position.set(0, -0.44, 0.06); g.rotation.x = 1.1; g.visible = false; parts.ra.add(g); parts[k] = g; }
-  return { root, parts, h: 1.7, kind: 'p', gear: gear.join() };
+  arm('la', 0.265); arm('ra', -0.265); upper.add(parts.body, parts.head);
+  const leg = (n: string, x: number) => { const t = pivot(merge([part(lathe([[0.095, 0.03], [0.1, -0.06], [0.078, -0.3]], 14), lc), ...(greaves ? [part(ball(0.085, 12), shade(lc, 1.15), [0, -0.3, 0.03], [0, 0, 0], [1, 1, 0.8])] : [])]), x, 0.64), s = pivot(merge([part(lathe([[0.078, 0.02], [0.08, -0.08], [0.06, -0.22]], 14), greaves ? shade(lc, 1.05) : shade(lc, 0.95)), part(lathe([[0.09, -0.1], [0.075, -0.18], [0.078, -0.3]], 14), boot), part(rbox(0.15, 0.1, 0.24, 0.045), boot, [0, -0.29, 0.045])]), 0, -0.3); t.add(s); parts[n] = t; parts[n + '2'] = s; root.add(t); };
+  leg('ll', 0.1); leg('rl', -0.1);
+  if (skirt || robe) root.add(pivot(part(lathe([[0.19, 0.06], [0.22, -0.12], [0.29, -0.42]], 22), skirt ? lc : shade(bc, 0.92), [0, 0, 0], [0, 0, 0], [1, 1, 0.85]), 0, 0.64));
+  root.add(upper);
+  const wp = it(0); if (wp) { const g = mesh(heldGeo(wp.icon, wp.color, wp.unique)); if (wp.icon === 'bow') { g.rotation.x = Math.PI / 2 - 0.05; parts.lah.add(g); } else { g.rotation.x = 1.5; parts.rah.add(g); } parts.weapon = g; }
+  root.scale.setScalar(1.08);
+  return { root, parts, h: 1.75, kind: 'p', gear: gear.join() };
 }
+// --- monsters
+const eyes = (x: number, y: number, z: number, r = 0.045, c = '#26231f'): G[] => [-1, 1].flatMap(s => [part(ball(r, 10), c, [x * s, y, z]), part(ball(r * 0.35, 6), '#f5f0e4', [x * s + r * 0.3, y + r * 0.35, z + r * 0.8])]);
 export function monsterModel(type: string): Model {
-  const d = MONSTERS[type], c = d.color, root = new THREE.Group(), parts: Model['parts'] = {}; let h = 1.1;
-  const eye = (x: number, y: number, z: number, r = 0.06) => [part(box(r, r, 0.04), '#26231f', [x, y, z]), part(box(r, r, 0.04), '#26231f', [-x, y, z])];
+  const d = MONSTERS[type], c = d.color, dk = shade(c, 0.72), lt = shade(c, 1.2), root = new THREE.Group(), parts: Model['parts'] = {}; let h = 1.1;
   if (d.shape === 'beast') {
-    const k = 0.8 + Math.min(0.6, d.level / 70), horn = type === 'stag' || type === 'drake' ? [part(cone(0.05, 0.5, 4), '#cfc6b0', [0.14, 0.4, 0], [0, 0, -0.5]), part(cone(0.05, 0.5, 4), '#cfc6b0', [-0.14, 0.4, 0], [0, 0, 0.5])] : type === 'boar' ? [part(cone(0.04, 0.2, 4), '#e5dcc8', [0.13, -0.06, 0.35], [0.6, 0, 0]), part(cone(0.04, 0.2, 4), '#e5dcc8', [-0.13, -0.06, 0.35], [0.6, 0, 0])] : [];
-    const spikes = type === 'thornback' ? [0, 1, 2, 3].map(i => part(cone(0.08, 0.35, 4), shade(c, 0.6), [0, 0.35, -0.3 + i * 0.2])) : [];
-    const wings = type === 'drake' ? [part(box(0.7, 0.04, 0.4), shade(c, 1.2), [0.5, 0.3, 0], [0, 0, 0.5]), part(box(0.7, 0.04, 0.4), shade(c, 1.2), [-0.5, 0.3, 0], [0, 0, -0.5])] : [];
-    parts.body = pivot(merge([part(box(0.48, 0.45, 0.9), c), ...spikes, ...wings]), 0, 0.55); parts.head = pivot(merge([part(box(0.36, 0.34, 0.36), shade(c, 1.1), [0, 0, 0.15]), part(box(0.2, 0.16, 0.16), shade(c, 0.8), [0, -0.06, 0.38]), ...eye(0.12, 0.06, 0.34), ...horn]), 0, 0.72, 0.45);
-    for (const [n, x, z] of [['ll', 0.17, 0.3], ['rl', -0.17, 0.3], ['rb', 0.17, -0.3], ['lb', -0.17, -0.3]] as const) parts[n] = pivot(part(box(0.13, 0.36, 0.13), shade(c, 0.75), [0, -0.17, 0]), x, 0.36, z);
-    root.scale.setScalar(k); h = 1.15 * k;
+    const pig = type === 'boar', deer = type === 'stag', drake = type === 'drake', thorn = type === 'thornback', wolf = type === 'wolf', legL = deer ? 0.52 : wolf ? 0.46 : pig ? 0.32 : 0.4, by = legL + (pig ? 0.2 : 0.17);
+    const body: G[] = [part(capsule(pig ? 0.27 : wolf ? 0.18 : 0.22, pig ? 0.42 : 0.62), c, [0, 0, 0], [Math.PI / 2, 0, 0], [1, 1, 1.02]), part(ball(pig ? 0.29 : wolf ? 0.21 : 0.25, 18), c, [0, 0.05, 0.22], [0, 0, 0], [1, 1.02, 1]), part(ball(0.2, 16), lt, [0, -0.1, 0.02], [0, 0, 0], [0.9, 0.7, 1.7])];
+    if (pig) body.push(...[0, 1, 2, 3, 4, 5, 6].map(i => part(cone(0.035, 0.15, 6), dk, [0, 0.28 - Math.abs(i - 3) * 0.008, 0.36 - i * 0.12], [-0.4, 0, 0])), part(taper([[0, 0.1, -0.5], [0.04, 0.16, -0.58], [-0.02, 0.12, -0.63]], 0.025, 0.012, 10, 6), dk));
+    else if (drake) body.push(part(taper([[0, 0, -0.4], [0, 0.02, -0.75], [0.12, 0.1, -1.05], [0.2, 0.16, -1.3]], 0.17, 0.02, 18, 10), c), ...[0, 1, 2, 3, 4, 5].map(i => part(cone(0.05, 0.16, 6), lt, [0, 0.25 - (i > 3 ? (i - 3) * 0.06 : 0), 0.3 - i * 0.2], [-0.4, 0, 0])));
+    else body.push(part(taper([[0, 0.06, -0.45], [0, 0.04, -0.62], [0.03, -0.1, -0.78]], 0.075, deer ? 0.03 : 0.05, 12, 8), dk), ...(thorn ? ring(5).flatMap((_, i) => [-1, 0, 1].map(s => part(cone(0.05, 0.3, 7), shade('#4f5636', 0.9 + (i % 2) * 0.2), [s * 0.16, 0.24 - Math.abs(s) * 0.06, 0.32 - i * 0.17], [-0.35, 0, -s * 0.5]))) : []), ...(type === 'wolf' ? ring(8).map((a, i) => part(blob(0.12, 2, 0.3, i), shade(c, 0.85 + (i % 2) * 0.15), [Math.cos(a) * 0.16, 0.06 + Math.sin(a) * 0.16, 0.36])) : []));
+    parts.body = pivot(merge(body), 0, by);
+    if (drake) for (const s of [-1, 1]) { const wing = pivot(merge([part(taper([[0, 0, 0], [s * 0.4, 0.3, 0], [s * 0.85, 0.2, -0.1]], 0.04, 0.015, 12, 7), dk), part(plate(q => { q.moveTo(0, 0); q.quadraticCurveTo(0.35, 0.36, 0.85, 0.2); q.quadraticCurveTo(0.68, 0, 0.62, -0.16); q.quadraticCurveTo(0.45, -0.06, 0.34, -0.22); q.quadraticCurveTo(0.2, -0.1, 0, -0.12); q.closePath(); }, 0.012, 0.006), lt, [0, 0, 0], [0, s > 0 ? 0 : Math.PI, 0])]), s * 0.16, 0.18, 0.1); parts.body.add(wing); parts[s > 0 ? 'wl' : 'wr'] = wing; }
+    const neckY = deer ? 0.42 : 0.1, hz = pig ? 0.16 : 0.2;
+    const hd: G[] = [part(ball(pig ? 0.22 : 0.17, 18), c, [0, neckY, hz], [0, 0, 0], [0.95, 0.95, 1.1]), part(lathe([[0.02, wolf ? 0.27 : 0.2], [pig ? 0.1 : 0.075, 0.19], [pig ? 0.13 : 0.11, 0.05], [0.14, -0.06]], 16), pig ? lt : shade(c, 1.08), [0, neckY - 0.05, hz + 0.1], [Math.PI / 2 + 0.12, 0, 0]), part(ball(pig ? 0.075 : 0.04, 12), '#3a2f2a', [0, neckY - 0.05, hz + (pig ? 0.28 : 0.3)], [0, 0, 0], [1.1, 0.8, 0.5]), ...eyes(0.1, neckY + 0.07, hz + 0.13, 0.034, drake ? '#e0b95a' : '#26231f'),
+      part(taper([[0, -0.02, -0.16], [0, neckY * 0.5, 0.02], [0, neckY, hz]], deer ? 0.15 : 0.19, 0.12, 12, 12), c), ...[-1, 1].map(s => part(cone(0.065, wolf ? 0.24 : 0.17, 10), dk, [s * 0.12, neckY + 0.18, hz - 0.03], [-0.15, 0, -s * 0.35], [1, 1, 0.5]))];
+    if (pig) for (const s of [-1, 1]) hd.push(part(taper([[s * 0.09, neckY - 0.1, hz + 0.2], [s * 0.15, neckY - 0.06, hz + 0.27], [s * 0.14, neckY + 0.05, hz + 0.28]], 0.03, 0.006, 10, 8), '#efe6d2'));
+    if (deer) for (const s of [-1, 1]) hd.push(part(taper([[s * 0.06, neckY + 0.13, hz], [s * 0.22, neckY + 0.35, hz - 0.08], [s * 0.3, neckY + 0.62, hz + 0.04]], 0.032, 0.01, 14, 8), '#d4c8ae'), ...[0.4, 0.62, 0.82].map((k, i) => part(taper([[s * (0.1 + k * 0.17), neckY + 0.16 + k * 0.36, hz - 0.05], [s * (0.18 + k * 0.24), neckY + 0.28 + k * 0.4, hz + 0.1 + i * 0.02]], 0.02, 0.006, 6, 6), '#d4c8ae')));
+    if (drake) for (const s of [-1, 1]) hd.push(part(taper([[s * 0.08, neckY + 0.13, hz - 0.02], [s * 0.14, neckY + 0.28, hz - 0.16], [s * 0.12, neckY + 0.4, hz - 0.34]], 0.04, 0.008, 12, 8), '#d4c8ae'));
+    parts.head = pivot(merge(hd), 0, by + 0.04, 0.36);
+    for (const [n, x, z] of [['ll', 0.15, 0.26], ['rl', -0.15, 0.26], ['rb', 0.15, -0.26], ['lb', -0.15, -0.26]] as const) parts[n] = pivot(merge([part(lathe([[0.11, 0.06], [0.09, -0.06], [0.05, -legL * 0.55], [0.055, -legL + 0.05]], 12), shade(c, 0.88)), part(lathe([[0.065, -legL + 0.08], [0.075, -legL + 0.02], [0.07, -legL]], 12), '#3d342c')]), x, legL, z);
+    root.scale.setScalar(0.9 + Math.min(0.55, d.level / 80)); h = (by + 0.55 + (deer ? 0.45 : 0)) * root.scale.x;
   } else if (d.shape === 'wisp') {
-    parts.body = pivot(merge([part(new THREE.OctahedronGeometry(0.32), c), part(new THREE.OctahedronGeometry(0.18), '#f0ece0', [0, 0, 0.2]), part(cone(0.2, 0.6, 5), shade(c, 0.8), [0, -0.4, 0], [Math.PI, 0, 0])]), 0, 1.05); h = 1.5;
+    parts.body = pivot(merge([part(lathe([[0.02, 0.42], [0.16, 0.3], [0.27, 0.06], [0.22, -0.2], [0.1, -0.5], [0.01, -0.85]], 22), c), ...ring(5).map((a, i) => part(taper([[Math.cos(a) * 0.2, 0, Math.sin(a) * 0.2], [Math.cos(a + 0.6) * 0.32, -0.32, Math.sin(a + 0.6) * 0.32], [Math.cos(a + 1.3) * 0.2, -0.7 - (i % 2) * 0.1, Math.sin(a + 1.3) * 0.2]], 0.07, 0.006, 14, 8), shade(c, 0.85 + (i % 2) * 0.2))), part(ball(0.17), '#f7f3e6', [0, 0.1, 0.13]), ...[-1, 1].map(s => part(ball(0.035, 10), '#333a44', [s * 0.07, 0.13, 0.285], [0, 0, 0], [0.8, 1.4, 0.6])), ...(type === 'seer' ? [part(torus(0.3, 0.025), '#d9b25b', [0, 0.42, 0], [1.4, 0, 0])] : [])]), 0, 1.05);
+    for (let i = 0; i < 3; i++) { const o = pivot(part(gem(0.07), lt), 0, 0); parts.body.add(o); parts['o' + i] = o; } h = 1.6;
   } else if (d.shape === 'plant') {
-    parts.body = pivot(merge([part(cyl(0.12, 0.2, 0.7), shade(c, 0.7), [0, 0.35, 0]), part(ico(0.34), c, [0, 0.85, 0]), part(cone(0.16, 0.3, 5), '#c9605a', [0, 0.85, 0.34], [1.57, 0, 0]), ...[0, 1, 2, 3, 4].map(i => part(cone(0.09, 0.5, 4), shade(c, 0.85), [Math.cos(i * 1.26) * 0.3, 0.15, Math.sin(i * 1.26) * 0.3], [Math.sin(i * 1.26), 0, -Math.cos(i * 1.26)]))]), 0, 0); h = 1.3;
+    parts.body = pivot(merge([part(taper([[0, 0, 0], [0.1, 0.3, -0.06], [-0.04, 0.6, 0], [0, 0.82, 0.04]], 0.13, 0.085, 18, 12), shade(c, 0.75)), part(blob(0.3, 4, 0.1, 3), c, [0, 0.95, 0.04]), part(torus(0.14, 0.055), '#cf6a62', [0, 0.95, 0.3]), part(ball(0.13), '#3a2028', [0, 0.95, 0.25], [0, 0, 0], [1, 1, 0.6]), ...ring(8).map(a => part(cone(0.025, 0.09, 8), '#f3ead6', [Math.cos(a) * 0.12, 0.95 + Math.sin(a) * 0.12, 0.35], [Math.PI / 2, 0, 0])), ...ring(9).map(a => part(blob(0.13, 2, 0.1, a), shade('#c9605a', 0.95), [Math.cos(a) * 0.32, 0.95 + Math.sin(a) * 0.32, 0.02], [0, 0, a], [1.4, 0.75, 0.3])), ...eyes(0.13, 1.2, 0.18, 0.045), ...ring(7).map((a, i) => part(taper([[0, 0.06, 0], [Math.cos(a) * 0.3, 0.26, Math.sin(a) * 0.3], [Math.cos(a) * 0.58, 0.05 + (i % 2) * 0.06, Math.sin(a) * 0.58]], 0.085, 0.008, 12, 7), shade(c, 0.85 + (i % 3) * 0.1), [0, 0, 0], [0, 0, 0], [1, 1, 1]))]), 0, 0); h = 1.45;
   } else if (d.shape === 'golem') {
-    parts.body = pivot(merge([part(ico(0.5), c, [0, 0.3, 0], [0.3, 0.5, 0]), part(ico(0.26), shade(c, 1.1), [0, 0.85, 0.1]), ...eye(0.1, 0.88, 0.32)]), 0, 0.6); parts.la = pivot(part(box(0.24, 0.75, 0.26), shade(c, 0.85), [0, -0.3, 0]), 0.55, 1.05); parts.ra = pivot(part(box(0.24, 0.75, 0.26), shade(c, 0.85), [0, -0.3, 0]), -0.55, 1.05); parts.ll = pivot(part(box(0.26, 0.5, 0.28), shade(c, 0.75), [0, -0.2, 0]), 0.22, 0.45); parts.rl = pivot(part(box(0.26, 0.5, 0.28), shade(c, 0.75), [0, -0.2, 0]), -0.22, 0.45); h = 1.7;
+    const moss = '#7f9458', st = (r: number, p: V3, s = 1, k = 1) => part(blob(r, 4, 0.2, s, true), shade(c, k), p);
+    parts.body = pivot(merge([st(0.46, [0, 0.36, 0], 3), st(0.3, [0.28, 0.55, -0.05], 5, 1.06), st(0.3, [-0.28, 0.55, -0.05], 8, 0.96), st(0.24, [0, 0.86, 0.1], 2, 1.1), part(rbox(0.3, 0.07, 0.1, 0.03), dk, [0, 0.95, 0.28]), ...eyes(0.085, 0.88, 0.31, 0.035, '#e0b95a'), part(blob(0.22, 3, 0.3, 4), moss, [0.2, 0.74, -0.1], [0, 0, 0], [1.2, 0.4, 1]), part(blob(0.16, 3, 0.3, 6), moss, [-0.3, 0.76, 0], [0, 0, 0], [1.2, 0.4, 1])]), 0, 0.55);
+    for (const [n, x] of [['la', 0.56], ['ra', -0.56]] as const) parts[n] = pivot(merge([st(0.19, [0, -0.1, 0], 2), st(0.17, [0, -0.38, 0.02], 4, 0.95), st(0.23, [0, -0.68, 0.06], 7, 1.06)]), x, 1.08);
+    for (const [n, x] of [['ll', 0.22], ['rl', -0.22]] as const) parts[n] = pivot(merge([st(0.2, [0, -0.06, 0], 5, 0.92), st(0.2, [0, -0.33, 0.04], 9, 0.86)]), x, 0.5); h = 1.75;
   } else if (d.shape === 'crab') {
-    parts.body = pivot(merge([part(ico(0.95), c, [0, 0, 0], [0, 0, 0], [1, 0.5, 0.8]), part(ico(0.25), '#8d9a94', [0.4, 0.4, -0.2]), part(ico(0.18), '#8d9a94', [-0.3, 0.45, -0.3]), part(cyl(0.05, 0.05, 0.4), c, [0.25, 0.45, 0.6]), part(cyl(0.05, 0.05, 0.4), c, [-0.25, 0.45, 0.6]), ...eye(0.25, 0.65, 0.62, 0.14), ...[0, 1, 2].flatMap(i => [part(box(0.7, 0.12, 0.12), shade(c, 0.8), [1, -0.2, 0.35 - i * 0.35], [0, 0, -0.5]), part(box(0.7, 0.12, 0.12), shade(c, 0.8), [-1, -0.2, 0.35 - i * 0.35], [0, 0, 0.5])])]), 0, 0.6);
-    const claw = () => merge([part(box(0.18, 0.18, 0.6), shade(c, 0.9), [0, 0, 0.3]), part(ico(0.34), shade(c, 1.1), [0, 0, 0.75]), part(cone(0.12, 0.4, 4), shade(c, 1.2), [0.1, 0.08, 1.1], [1.57, 0, 0])]);
-    parts.la = pivot(claw(), 0.75, 0.6, 0.5); parts.ra = pivot(claw(), -0.75, 0.6, 0.5); h = 1.7;
+    const b: G[] = [part(lathe([[0.02, 0.48], [0.45, 0.44], [0.88, 0.18], [0.95, 0], [0.8, -0.16], [0.3, -0.24], [0.02, -0.24]], 30), c, [0, 0, 0], [0, 0, 0], [1, 1, 0.82]), part(lathe([[0.9, -0.1], [0.97, 0], [0.9, 0.1]], 30), lt, [0, 0, 0], [0, 0, 0], [1, 1, 0.83]), ...ring(11).map((a, i) => part(ball(0.06 + (i % 3) * 0.02, 10), shade(c, 0.75), [Math.cos(a) * (0.3 + (i % 3) * 0.16), 0.42 - (i % 3) * 0.06, Math.sin(a) * (0.26 + (i % 3) * 0.12)], [0, 0, 0], [1, 0.5, 1])), ...([[0.42, 0.42, -0.18, 0.17], [-0.36, 0.44, -0.28, 0.13], [-0.1, 0.47, -0.42, 0.1]] as const).map(([x, y, z, r]) => part(lathe([[r, 0], [r * 0.85, r * 0.7], [r * 0.5, r * 1.2], [r * 0.35, r * 1.1], [r * 0.3, r * 0.7]], 12), '#a9b5ad', [x, y - 0.06, z], [z, 0, -x * 0.5]))];
+    for (const s of [-1, 1]) { b.push(part(taper([[s * 0.24, 0.26, 0.6], [s * 0.26, 0.5, 0.7], [s * 0.27, 0.64, 0.72]], 0.06, 0.05, 10, 10), c), part(ball(0.11), '#f3ecd8', [s * 0.27, 0.7, 0.73]), part(ball(0.06), '#26231f', [s * 0.27, 0.71, 0.82])); for (let i = 0; i < 4; i++) { const z = 0.42 - i * 0.28; b.push(part(taper([[s * 0.75, -0.05, z * 0.8], [s * 1.12, 0.2, z], [s * 1.3, -0.2, z * 1.1], [s * 1.36, -0.58, z * 1.15]], 0.1, 0.02, 18, 10), shade(c, 0.85 + (i % 2) * 0.08))); } }
+    for (const x of [-0.14, -0.05, 0.05, 0.14]) b.push(part(taper([[x, -0.06, 0.74], [x * 1.3, -0.14, 0.84], [x, -0.2, 0.84]], 0.035, 0.015, 8, 7), lt));
+    parts.body = pivot(merge(b), 0, 0.6);
+    const claw = (s: number) => merge([part(taper([[0, 0, 0], [s * 0.3, 0.06, 0.2], [s * 0.18, 0, 0.55]], 0.14, 0.12, 14, 12), shade(c, 0.92)), part(blob(0.3, 4, 0.07, 2), c, [s * 0.1, 0.02, 0.78], [0, 0, 0], [0.85, 0.8, 1.15]), part(taper([[s * 0.24, 0.02, 0.9], [s * 0.34, 0.04, 1.2], [s * 0.1, 0.02, 1.46]], 0.15, 0.015, 14, 12), lt), part(taper([[s * -0.08, 0.02, 0.92], [s * -0.18, 0.04, 1.15], [s * 0.02, 0.02, 1.36]], 0.11, 0.012, 14, 12), lt), ...[0, 1, 2, 3].map(i => part(ball(0.035, 8), '#f0e2cc', [s * (0.19 - i * 0.015), 0.1, 1 + i * 0.09]))]);
+    parts.la = pivot(claw(1), 0.68, 0.6, 0.45); parts.ra = pivot(claw(-1), -0.68, 0.6, 0.45); h = 1.75;
   } else {
-    const l = '#7f9a58';
-    parts.body = pivot(merge([part(cyl(0.75, 1.15, 2.6, 7), c, [0, 1.3, 0]), part(box(0.28, 0.2, 0.1), '#e0b95a', [0.35, 2, 0.78]), part(box(0.28, 0.2, 0.1), '#e0b95a', [-0.35, 2, 0.78]), part(box(0.7, 0.14, 0.1), '#2c2a20', [0, 1.5, 0.9]), part(ico(1.1), l, [0, 3.4, 0], [0.2, 0.4, 0], [1.2, 0.8, 1.2]), part(ico(0.7), shade(l, 1.1), [0.9, 3, 0.2]), part(ico(0.7), shade(l, 0.9), [-0.9, 3.1, -0.2]), ...[0, 1, 2, 3, 4, 5].map(i => part(cone(0.28, 1.3, 5), shade(c, 0.8), [Math.cos(i * 1.05) * 1.1, 0.2, Math.sin(i * 1.05) * 1.1], [Math.sin(i * 1.05) * 1.2, 0, -Math.cos(i * 1.05) * 1.2]))]), 0, 0);
-    const arm = merge([part(cyl(0.24, 0.32, 1.8, 6), shade(c, 0.9), [0, -0.8, 0]), part(ico(0.48), shade(c, 0.75), [0, -1.8, 0])]);
-    parts.la = pivot(arm, 1.1, 2.3); parts.ra = pivot(arm.clone(), -1.1, 2.3); h = 4.2;
+    const l = '#7f9a58', tr = lathe([[1.25, 0], [0.98, 0.35], [0.82, 1], [0.84, 1.8], [0.74, 2.4], [0.5, 3]], 36), p = tr.attributes.position; for (let i = 0; i < p.count; i++) { const x = p.getX(i), z = p.getZ(i), a = Math.atan2(z, x), f = 1 + 0.06 * Math.sin(a * 9 + p.getY(i) * 0.8) + 0.03 * Math.sin(a * 17); p.setXYZ(i, x * f, p.getY(i), z * f); } tr.computeVertexNormals();
+    parts.body = pivot(merge([part(tr, c), ...[-1, 1].flatMap(s => [part(ball(0.24), '#26241b', [s * 0.33, 2.02, 0.68], [0, 0, s * 0.3], [1, 0.75, 0.6]), part(ball(0.13), '#f0c55e', [s * 0.33, 2.02, 0.8], [0, 0, 0], [1, 0.8, 0.6]), part(taper([[s * 0.1, 2.14, 0.84], [s * 0.34, 2.32, 0.82], [s * 0.64, 2.3, 0.58]], 0.1, 0.05, 12, 10), shade(c, 0.78))]), part(blob(0.15, 3, 0.2, 1), shade(c, 0.8), [0, 1.82, 0.88], [0, 0, 0], [0.8, 1.4, 0.8]), part(taper([[-0.42, 1.42, 0.72], [0, 1.3, 0.86], [0.42, 1.42, 0.72]], 0.1, 0.1, 16, 10), '#26241b', [0, 0, 0]), ...[-0.24, -0.08, 0.08, 0.24].map(x => part(cone(0.05, 0.16, 8), '#cdbf9a', [x, 1.33, 0.9], [Math.PI, 0, 0])), ...ring(9).map((a, i) => part(taper([[Math.cos(a) * 0.8, 0.5, Math.sin(a) * 0.8], [Math.cos(a) * 1.25, 0.34, Math.sin(a) * 1.25], [Math.cos(a + 0.2) * (1.65 + (i % 2) * 0.2), -0.05, Math.sin(a + 0.2) * 1.7]], 0.27, 0.04, 14, 10), shade(c, 0.8 + (i % 3) * 0.08))),
+      part(blob(1.05, 5, 0.2, 2), l, [0, 3.55, 0], [0, 0, 0], [1.25, 0.8, 1.2]), ...ring(7).map((a, i) => part(blob(0.62, 4, 0.22, i), shade(l, 0.86 + (i % 3) * 0.1), [Math.cos(a) * 1.05, 3.1 + (i % 2) * 0.36, Math.sin(a) * 1.05])), ...ring(9).filter(a => Math.sin(a) < 0.3).map((a, i) => part(blob(0.2, 3, 0.3, i), '#8fa560', [Math.cos(a) * 0.85, 0.9 + (i % 3) * 0.5, Math.sin(a) * 0.85], [0, 0, 0], [1, 0.6, 1])), ...ring(4).map((a, i) => part(taper([[Math.cos(a) * 0.4, 3, Math.sin(a) * 0.4], [Math.cos(a) * 0.8, 3.9, Math.sin(a) * 0.8], [Math.cos(a) * 0.9, 4.5 + i * 0.1, Math.sin(a) * 0.7]], 0.14, 0.03, 12, 8), shade(c, 0.9)))]), 0, 0);
+    const arm = (s: number) => merge([part(taper([[0, 0, 0], [s * 0.3, -0.5, 0.1], [s * 0.1, -1.1, 0.1], [0, -1.6, 0.15]], 0.34, 0.24, 20, 14), shade(c, 0.92)), part(blob(0.4, 4, 0.2, 3), shade(c, 0.82), [0, -1.75, 0.15]), ...[-1, 0, 1].map(i => part(taper([[i * 0.2, -1.85, 0.25], [i * 0.3, -2.1, 0.4], [i * 0.22, -2.3, 0.4]], 0.11, 0.02, 10, 8), shade(c, 0.75))), part(blob(0.3, 3, 0.25, 5), l, [s * 0.1, 0.05, 0], [0, 0, 0], [1.2, 0.6, 1.1])]);
+    parts.la = pivot(arm(1), 0.95, 2.4); parts.ra = pivot(arm(-1), -0.95, 2.4); h = 4.6;
   }
-  for (const p of Object.values(parts)) root.add(p);
+  for (const p of Object.values(parts)) if (!p.parent) root.add(p);
   return { root, parts, h, kind: d.shape };
 }
-export function dropModel(item: string): Model { const c = ITEMS[item].color, root = new THREE.Group(); root.add(mesh(merge([part(box(0.3, 0.22, 0.3), c, [0, 0.13, 0], [0, 0.5, 0]), part(box(0.16, 0.1, 0.16), shade(c, 1.2), [0.14, 0.06, 0.14])]))); if (ITEMS[item].unique) { const b = new THREE.Mesh(new THREE.CylinderGeometry(0.06, 0.06, 4, 6), new THREE.MeshBasicMaterial({ color: c, transparent: true, opacity: 0.45 })); b.position.y = 2; root.add(b); } return { root, parts: {}, h: 0.4, kind: 'd' }; }
-export function graveModel(): Model { const root = new THREE.Group(); root.add(mesh(merge([part(box(0.5, 0.75, 0.16), '#9a978f', [0, 0.37, 0]), part(cyl(0.25, 0.25, 0.16, 8), '#9a978f', [0, 0.75, 0], [1.57, 0, 0]), part(box(0.7, 0.1, 0.9), '#6d5f48', [0, 0.05, 0.4])]))); return { root, parts: {}, h: 1, kind: 'g' }; }
+export function dropModel(item: string): Model {
+  const i = ITEMS[item], c = i.color, root = new THREE.Group(); let g: G;
+  if (['sword', 'pickaxe', 'axe', 'bow', 'staff'].includes(i.icon)) { g = heldGeo(i.icon, c, i.unique); g.rotateX(Math.PI / 2); g.rotateY(0.6); g.translate(-0.15, 0.06, -0.2); g.scale(0.8, 0.8, 0.8); }
+  else if (i.icon === 'log') g = merge([part(cyl(0.11, 0.12, 0.6), c, [0, 0.12, 0], [0, 0.5, Math.PI / 2]), part(cyl(0.1, 0.1, 0.61), '#e0cca0', [0, 0.12, 0], [0, 0.5, Math.PI / 2], [0.8, 1, 0.8])]);
+  else if (i.icon === 'ore') g = merge([part(blob(0.18, 3, 0.25, 3, true), '#837f78', [0, 0.13, 0]), ...ring(4).map(a => part(blob(0.06, 2, 0.2, a, true), c, [Math.cos(a) * 0.13, 0.17, Math.sin(a) * 0.13]))]);
+  else if (i.icon === 'bar') g = part(new THREE.CylinderGeometry(0.17, 0.24, 0.14, 4).rotateY(Math.PI / 4), c, [0, 0.08, 0], [0, 0.4, 0], [1.3, 1, 0.65]);
+  else if (i.icon === 'gem' || i.icon === 'essence') g = part(gem(0.15), c, [0, 0.17, 0]);
+  else if (i.icon === 'hide') g = part(blob(0.25, 3, 0.25, 2), c, [0, 0.05, 0], [0, 0, 0], [1.1, 0.25, 0.9]);
+  else if (i.icon === 'meat') g = merge([part(blob(0.17, 3, 0.15, 2), c, [0, 0.13, 0], [0, 0, 0], [1.3, 0.75, 0.9]), part(cyl(0.025, 0.025, 0.2), '#efe6d2', [0.24, 0.13, 0], [0, 0, Math.PI / 2]), part(ball(0.04), '#efe6d2', [0.34, 0.13, 0])]);
+  else g = merge([part(blob(0.18, 3, 0.08, 2), c, [0, 0.15, 0], [0, 0, 0], [1, 0.9, 1]), part(torus(0.07, 0.025), '#5a4632', [0, 0.3, 0], [Math.PI / 2, 0, 0]), part(lathe([[0.05, 0], [0.11, 0.1]], 12), c, [0, 0.3, 0])]);
+  root.add(mesh(g));
+  if (i.unique) { const b = new THREE.Mesh(new THREE.CylinderGeometry(0.06, 0.06, 4, 12), new THREE.MeshBasicMaterial({ color: c, transparent: true, opacity: 0.45 })); b.position.y = 2; root.add(b); }
+  return { root, parts: {}, h: 0.4, kind: 'd' };
+}
+export function graveModel(): Model { const root = new THREE.Group(), s = '#9a978f'; root.add(mesh(merge([part(plate(q => { q.moveTo(-0.26, 0); q.lineTo(-0.26, 0.55); q.absarc(0, 0.55, 0.26, Math.PI, 0, true); q.lineTo(0.26, 0); q.closePath(); }, 0.12, 0.025), s), part(rbox(0.22, 0.04, 0.02, 0.01), shade(s, 0.7), [0, 0.52, 0.09]), part(rbox(0.04, 0.26, 0.02, 0.01), shade(s, 0.7), [0, 0.48, 0.09]), part(blob(0.42, 4, 0.12, 2), '#6d5f48', [0, 0, 0.42], [0, 0, 0], [0.9, 0.28, 1.15]), ...ring(5).map((a, i) => part(blob(0.07, 2, 0.2, i, true), shade(s, 0.9), [Math.cos(a) * 0.38, 0.03, 0.42 + Math.sin(a) * 0.5]))]))); return { root, parts: {}, h: 1, kind: 'g' }; }
+// --- animation
+const ease = (t: number) => t * t * (3 - 2 * t), mix = (a: number, b: number, t: number) => a + (b - a) * t;
+/** 0 = resting on target, 1 = fully raised. Slow lift, fast strike, short rest. */
+export const swing = (p: number) => (p < 0.55 ? ease(p / 0.55) : p < 0.7 ? 1 - ((p - 0.55) / 0.15) ** 2 : 0);
+export const STRIKE_AT = 0.7;
+export interface Pose { act?: string; walk: number; moving: boolean; hit: number; t: number; tool?: string }
+/** Sets every joint. `hit` runs 1 to 0 after an attack; `t` is milliseconds. */
+export function posePlayer(m: Model, o: Pose) {
+  const p = m.parts, w = o.moving ? Math.sin(o.walk) : 0, aw = Math.abs(Math.cos(o.walk)), br = Math.sin(o.t / 700) * 0.012;
+  let lean = o.moving ? 0.08 : br, twist = -w * 0.12, la = -w * 0.6, ra = w * 0.6, la2 = -0.25, ra2 = -0.25, lz = 0.06, rz = -0.06, ll = w * 0.75, rl = -w * 0.75, drop = o.moving ? aw * 0.035 : 0, hx = 0;
+  let ll2 = o.moving ? Math.max(0, -Math.sin(o.walk + 0.9)) * 0.9 + 0.1 : 0, rl2 = o.moving ? Math.max(0, Math.sin(o.walk + 0.9)) * 0.9 + 0.1 : 0;
+  const a = o.act, cyc = (ms: number) => (o.t % ms) / ms, stance = () => { if (!o.moving) { ll = -0.3; rl = 0.26; ll2 = 0.2; rl2 = 0.1; drop = -0.03; } };
+  if (a === 'mine' || a === 'chop') {
+    const s = swing(cyc(1200)); stance(); lean = mix(0.34, -0.14, s); hx = mix(-0.1, 0.1, s); twist = a === 'chop' ? mix(-0.25, 0.5, s) : mix(-0.05, 0.12, s);
+    ra = mix(-0.75, -2.35, s); ra2 = mix(-0.15, -0.75, s); rz = 0.16; la = mix(-0.95, -2.1, s); la2 = mix(-0.35, -0.95, s); lz = -0.5;
+  } else if (a === 'craft') { const s = swing(cyc(750)); lean = 0.18; hx = 0.2; ra = mix(-0.7, -1.5, s); ra2 = mix(-0.3, -0.9, s); la = -0.75; la2 = -0.5; lz = -0.1; }
+  else if (a === 'pick') { const s = Math.sin(o.t / 260); lean = 0.72; hx = 0.1; ll = -0.5; rl = 0.1; ll2 = 0.8; rl2 = 0.6; drop = -0.14; la = -0.95 + s * 0.2; ra = -0.95 - s * 0.2; la2 = ra2 = -0.3; }
+  else if (a === 'eat') { ra = -1.2; ra2 = -1.7 + Math.sin(o.t / 90) * 0.12; rz = 0.3; hx = 0.12; }
+  else if (a === 'ranged') { stance(); twist = 0.55; la = -1.5; la2 = -0.06; lz = -0.45; const d = 1 - o.hit; ra = -1.45; ra2 = mix(-0.7, -1.9, ease(Math.min(1, d * 1.6))); rz = -0.35; hx = 0; }
+  else if (a === 'magic') { stance(); const f = o.hit; ra = mix(-1.25, -1.75, f); ra2 = mix(-0.5, -0.05, f); la = mix(-0.5, -1.6, f); la2 = mix(-0.7, -0.15, f); lean = f * 0.14; }
+  else if (a === 'melee') { stance(); ra = -0.7; ra2 = -0.75; la = -0.5; la2 = -0.9; if (o.hit > 0) { const q = 1 - o.hit, s = q < 0.35 ? ease(q / 0.35) : 1 - ease((q - 0.35) / 0.65); const down = q < 0.35; ra = down ? mix(-0.7, -2.5, s) : mix(-0.35, -2.5, s); ra2 = mix(-0.2, -0.8, s); twist = mix(-0.4, 0.35, s); lean = mix(0.22, -0.06, s); } }
+  p.upper.rotation.set(lean, twist, 0); p.upper.position.y = 0.64 + drop; p.head.rotation.set(hx - lean * 0.6, -twist * 0.7, 0);
+  p.la.rotation.set(la, 0, lz); p.ra.rotation.set(ra, 0, rz); p.la2.rotation.x = la2; p.ra2.rotation.x = ra2;
+  p.ll.rotation.x = ll; p.rl.rotation.x = rl; p.ll2.rotation.x = ll2; p.rl2.rotation.x = rl2; p.ll.position.y = p.rl.position.y = 0.64 + drop;
+  const want = a === 'mine' || a === 'chop' ? o.tool : a === 'craft' ? 'hammer' : undefined;
+  if (p.tool?.userData.id !== want) { if (p.tool) { p.rah.remove(p.tool); (p.tool as THREE.Mesh).geometry.dispose(); delete p.tool; } if (want) { const i = ITEMS[want], g = mesh(heldGeo(i?.icon ?? 'hammer', i?.color ?? '#6b7177')); g.userData.id = want; g.rotation.x = want === 'hammer' ? 1.75 : 2.1; p.rah.add(g); p.tool = g; } }
+  if (p.weapon) p.weapon.visible = !want && a !== 'pick' && a !== 'eat';
+}
+export function poseMonster(m: Model, o: Pose & { x: number }) {
+  const p = m.parts, w = o.moving ? Math.sin(o.walk) * 0.65 : 0, br = Math.sin(o.t / 600 + o.x);
+  for (const [k, s] of [['ll', 1], ['rl', -1], ['lb', 1], ['rb', -1]] as const) if (p[k]) p[k].rotation.x = w * s;
+  if (m.kind === 'wisp') { p.body.position.y = 1.05 + Math.sin(o.t / 450 + o.x) * 0.12; p.body.rotation.x = o.hit * 0.5; for (let i = 0; i < 3; i++) { const a = o.t / 700 + (i * TAU) / 3; p['o' + i].position.set(Math.cos(a) * 0.45, 0.1 + Math.sin(a * 2) * 0.12, Math.sin(a) * 0.45); } }
+  else if (m.kind === 'plant') { p.body.rotation.set(Math.sin(o.hit * Math.PI) * 0.35, 0, br * 0.05); }
+  else if (m.kind === 'golem') { p.la.rotation.x = -w; p.ra.rotation.x = w - Math.sin(o.hit * Math.PI) * 2; p.body.rotation.x = Math.sin(o.hit * Math.PI) * 0.2; }
+  else { p.head.rotation.x = br * 0.05 + Math.sin(o.hit * Math.PI) * 0.45; p.body.rotation.x = -Math.sin(o.hit * Math.PI) * 0.08; if (p.wl) { p.wl.rotation.z = 0.25 + Math.sin(o.t / 220) * 0.3; p.wr.rotation.z = -p.wl.rotation.z; } }
+}

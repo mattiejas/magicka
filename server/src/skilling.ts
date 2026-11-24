@@ -1,4 +1,4 @@
-import { BOAT_PARTS, ITEMS, MAPS, NODES, RECIPES, gatherChance, inReach, ticks } from '@magicka/shared';
+import { BOAT_PARTS, ITEMS, MAPS, METALS, NODES, RECIPES, gatherChance, inReach, ticks } from '@magicka/shared';
 import { bestTool, count, give, level, take } from './inventory';
 import type { Player } from './types';
 import type { World } from './world';
@@ -10,9 +10,11 @@ export function gather(w: World, p: Player, id: string) {
   let tier = 0;
   if (d.tool) {
     tier = bestTool(p, d.tool);
+    if (tier < 0) { w.info(p, `You are not carrying ${d.tool === 'axe' ? 'an axe' : 'a pickaxe'} you can use.`); return w.stop(p); }
     if (tier < d.tier - 1) { w.info(p, `You need a better ${d.tool} for that.`); return w.stop(p); }
   }
   if (p.c.inv.every(Boolean) && !(ITEMS[d.item].stack && count(p, d.item))) { w.info(p, 'Your inventory is full.'); return w.stop(p); }
+  if (d.tool) p.tool = `${tier ? METALS[tier] : 'worn'}_${d.tool}`;
   p.act = d.kind === 'rock' ? 'mine' : d.kind === 'tree' ? 'chop' : 'pick';
   if (p.nextAct > w.tick) return;
   if (p.nextAct < w.tick - 1) { p.nextAct = w.tick + 3; return; }

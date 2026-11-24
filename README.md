@@ -35,3 +35,5 @@ Only with `MAGICKA_DEV=1` (set by `npm run dev`; refused in production): `/give 
 
 `shared/` content, formulas, maps, pathfinding, protocol. `server/` simulation (`world`, `skilling`, `combat`, `bosses`, `inventory`), accounts, saves. `client/` Three.js scene and DOM interface.
 Items, recipes, monsters, loot and boss attacks are data in `shared/src/content.ts`.
+
+Model gallery while developing: `http://localhost:5173/gallery.html?set=people|monsters|nodes|camp&t=600` (`t` freezes the animation at that millisecond).

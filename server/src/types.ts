@@ -10,7 +10,7 @@ export type Action =
 export interface Player {
   id: string; account: number; name: string; c: SavedChar; action: Action | null; path: [number, number][]; via: [number, number][];
   nextAct: number; nextAttack: number; rootedUntil: number; lastCombat: number; dirty: boolean; send: ((m: ServerMsg) => void) | null;
-  disconnectedAt: number | null; known: Map<string, string>; knownMap: MapId | null; warned: string; act: string; loggingOut: boolean;
+  disconnectedAt: number | null; known: Map<string, string>; knownMap: MapId | null; warned: string; act: string; tool: string | undefined;
 }
 export interface Monster {
   id: string; def: MonsterDef; map: MapId; x: number; y: number; sx: number; sy: number; hp: number; mhp: number; dead: boolean; respawnAt: number;

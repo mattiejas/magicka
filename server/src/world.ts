@@ -32,7 +32,7 @@ export class World {
     else {
       const fresh = newChar(), c: SavedChar = saved ? { ...fresh, ...saved } : fresh;
       for (const s of SKILLS) c.xp[s] ??= 0;
-      p = { id, account, name, c, action: null, path: [], via: [], nextAct: 0, nextAttack: 0, rootedUntil: 0, lastCombat: -999, dirty: true, send: null, disconnectedAt: null, known: new Map(), knownMap: null, warned: '', act: '', loggingOut: false };
+      p = { id, account, name, c, action: null, path: [], via: [], nextAct: 0, nextAttack: 0, rootedUntil: 0, lastCombat: -999, dirty: true, send: null, disconnectedAt: null, known: new Map(), knownMap: null, warned: '', act: '', tool: undefined };
       this.players.set(id, p);
     }
     p.send = send; p.disconnectedAt = null; p.known = new Map(); p.knownMap = null; p.dirty = true;
@@ -128,7 +128,7 @@ export class World {
     return null;
   }
   private actPlayer(p: Player) {
-    p.via = []; p.act = p.act === 'eat' && p.nextAct > this.tick ? 'eat' : '';
+    p.via = []; p.tool = undefined; p.act = p.act === 'eat' && p.nextAct > this.tick ? 'eat' : '';
     const a = p.action; if (!a) return;
     const c = p.c, rooted = p.rootedUntil > this.tick;
     if (a.type === 'craft') return craft(this, p, a);
@@ -182,7 +182,7 @@ export class World {
     const add = (map: MapId, e: Ent, owner?: string | null) => ents.push({ map, e, s: JSON.stringify(e), owner });
     for (const p of this.players.values()) {
       const g = p.c.equip, a = p.action;
-      add(p.c.map, { id: p.id, k: 'p', x: p.c.x, y: p.c.y, via: p.via.length ? p.via : undefined, name: p.name, hp: p.c.hp, mhp: maxHp(level(p, 'vitality')), act: p.act || undefined, tgt: a && 'id' in a && a.type !== 'craft' ? a.id : undefined, rooted: p.rootedUntil > this.tick || undefined, gear: [g.weapon?.id ?? null, g.head?.id ?? null, g.body?.id ?? null, g.legs?.id ?? null], lvl: Math.max(level(p, 'melee'), level(p, 'ranged'), level(p, 'magic')) });
+      add(p.c.map, { id: p.id, k: 'p', x: p.c.x, y: p.c.y, via: p.via.length ? p.via : undefined, name: p.name, hp: p.c.hp, mhp: maxHp(level(p, 'vitality')), act: p.act || undefined, tool: p.tool, tgt: a && 'id' in a && a.type !== 'craft' ? a.id : undefined, rooted: p.rootedUntil > this.tick || undefined, gear: [g.weapon?.id ?? null, g.head?.id ?? null, g.body?.id ?? null, g.legs?.id ?? null], lvl: Math.max(level(p, 'melee'), level(p, 'ranged'), level(p, 'magic')) });
     }
     for (const m of this.monsters.values()) if (!m.dead) add(m.map, { id: m.id, k: 'm', type: m.def.id, x: m.x, y: m.y, via: m.via.length ? m.via : undefined, hp: Math.ceil(m.hp), mhp: m.mhp, tgt: m.target ?? undefined, boss: m.boss ? { st: m.boss.st, atk: m.boss.atk?.id, tiles: m.boss.tiles, start: m.boss.start, end: m.boss.end, tgt: m.boss.tgt ?? undefined } : undefined });
     for (const n of this.nodes.values()) if (n.depletedUntil > this.tick) add(n.map, { id: n.id, k: 'n', x: n.x, y: n.y });

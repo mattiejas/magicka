@@ -22,7 +22,7 @@ export interface Stack { id: string; qty: number }
 export interface BossView { st: 'choose' | 'windup' | 'execute'; atk?: string; tiles?: [number, number][]; start: number; end: number; tgt?: string }
 export interface Ent {
   id: string; k: 'p' | 'm' | 'n' | 'd' | 'g'; x: number; y: number;
-  via?: [number, number][]; name?: string; type?: string; hp?: number; mhp?: number; act?: string; tgt?: string; gear?: (string | null)[]; lvl?: number; rooted?: boolean;
+  via?: [number, number][]; name?: string; type?: string; hp?: number; mhp?: number; act?: string; tgt?: string; gear?: (string | null)[]; lvl?: number; rooted?: boolean; tool?: string;
   qty?: number; boss?: BossView;
 }
 export type GameEvent =

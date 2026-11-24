@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import { BOAT_PARTS, ITEMS, MAPS, MONSTERS, NODES, T, mulberry, type Ent, type GameEvent, type GameMap, type MapId } from '@magicka/shared';
-import { MAT, boatGeo, box, cone, dropModel, graveModel, ico, merge, monsterModel, nodeGeo, part, playerModel, stationGeo, type Model } from './models';
+import { MAT, blob, merge, noise, part, rbox, shade, taper } from './geo';
+import { STRIKE_AT, boatGeo, dropModel, graveModel, monsterModel, nodeGeo, playerModel, poseMonster, posePlayer, stationGeo, type Model } from './models';
 import { moving, posOf, state, tickNow, type Track } from './net';
 const COLORS = ['#4f7f8a', '#d8c79a', '#88a566', '#b39a72', '#99958c', '#a3825a'];
 export interface Pick { kind: 'node' | 'station' | 'ent'; id: string; name: string; type: string; box: THREE.Box3; e?: Ent }
@@ -9,16 +10,16 @@ export class Scene {
   yaw = 0; pitch = 0.95; dist = 15; private focus = new THREE.Vector3(32, 0, 35);
   private world = new THREE.Group(); private map: MapId | null = null; private models = new Map<string, { m: Model; yaw: number }>();
   private nodeInst = new Map<string, { full: THREE.InstancedMesh; spent: THREE.InstancedMesh; i: number; m: THREE.Matrix4; on: boolean }>();
-  private picks: Pick[] = []; private sun = new THREE.DirectionalLight('#fff0d8', 2.1);
+  private picks: Pick[] = []; private sun = new THREE.DirectionalLight('#fff0d8', 2.5);
   private hover = square('#f0ead8', 0.55); private dest = square('#8fd0c0', 0.8); private mine = square('#8fd0c0', 0.28);
   private tele = new Map<string, { g: THREE.Group; key: string; fx: ((k: number, st: string) => void)[] }>();
   private boat: THREE.Mesh | null = null; private boatKey = ''; private fx: { o: THREE.Object3D; t0: number; ms: number; f: (o: THREE.Object3D, k: number) => void }[] = [];
   texts: { x: number; y: number; h: number; text: string; cls: string; at: number; el?: HTMLElement }[] = [];
   private lastAct = new Map<string, number>(); private water: THREE.Mesh | null = null;
   constructor(canvas: HTMLCanvasElement, private overlay: HTMLElement) {
-    this.r = new THREE.WebGLRenderer({ canvas, antialias: true }); this.r.shadowMap.enabled = true; this.r.shadowMap.type = THREE.PCFSoftShadowMap;
+    this.r = new THREE.WebGLRenderer({ canvas, antialias: true }); this.r.toneMapping = THREE.NeutralToneMapping; this.r.toneMappingExposure = 1.1; this.r.shadowMap.enabled = true; this.r.shadowMap.type = THREE.PCFSoftShadowMap;
     this.s.background = new THREE.Color('#b9cdd0'); this.s.fog = new THREE.Fog('#b9cdd0', 34, 70);
-    this.s.add(new THREE.HemisphereLight('#e6eef0', '#8a7f66', 1.5), this.sun, this.sun.target, this.world, this.hover, this.dest, this.mine);
+    this.s.add(new THREE.HemisphereLight('#e9f0f2', '#a39a82', 2.3), this.sun, this.sun.target, this.world, this.hover, this.dest, this.mine);
     this.sun.castShadow = true; this.sun.shadow.mapSize.set(2048, 2048); const c = this.sun.shadow.camera; c.left = c.bottom = -24; c.right = c.top = 24; c.far = 80; this.sun.shadow.bias = -0.001; this.sun.shadow.normalBias = 0.03;
     this.dest.visible = this.hover.visible = false; this.resize(); addEventListener('resize', () => this.resize());
   }
@@ -29,17 +30,25 @@ export class Scene {
     for (const k of [...this.models.keys()]) this.remove(k);
     for (const t of this.tele.values()) this.s.remove(t.g); this.tele.clear();
     this.world.add(terrain(m));
-    this.water = new THREE.Mesh(new THREE.PlaneGeometry(m.size + 160, m.size + 160).rotateX(-Math.PI / 2), new THREE.MeshLambertMaterial({ color: '#5d9aa3', transparent: true, opacity: 0.82 })); this.water.position.set(m.size / 2, -0.22, m.size / 2); this.world.add(this.water);
+    this.water = new THREE.Mesh(new THREE.PlaneGeometry(m.size + 160, m.size + 160).rotateX(-Math.PI / 2), new THREE.MeshStandardMaterial({ color: '#5fa0a8', transparent: true, opacity: 0.74, roughness: 0.35 })); this.water.position.set(m.size / 2, -0.22, m.size / 2); this.world.add(this.water);
     const by: Record<string, typeof m.nodes> = {}; for (const n of m.nodes) (by[n.type] ??= []).push(n);
     const rnd = mulberry(3);
     for (const [type, list] of Object.entries(by)) {
-      const g = nodeGeo(type), full = new THREE.InstancedMesh(g.full, MAT, list.length), spent = new THREE.InstancedMesh(g.spent, MAT, list.length); full.castShadow = spent.castShadow = true; full.frustumCulled = spent.frustumCulled = false;
+      const g = nodeGeo(type), full = new THREE.InstancedMesh(g.full, MAT, list.length), spent = new THREE.InstancedMesh(g.spent, MAT, list.length); full.castShadow = spent.castShadow = full.receiveShadow = spent.receiveShadow = true; full.frustumCulled = spent.frustumCulled = false;
       list.forEach((n, i) => { const k = 0.9 + rnd() * 0.25, mt = new THREE.Matrix4().compose(new THREE.Vector3(n.x + 0.5, 0, n.y + 0.5), new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 1, 0), rnd() * 6.28), new THREE.Vector3(k, k, k)); full.setMatrixAt(i, mt); spent.setMatrixAt(i, ZERO); this.nodeInst.set(n.id, { full, spent, i, m: mt, on: true }); this.picks.push({ kind: 'node', id: n.id, name: NODES[type].name, type, box: bx(n.x, n.y, 1, g.h) }); });
       this.world.add(full, spent);
     }
-    for (const s of m.stations) { const o = new THREE.Mesh(stationGeo(s.type), MAT); o.position.set(s.x + 0.5, 0, s.y + 0.5); o.castShadow = true; this.world.add(o); this.picks.push({ kind: 'station', id: s.id, name: STATION[s.type], type: s.type, box: bx(s.x, s.y, 1, 1.5) }); }
-    const g: THREE.BufferGeometry[] = []; for (let i = 0; i < m.size * 5; i++) { const x = rnd() * m.size, y = rnd() * m.size, ti = (y | 0) * m.size + (x | 0); if (m.tiles[ti] !== T.GRASS || m.blocked[ti]) continue; g.push(part(cone(0.05, 0.2 + rnd() * 0.15, 3), rnd() < 0.12 ? '#e3d9b0' : '#7a9a5a', [x, 0.1, y], [(rnd() - 0.5) * 0.5, 0, (rnd() - 0.5) * 0.5])); }
-    if (g.length) this.world.add(new THREE.Mesh(merge(g), MAT));
+    for (const s of m.stations) { const o = new THREE.Mesh(stationGeo(s.type), MAT); o.position.set(s.x + 0.5, 0, s.y + 0.5); o.castShadow = o.receiveShadow = true; this.world.add(o); this.picks.push({ kind: 'station', id: s.id, name: STATION[s.type], type: s.type, box: bx(s.x, s.y, 1, 1.5) }); }
+    this.detail(m, rnd);
+  }
+  private detail(m: GameMap, rnd: () => number) {
+    const blades = [0, 1, 2, 3, 4].map(i => { const a = i * 1.26; return part(taper([[Math.cos(a) * 0.03, 0, Math.sin(a) * 0.03], [Math.cos(a) * 0.05, 0.12, Math.sin(a) * 0.05], [Math.cos(a) * 0.13, 0.2 + (i % 2) * 0.06, Math.sin(a) * 0.13]], 0.016, 0.002, 4, 3), shade('#8fae66', 0.9 + (i % 3) * 0.08)); });
+    const kinds: [THREE.BufferGeometry, number, number][] = [[merge(blades), m.size * 22, T.GRASS], [merge([...blades.slice(0, 2), part(taper([[0, 0, 0], [0.02, 0.26, 0]], 0.012, 0.01, 3, 4), '#7d9660'), ...[0, 1, 2, 3, 4].map(i => part(blob(0.03, 1, 0, 0), '#f0e6c8', [0.02 + Math.cos(i * 1.26) * 0.045, 0.27, Math.sin(i * 1.26) * 0.045])), part(blob(0.028, 1, 0, 0), '#dcb45e', [0.02, 0.28, 0])]), m.size * 3, T.GRASS], [merge([part(blob(0.07, 2, 0.25, 1, true), '#a39d92', [0, 0.02, 0]), part(blob(0.04, 1, 0.2, 2, true), '#938d84', [0.09, 0.01, 0.04])]), m.size * 3, -1]];
+    for (const [g, n, tile] of kinds) {
+      const list: THREE.Matrix4[] = [];
+      for (let i = 0; i < n; i++) { const x = rnd() * m.size, y = rnd() * m.size, ti = (y | 0) * m.size + (x | 0), t = m.tiles[ti]; if (m.blocked[ti] || t === T.WATER || t === T.WOOD || (tile >= 0 ? t !== tile : t === T.GRASS)) continue; const k = 0.75 + rnd() * 0.6; list.push(new THREE.Matrix4().compose(new THREE.Vector3(x, 0, y), new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 1, 0), rnd() * 6.28), new THREE.Vector3(k, k, k))); }
+      const im = new THREE.InstancedMesh(g, MAT, list.length); list.forEach((q, i) => im.setMatrixAt(i, q)); im.receiveShadow = true; im.frustumCulled = false; this.world.add(im);
+    }
   }
   private remove(id: string) { const o = this.models.get(id); if (!o) return; this.s.remove(o.m.root); o.m.root.traverse(c => (c as THREE.Mesh).geometry?.dispose()); this.models.delete(id); this.lastAct.delete(id); }
   marker(x: number, y: number) { this.dest.position.set(x + 0.5, 0.03, y + 0.5); this.dest.visible = true; }
@@ -52,7 +61,7 @@ export class Scene {
         const [fx, fy] = posOf(from), o = new THREE.Mesh(ev.style === 'magic' ? new THREE.OctahedronGeometry(0.16) : new THREE.BoxGeometry(0.05, 0.05, 0.5), new THREE.MeshBasicMaterial({ color: ev.style === 'magic' ? '#a9d0ea' : '#e5d9bd' }));
         this.add(o, 280, (o, k) => { o.position.set(fx + 0.5 + (x + sz / 2 - fx - 0.5) * k, 1 + Math.sin(k * 3.14) * 0.3, fy + 0.5 + (y + sz / 2 - fy - 0.5) * k); o.lookAt(x + sz / 2, 1, y + sz / 2); }); setTimeout(land, 280);
       } else land();
-    } else if (ev.e === 'impact') for (const [x, y] of ev.tiles) if ((x + y) % 2 === 0) { const o = new THREE.Mesh(ico(0.14), new THREE.MeshLambertMaterial({ color: ev.atk === 'vines' ? '#6f9048' : '#9a8f7c' })); const a = Math.random() * 6; this.add(o, 500, (o, k) => { o.position.set(x + 0.5 + Math.cos(a) * k, Math.sin(k * 3.14) * 1.1, y + 0.5 + Math.sin(a) * k); o.scale.setScalar(1 - k); }); }
+    } else if (ev.e === 'impact') for (const [x, y] of ev.tiles) if ((x + y) % 2 === 0) { const o = new THREE.Mesh(CHIP, new THREE.MeshStandardMaterial({ color: ev.atk === 'vines' ? '#6f9048' : '#9a8f7c' })); const a = Math.random() * 6; this.add(o, 500, (o, k) => { o.position.set(x + 0.5 + Math.cos(a) * k, Math.sin(k * 3.14) * 1.1, y + 0.5 + Math.sin(a) * k); o.scale.setScalar(1 - k); }); }
   }
   private add(o: THREE.Mesh, ms: number, f: (o: THREE.Object3D, k: number) => void) { f(o, 0); this.s.add(o); this.fx.push({ o, ms, t0: performance.now(), f }); }
   private ray(mx: number, my: number) { const r = new THREE.Raycaster(); r.setFromCamera(new THREE.Vector2((mx / innerWidth) * 2 - 1, 1 - (my / innerHeight) * 2), this.cam); return r; }
@@ -109,19 +118,17 @@ export class Scene {
     else if (e.tgt || e.boss) { const tid = e.boss?.tgt ?? e.tgt ?? (e.boss ? state.me : ''), q = state.ents.get(tid), n = q && q.e.k !== 'n' ? posOf(q) : this.picks.find(k => k.id === tid)?.box.min; if (n) { const tx = Array.isArray(n) ? n[0] + (q!.e.k === 'm' ? MONSTERS[q!.e.type!].size / 2 : 0.5) : n.x + 0.5, tz = Array.isArray(n) ? n[1] + (q!.e.k === 'm' ? MONSTERS[q!.e.type!].size / 2 : 0.5) : n.z + 0.5; if (Math.hypot(tx - root.position.x, tz - root.position.z) > 0.1) face = Math.atan2(tx - root.position.x, tz - root.position.z); } }
     if (face !== null) { const d = Math.atan2(Math.sin(face - o.yaw), Math.cos(face - o.yaw)); o.yaw += d * (1 - Math.exp(-dt * 14)); }
     if (e.k === 'p' || e.k === 'm') root.rotation.y = o.yaw;
-    const w = Math.sin(now / 95) * (mv ? 0.7 : 0), hit = Math.max(0, 1 - (now - (this.lastAct.get(e.id) ?? 0)) / 450);
-    if (p.ll) p.ll.rotation.x = w; if (p.rl) p.rl.rotation.x = -w; if (p.lb) p.lb.rotation.x = w; if (p.rb) p.rb.rotation.x = -w;
-    if (e.k === 'p') {
-      p.la.rotation.x = -w * 0.8; let ra = w * 0.8; const act = e.act;
-      if (act === 'mine' || act === 'chop' || act === 'craft') ra = -1.4 + Math.sin(now / 130) * 0.8; else if (act === 'pick') { ra = -0.9 + Math.sin(now / 200) * 0.3; p.la.rotation.x = ra; } else if (act === 'ranged' || act === 'magic') ra = -1.5; else if (act === 'eat') ra = -2;
-      if (hit > 0) ra = act === 'ranged' || act === 'magic' ? -1.5 - hit * 0.4 : -2.2 * hit;
-      p.ra.rotation.x = ra; p.body.rotation.x = act === 'pick' ? 0.3 : 0;
-      p.tool_mine.visible = act === 'mine' || act === 'craft'; p.tool_chop.visible = act === 'chop'; if (p.weapon) p.weapon.visible = !p.tool_mine.visible && !p.tool_chop.visible;
-    } else if (e.k === 'm') {
-      if (o.m.kind === 'wisp') { p.body.position.y = 1.05 + Math.sin(now / 400 + x) * 0.15; p.body.rotation.y += dt; }
-      else if (!e.boss) p.body.rotation.x = hit * 0.35;
-      if (e.boss) this.boss(e, p, x, y, sz);
-    }
+    const hit = Math.max(0, 1 - (now - (this.lastAct.get(e.id) ?? -1e9)) / 550), pose = { act: mv ? undefined : e.act, walk: now / 105, moving: mv, hit, t: now, tool: e.tool };
+    if (e.k === 'p') { posePlayer(o.m, pose); this.chips(e, o.yaw, now); }
+    else if (e.k === 'm') { if (e.boss) this.boss(e, p, x, y, sz); else poseMonster(o.m, { ...pose, x }); }
+  }
+  /** Debris thrown up at the moment a tool lands. */
+  private struck = new Map<string, number>();
+  private chips(e: Ent, yaw: number, now: number) {
+    const ms = e.act === 'mine' || e.act === 'chop' ? 1200 : e.act === 'craft' ? 750 : 0; if (!ms) return;
+    const n = Math.floor(now / ms - STRIKE_AT), was = this.struck.get(e.id); this.struck.set(e.id, n); if (was === undefined || was === n || !e.tgt && e.act !== 'craft') return;
+    const color = e.act === 'mine' ? '#8f8a82' : e.act === 'chop' ? '#d0b183' : '#f0b060', cx = e.x + 0.5 + Math.sin(yaw) * 0.62, cz = e.y + 0.5 + Math.cos(yaw) * 0.62, y0 = e.act === 'craft' ? 0.85 : 0.6;
+    for (let i = 0; i < 7; i++) { const a = Math.random() * 6.28, v = 0.25 + Math.random() * 0.4, up = 0.4 + Math.random() * 0.5, o = new THREE.Mesh(CHIP, new THREE.MeshStandardMaterial({ color, roughness: 1, emissive: e.act === 'craft' ? '#b06020' : '#000000' })); this.add(o, 450 + Math.random() * 200, (o, k) => { o.position.set(cx + Math.cos(a) * v * k, Math.max(0.03, y0 + up * k * 1.6 - 2 * k * k), cz + Math.sin(a) * v * k); o.rotation.set(k * 9, k * 7, 0); o.scale.setScalar((1 - k * 0.6) * (e.act === 'craft' ? 0.5 : 1)); }); }
   }
   private boss(e: Ent, p: Model['parts'], bx0: number, by0: number, sz: number) {
     const b = e.boss!, tk = tickNow(), k = b.st === 'windup' ? Math.min(1, (tk - b.start) / Math.max(1, b.end - b.start)) : b.st === 'execute' ? Math.min(1, (tk - b.start) / Math.max(1, b.end - b.start)) : 0;
@@ -146,15 +153,15 @@ export class Scene {
       let cs = tiles.filter(([x, y]) => [-1, 0, 1].every(i => [-1, 0, 1].every(j => set.has(`${x + i},${y + j}`)))); if (!cs.length) cs = [tiles[tiles.length >> 1]];
       for (const [x, y] of cs) {
         const sh = new THREE.Mesh(new THREE.CircleGeometry(1.45, 20).rotateX(-Math.PI / 2), new THREE.MeshBasicMaterial({ color: '#201d1c', transparent: true, depthWrite: false })); sh.position.set(x + 0.5, 0.045, y + 0.5);
-        const rock = new THREE.Mesh(merge([part(ico(0.95), '#85807a', [0, 0, 0], [0.4, 0.2, 0.1]), part(ico(0.45), '#746f69', [0.6, 0.2, 0.3])]), MAT); rock.castShadow = true; g.add(sh, rock);
+        const rock = new THREE.Mesh(merge([part(blob(0.95, 4, 0.18, 3, true), '#8a857e'), part(blob(0.3, 3, 0.2, 5, true), '#7a756e', [0.7, 0.3, 0.3])]), MAT); rock.castShadow = true; g.add(sh, rock);
         fx.push((k, st) => {
           sh.scale.setScalar(st === 'windup' ? 0.15 + k * 0.85 : 1); (sh.material as THREE.MeshBasicMaterial).opacity = st === 'windup' ? 0.15 + k * 0.5 : 0.5 * (1 - k);
           if (st === 'windup') { if (crab) { rock.position.set(from[0] + (x + 0.5 - from[0]) * k, 1 + Math.sin(k * 3.14) * 5, from[1] + (y + 0.5 - from[1]) * k); rock.visible = k > 0.15; } else { const f = Math.max(0, (k - 0.55) / 0.45); rock.visible = k > 0.55; rock.position.set(x + 0.5, 0.5 + (1 - f * f) * 14, y + 0.5); } rock.rotation.x = k * 5; }
           else { rock.visible = true; rock.position.set(x + 0.5, 0.35 - k * 1.3, y + 0.5); }
         });
       }
-    } else if (atk === 'vines') for (const [x, y] of tiles) for (let i = 0; i < 4; i++) { const a = i * 1.57 + x, v = new THREE.Mesh(part(cone(0.1, 1, 4), '#5f7f3a', [0, 0.5, 0]), MAT); v.position.set(x + 0.5 + Math.cos(a) * 0.26, 0, y + 0.5 + Math.sin(a) * 0.26); v.castShadow = true; g.add(v); fx.push((k, st) => { v.scale.y = st === 'windup' ? 0.08 + k * 0.45 : 1.5 * (1 - k * 0.8); const lean = st === 'windup' ? Math.sin(performance.now() / 200 + a) * 0.15 : 0.7; v.rotation.set(-Math.sin(a) * lean, 0, Math.cos(a) * lean); }); }
-    else for (const [x, y] of tiles) { const v = new THREE.Mesh(part(box(0.5, 0.5, 0.18), '#6b5a44', [0, 0, 0], [0.2, x + y, 0.3]), MAT); v.position.set(x + 0.5, -0.4, y + 0.5); g.add(v); fx.push((k, st) => { v.position.y = st === 'windup' ? -0.34 + k * 0.14 + Math.sin(performance.now() / 40 + x) * 0.02 * k : 0.25 - k * 0.8; }); }
+    } else if (atk === 'vines') for (const [x, y] of tiles) for (let i = 0; i < 4; i++) { const a = i * 1.57 + x, v = new THREE.Mesh(part(taper([[0, 0, 0], [0.06, 0.35, 0.03], [-0.04, 0.7, 0], [0.05, 1, 0.04]], 0.075, 0.01, 16, 8), '#5f7f3a'), MAT); v.position.set(x + 0.5 + Math.cos(a) * 0.26, 0, y + 0.5 + Math.sin(a) * 0.26); v.castShadow = true; g.add(v); fx.push((k, st) => { v.scale.y = st === 'windup' ? 0.08 + k * 0.45 : 1.5 * (1 - k * 0.8); const lean = st === 'windup' ? Math.sin(performance.now() / 200 + a) * 0.15 : 0.7; v.rotation.set(-Math.sin(a) * lean, 0, Math.cos(a) * lean); }); }
+    else for (const [x, y] of tiles) { const v = new THREE.Mesh(part(blob(0.32, 3, 0.25, x + y, true), '#75644c', [0, 0, 0], [0.2, x + y, 0.3], [1, 1.1, 0.6]), MAT); v.position.set(x + 0.5, -0.4, y + 0.5); g.add(v); fx.push((k, st) => { v.position.y = st === 'windup' ? -0.34 + k * 0.14 + Math.sin(performance.now() / 40 + x) * 0.02 * k : 0.25 - k * 0.8; }); }
     return { g, key: '', fx };
   }
   private tags = new Map<string, { el: HTMLElement; name: HTMLElement; bar: HTMLElement }>();
@@ -172,22 +179,38 @@ export class Scene {
   }
 }
 const STATION: Record<string, string> = { bank: 'Bank chest', furnace: 'Furnace', anvil: 'Anvil', workbench: 'Workbench', reaper: 'Reaper', dock: 'Shipwright' };
+const CHIP = new THREE.IcosahedronGeometry(0.055, 0);
 const ZERO = new THREE.Matrix4().makeScale(0, 0, 0);
 const bx = (x: number, y: number, s: number, h: number) => new THREE.Box3(new THREE.Vector3(x + 0.08, 0, y + 0.08), new THREE.Vector3(x + s - 0.08, h, y + s - 0.08));
 function square(c: string, o: number) { const s = new THREE.Shape(); s.moveTo(-0.48, -0.48); s.lineTo(0.48, -0.48); s.lineTo(0.48, 0.48); s.lineTo(-0.48, 0.48); const h = new THREE.Path(); h.moveTo(-0.41, -0.41); h.lineTo(-0.41, 0.41); h.lineTo(0.41, 0.41); h.lineTo(0.41, -0.41); s.holes.push(h); return new THREE.Mesh(new THREE.ShapeGeometry(s).rotateX(-Math.PI / 2), new THREE.MeshBasicMaterial({ color: c, transparent: true, opacity: o, depthWrite: false })); }
+const SUB = 4;
+/** Subdivided ground: land stays flat for tile play, colours and the shoreline are blended and softened. */
 function terrain(m: GameMap) {
-  const N = m.size, pos: number[] = [], col: number[] = [], at = (x: number, y: number) => (x < 0 || y < 0 || x >= N || y >= N ? 0 : m.tiles[y * N + x]), c = new THREE.Color();
-  const land = (x: number, y: number) => { const t = at(x, y); return t !== T.WATER && t !== T.WOOD; };
-  const H = (x: number, y: number) => { const n = [[0, 0], [-1, 0], [0, -1], [-1, -1]].filter(([i, j]) => land(x + i, y + j)).length; return n === 4 ? 0 : n ? -0.12 - (3 - n) * 0.08 : -0.9; };
-  for (let y = 0; y < N; y++) for (let x = 0; x < N; x++) {
-    let t = at(x, y); if (t === T.WOOD) t = T.WATER;
-    const n = Math.sin(x * 12.99 + y * 78.23) * 43758.5; c.set(COLORS[t]).multiplyScalar(0.97 + (n - Math.floor(n)) * 0.06 + ((x + y) % 2) * 0.018);
-    const a = H(x, y), b = H(x + 1, y), d = H(x, y + 1), e = H(x + 1, y + 1);
-    pos.push(x, a, y, x, d, y + 1, x + 1, b, y, x + 1, b, y, x, d, y + 1, x + 1, e, y + 1); for (let i = 0; i < 6; i++) col.push(c.r, c.g, c.b);
+  const N = m.size, V = N * SUB + 1, pos = new Float32Array(V * V * 3), col = new Float32Array(V * V * 3), idx: number[] = [], cs = COLORS.map(c => new THREE.Color(c));
+  const at = (x: number, y: number) => { const t = x < 0 || y < 0 || x >= N || y >= N ? T.WATER : m.tiles[y * N + x]; return t === T.WOOD ? T.WATER : t; };
+  const wet = new THREE.Color('#b3a67f'), deep = new THREE.Color('#4a7680');
+  for (let j = 0; j < V; j++) for (let i = 0; i < V; i++) {
+    const wx = i / SUB, wy = j / SUB, ox = noise(wx * 1.9, wy * 1.9, 3) * 0.3, oy = noise(wx * 1.9, wy * 1.9, 9) * 0.3;
+    const px = wx - 0.5, py = wy - 0.5, x0 = Math.floor(px), y0 = Math.floor(py), fx = px - x0, fy = py - y0;
+    const land = (q: number, r: number) => (at(q, r) === T.WATER ? 0 : 1);
+    const mask = (land(x0, y0) * (1 - fx) + land(x0 + 1, y0) * fx) * (1 - fy) + (land(x0, y0 + 1) * (1 - fx) + land(x0 + 1, y0 + 1) * fx) * fy;
+    const h = mask >= 1 ? 0 : mask > 0.5 ? -0.16 * (1 - (mask - 0.5) * 2) ** 2 : -0.16 - (0.5 - mask) * 1.6;
+    const k = (j * V + i) * 3; pos[k] = wx; pos[k + 1] = h; pos[k + 2] = wy;
+    const cx = px + ox, cy = py + oy, a0 = Math.floor(cx), b0 = Math.floor(cy), sx = THREE.MathUtils.smoothstep(cx - a0, 0.25, 0.75), sy = THREE.MathUtils.smoothstep(cy - b0, 0.25, 0.75);
+    let r = 0, g = 0, b = 0, sum = 0;
+    for (const [q, p, w] of [[a0, b0, (1 - sx) * (1 - sy)], [a0 + 1, b0, sx * (1 - sy)], [a0, b0 + 1, (1 - sx) * sy], [a0 + 1, b0 + 1, sx * sy]]) { const t = at(q, p); if (t === T.WATER || !w) continue; r += cs[t].r * w; g += cs[t].g * w; b += cs[t].b * w; sum += w; }
+    const c = sum ? new THREE.Color(r / sum, g / sum, b / sum) : wet.clone();
+    if (mask < 1) c.lerp(wet, (1 - mask) * 0.6); if (mask < 0.5) c.lerp(deep, (0.5 - mask) * 1.4);
+    c.multiplyScalar(0.98 + noise(wx * 0.9, wy * 0.9, 1) * 0.045 + noise(wx * 5, wy * 5, 2) * 0.02);
+    col[k] = c.r; col[k + 1] = c.g; col[k + 2] = c.b;
   }
-  const g = new THREE.BufferGeometry(); g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3)); g.setAttribute('color', new THREE.Float32BufferAttribute(col, 3)); g.computeVertexNormals();
-  const grp = new THREE.Group(), gm = new THREE.Mesh(g, new THREE.MeshLambertMaterial({ vertexColors: true })); gm.receiveShadow = true; grp.add(gm);
-  const planks: THREE.BufferGeometry[] = []; for (let y = 0; y < N; y++) for (let x = 0; x < N; x++) if (at(x, y) === T.WOOD) planks.push(part(box(0.98, 0.1, 0.44), '#a3825a', [x + 0.5, -0.05, y + 0.25]), part(box(0.98, 0.1, 0.44), '#947450', [x + 0.5, -0.05, y + 0.75]));
-  if (planks.length) { const pm = new THREE.Mesh(merge(planks), MAT); pm.receiveShadow = true; grp.add(pm); }
+  for (let j = 0; j < V - 1; j++) for (let i = 0; i < V - 1; i++) { const a = j * V + i; idx.push(a, a + V, a + 1, a + 1, a + V, a + V + 1); }
+  const g = new THREE.BufferGeometry(); g.setAttribute('position', new THREE.BufferAttribute(pos, 3)); g.setAttribute('color', new THREE.BufferAttribute(col, 3)); g.setIndex(idx); g.computeVertexNormals();
+  const grp = new THREE.Group(), gm = new THREE.Mesh(g, new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 1 })); gm.receiveShadow = true; grp.add(gm);
+  // Faint tile lines keep distances readable.
+  const line: number[] = []; for (let y = 0; y < N; y++) for (let x = 0; x < N; x++) if (at(x, y) !== T.WATER) line.push(x, 0.012, y, x + 1, 0.012, y, x, 0.012, y, x, 0.012, y + 1);
+  const lg = new THREE.BufferGeometry(); lg.setAttribute('position', new THREE.Float32BufferAttribute(line, 3)); grp.add(new THREE.LineSegments(lg, new THREE.LineBasicMaterial({ color: '#3a4a30', transparent: true, opacity: 0.09, depthWrite: false })));
+  const planks: THREE.BufferGeometry[] = []; for (let y = 0; y < N; y++) for (let x = 0; x < N; x++) if (m.tiles[y * N + x] === T.WOOD) { for (let i = 0; i < 3; i++) planks.push(part(rbox(0.99, 0.09, 0.3, 0.02, 2), shade('#a3825a', 0.93 + ((x * 3 + y * 5 + i * 2) % 5) * 0.035), [x + 0.5, -0.045, y + 0.17 + i * 0.33])); if (y % 3 === 0 && (m.tiles[y * N + x - 1] !== T.WOOD || m.tiles[y * N + x + 1] !== T.WOOD)) planks.push(part(new THREE.CylinderGeometry(0.09, 0.1, 1.1, 12), '#7d6144', [x + (m.tiles[y * N + x - 1] !== T.WOOD ? 0.02 : 0.98), -0.2, y + 0.5])); }
+  if (planks.length) { const pm = new THREE.Mesh(merge(planks), MAT); pm.receiveShadow = pm.castShadow = true; grp.add(pm); }
   return grp;
 }
