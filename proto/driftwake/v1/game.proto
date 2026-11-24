@@ -1,0 +1,67 @@
+syntax = "proto3";
+// Everything that travels between browser and server. Run `npm run proto` after editing.
+package driftwake.v1;
+option go_package = "driftwake/server/internal/pb;pb";
+
+enum Slot { SLOT_UNSPECIFIED = 0; SLOT_WEAPON = 1; SLOT_HEAD = 2; SLOT_BODY = 3; SLOT_LEGS = 4; SLOT_NECK = 5; SLOT_AMMO = 6; }
+enum MapId { MAP_ID_UNSPECIFIED = 0; MAP_ID_ISLAND = 1; MAP_ID_MAINLAND = 2; }
+enum EntityKind { ENTITY_KIND_UNSPECIFIED = 0; ENTITY_KIND_PLAYER = 1; ENTITY_KIND_MONSTER = 2; ENTITY_KIND_NODE = 3; ENTITY_KIND_DROP = 4; ENTITY_KIND_GRAVE = 5; ENTITY_KIND_STATION = 6; }
+enum BossState { BOSS_STATE_UNSPECIFIED = 0; BOSS_STATE_CHOOSE = 1; BOSS_STATE_WINDUP = 2; BOSS_STATE_EXECUTE = 3; }
+enum InfoKind { INFO_KIND_UNSPECIFIED = 0; INFO_KIND_UNIQUE = 1; INFO_KIND_BOSS = 2; INFO_KIND_LEVEL = 3; INFO_KIND_BAD = 4; }
+
+// --- browser to server
+message ClientMessage {
+  oneof msg {
+    Credentials register = 1; Credentials login = 2; string resume_token = 3; Empty logout = 4;
+    Tile move = 5; uint32 gather = 6; uint32 station = 7; uint32 attack = 8; uint32 pickup = 9; Empty grave = 10; Empty claim = 11;
+    Craft craft = 12; uint32 equip_slot = 13; Slot unequip = 14; uint32 eat_slot = 15; uint32 drop_slot = 16; Swap swap = 17;
+    Bank bank = 18; Empty deposit_all = 19; Boat boat = 20; Look look = 21; string chat = 22;
+  }
+}
+message Empty {}
+message Credentials { string name = 1; string password = 2; }
+message Tile { uint32 x = 1; uint32 y = 2; }
+message Craft { string recipe = 1; uint32 qty = 2; }
+message Swap { uint32 a = 1; uint32 b = 2; }
+message Bank { bool withdraw = 1; string item = 2; uint32 qty = 3; }
+message Boat { bool sail = 1; }
+message Look { uint32 cut = 1; uint32 color = 2; }
+
+// --- server to browser
+message ServerMessage {
+  oneof msg {
+    Welcome welcome = 1; string error = 2; string kicked = 3; Self self = 4; Snapshot snapshot = 5;
+    Chat chat = 6; Info info = 7; Xp xp = 8; string open_station = 9; BossStatus boss = 10;
+  }
+}
+message Welcome { string token = 1; uint32 id = 2; }
+message Chat { string from = 1; string text = 2; }
+message Info { string text = 1; InfoKind kind = 2; }
+message Xp { string skill = 1; uint32 amount = 2; }
+message BossStatus { bool alive = 1; uint32 next_ticks = 2; float contribution = 3; uint32 online = 4; }
+message Stack { string item = 1; uint32 qty = 2; }
+message InvSlot { uint32 index = 1; Stack stack = 2; }
+message EquipSlot { Slot slot = 1; Stack stack = 2; }
+message Self {
+  uint32 id = 1; string name = 2; MapId map = 3; map<string, uint32> xp = 4; repeated InvSlot inventory = 5; repeated EquipSlot equipment = 6;
+  repeated Stack bank = 7; map<string, uint32> boat = 8; bool boat_done = 9; repeated Stack reaper = 10; Look look = 11;
+}
+// `entities` hold only what changed, except for entities the browser did not know yet.
+message Snapshot { uint32 tick = 1; MapId map = 2; bool reset = 3; repeated Entity entities = 4; repeated uint32 gone = 5; repeated Event events = 6; }
+message Entity {
+  uint32 id = 1;
+  // Set when the entity is new to this browser: all fields are present and nothing carries over.
+  bool full = 2;
+  optional uint32 x = 3; optional uint32 y = 4;
+  // Tiles walked this tick, as x, y pairs. Never carries over.
+  repeated uint32 via = 5;
+  optional string name = 6; optional string type = 7; optional uint32 hp = 8; optional uint32 max_hp = 9;
+  // An empty text or zero target means "none".
+  optional string act = 10; optional uint32 target = 11; optional string tool = 12;
+  Gear gear = 13; Look look = 14; optional uint32 level = 15; optional bool rooted = 16; optional uint32 qty = 17; BossView boss = 18;
+}
+message Gear { string weapon = 1; string head = 2; string body = 3; string legs = 4; }
+message BossView { BossState state = 1; string attack = 2; repeated uint32 tiles = 3; uint32 start = 4; uint32 end = 5; uint32 target = 6; }
+message Event { oneof event { Hit hit = 1; Impact impact = 2; uint32 death = 3; } }
+message Hit { uint32 from = 1; uint32 to = 2; uint32 damage = 3; string style = 4; }
+message Impact { uint32 boss = 1; string attack = 2; repeated uint32 tiles = 3; }
