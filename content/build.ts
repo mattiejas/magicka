@@ -4,7 +4,7 @@ import * as f from '../shared/src/formulas';
 import * as c from './src/items';
 import { MAPS } from './src/maps';
 export function build(): Record<string, string> {
-  const line = (o: unknown) => JSON.stringify(o, null, 1) + '\n';
+  const line = (o: unknown) => `${JSON.stringify(o, null, 1)}\n`;
   const maps = Object.values(MAPS).map(({ tiles, blocked: _b, ...m }) => ({
     ...m,
     rows: Array.from({ length: m.size }, (_, y) =>

@@ -1,56 +1,71 @@
-// What the client works with. The wire format is proto/driftwake/v1/game.proto; client/src/wire.ts translates.
+// What the client works with. The wire format is proto/driftwake/v1/game.proto; client/src/net/wire.ts translates.
 import type { Look, Skill, Slot } from './content';
 import type { MapId, StationType } from './map';
-export type ClientMsg =
-  | { t: 'register' | 'login'; name: string; pw: string }
-  | { t: 'resume'; token: string }
-  | { t: 'logout' | 'grave' | 'claim' | 'depositAll' }
-  | { t: 'move'; x: number; y: number }
-  | { t: 'gather' | 'station' | 'attack' | 'pickup'; id: string }
-  | { t: 'craft'; id: string; qty: number }
-  | { t: 'equip' | 'eat' | 'drop'; slot: number }
-  | { t: 'unequip'; slot: Slot }
-  | { t: 'swap'; a: number; b: number }
-  | { t: 'bank'; op: 'deposit' | 'withdraw'; item: string; qty: number }
-  | { t: 'boat'; op: 'build' | 'sail' }
-  | { t: 'look'; cut: number; color: number }
-  | { t: 'chat'; text: string };
+
+export type TilePos = [x: number, y: number];
 export interface Stack {
   id: string;
   qty: number;
 }
+
+/** Something the player asks the server to do. */
+export type ClientMsg =
+  | { type: 'register' | 'login'; name: string; password: string }
+  | { type: 'resume'; token: string }
+  | { type: 'logout' | 'grave' | 'claim' | 'depositAll' }
+  | { type: 'move'; x: number; y: number }
+  | { type: 'gather' | 'station' | 'attack' | 'pickup'; id: string }
+  | { type: 'craft'; recipe: string; qty: number }
+  | { type: 'equip' | 'eat' | 'drop'; slot: number }
+  | { type: 'unequip'; slot: Slot }
+  | { type: 'swap'; a: number; b: number }
+  | { type: 'bank'; op: 'deposit' | 'withdraw'; item: string; qty: number }
+  | { type: 'boat'; op: 'build' | 'sail' }
+  | { type: 'look'; look: Look }
+  | { type: 'chat'; text: string };
+
 export interface BossView {
-  st: 'choose' | 'windup' | 'execute';
-  atk?: string;
-  tiles?: [number, number][];
+  state: 'choose' | 'windup' | 'execute';
+  attack?: string;
+  tiles: TilePos[];
+  /** Ticks at which the current state began and ends. */
   start: number;
   end: number;
-  tgt?: string;
+  target?: string;
 }
-export interface Ent {
+
+export type EntityKind = 'player' | 'monster' | 'node' | 'drop' | 'grave';
+/** Anything the server reports at a position. Nodes are only reported while depleted. */
+export interface Entity {
   id: string;
-  k: 'p' | 'm' | 'n' | 'd' | 'g';
+  kind: EntityKind;
   x: number;
   y: number;
-  via?: [number, number][];
+  /** Tiles walked during the latest tick. */
+  via?: TilePos[];
   name?: string;
+  /** Monster or item id. */
   type?: string;
   hp?: number;
-  mhp?: number;
-  act?: string;
-  tgt?: string;
+  maxHp?: number;
+  action?: string;
+  target?: string;
+  /** Weapon, head, body, legs. */
   gear?: (string | null)[];
   look?: Look;
-  lvl?: number;
+  level?: number;
   rooted?: boolean;
   tool?: string;
   qty?: number;
   boss?: BossView;
 }
+
 export type GameEvent =
-  | { e: 'hit'; from: string; to: string; dmg: number; style: string }
-  | { e: 'impact'; boss: string; atk: string; tiles: [number, number][] }
-  | { e: 'death'; id: string };
+  | { type: 'hit'; from: string; to: string; damage: number; style: string }
+  | { type: 'impact'; boss: string; attack: string; tiles: TilePos[] }
+  | { type: 'death'; id: string };
+
+/** The player's own character, which only they can see in full. */
 export interface SelfState {
   id: string;
   name: string;
@@ -64,24 +79,28 @@ export interface SelfState {
   reaper: Stack[];
   look: Look;
 }
+
+export type InfoKind = 'unique' | 'boss' | 'level' | 'bad';
 /** Still encoded against what the client already knows; see mergeEntity. */
-export type EntityDelta = { id: number; full: boolean };
+export interface EntityDelta {
+  id: number;
+  full: boolean;
+}
 export type ServerMsg =
-  | { t: 'welcome'; token: string; id: string }
-  | { t: 'error'; msg: string }
-  | { t: 'kicked'; msg: string }
-  | { t: 'self'; s: SelfState }
+  | { type: 'welcome'; token: string; id: string }
+  | { type: 'error' | 'kicked'; text: string }
+  | { type: 'self'; self: SelfState }
   | {
-      t: 'snap';
+      type: 'snapshot';
       tick: number;
       map: MapId;
-      reset?: boolean;
-      raw: EntityDelta[];
+      reset: boolean;
+      entities: EntityDelta[];
       gone: string[];
-      ev: GameEvent[];
+      events: GameEvent[];
     }
-  | { t: 'chat'; from: string; text: string }
-  | { t: 'info'; text: string; kind?: 'unique' | 'boss' | 'level' | 'bad' }
-  | { t: 'xp'; skill: Skill; amount: number }
-  | { t: 'open'; station: StationType }
-  | { t: 'boss'; alive: boolean; next: number; contrib: number; online: number };
+  | { type: 'chat'; from: string; text: string }
+  | { type: 'info'; text: string; kind?: InfoKind }
+  | { type: 'xp'; skill: Skill; amount: number }
+  | { type: 'open'; station: StationType }
+  | { type: 'boss'; alive: boolean; nextTicks: number; contribution: number; online: number };

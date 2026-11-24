@@ -1,107 +1,140 @@
-import { MAPS, MONSTERS, NODES, walkable } from '@magicka/shared';
-import { send, state } from './net';
-import type { Pick, Scene } from './scene';
-import { closeMenu, closePanel, menu, tooltip } from './ui/ui';
+// Mouse and keyboard.
+import { MAPS, MONSTERS, NODES, type TilePos, walkable } from '@magicka/shared';
+import { send } from './net/connection';
+import { state } from './net/state';
+import type { Pick } from './scene/picking';
+import type { Scene } from './scene/scene';
+import { focusChat } from './ui/chat';
+import { closePanel } from './ui/panels';
+import { closeMenu, hideTooltip, type MenuItem, showMenu, showTooltip } from './ui/popups';
 
-const verb = (p: Pick): [string, () => void] | null => {
-  if (p.kind === 'node') {
-    const k = NODES[p.type].kind;
-    return [k === 'rock' ? 'Mine' : k === 'tree' ? 'Chop' : 'Pick', () => send({ t: 'gather', id: p.id })];
+const MIDDLE_BUTTON = 1;
+const LEFT_BUTTON = 0;
+const GATHER_VERBS = { rock: 'Mine', tree: 'Chop', plant: 'Pick' };
+
+/** What clicking a thing does. */
+interface Interaction {
+  verb: string;
+  run: () => void;
+}
+
+function interactionWith({ kind, id, type, entity }: Pick): Interaction | null {
+  if (kind === 'node')
+    return { verb: GATHER_VERBS[NODES[type].kind], run: () => send({ type: 'gather', id }) };
+  if (kind === 'station') return { verb: 'Use', run: () => send({ type: 'station', id }) };
+  switch (entity!.kind) {
+    case 'monster':
+      return { verb: 'Attack', run: () => send({ type: 'attack', id }) };
+    case 'drop':
+      return { verb: 'Take', run: () => send({ type: 'pickup', id }) };
+    case 'grave':
+      return { verb: 'Recover', run: () => send({ type: 'grave' }) };
+    default:
+      return null;
   }
-  if (p.kind === 'station') return ['Use', () => send({ t: 'station', id: p.id })];
-  if (p.e!.k === 'm') return ['Attack', () => send({ t: 'attack', id: p.id })];
-  if (p.e!.k === 'd') return ['Take', () => send({ t: 'pickup', id: p.id })];
-  if (p.e!.k === 'g') return ['Recover', () => send({ t: 'grave' })];
-  return null;
-};
-const label = (p: Pick) =>
-  p.name +
-  (p.kind === 'ent' && p.e!.k === 'm'
-    ? `  level ${MONSTERS[p.type].level}`
-    : p.kind === 'node' && NODES[p.type].skill
-      ? `  ${NODES[p.type].skill} ${NODES[p.type].level}`
-      : '');
-export function bindInput(canvas: HTMLCanvasElement, scene: Scene) {
-  let drag: [number, number] | null = null;
-  const keys = new Set<string>();
-  const walk = (t: [number, number] | null) => {
-    if (!t || !state.self) return;
-    if (walkable(MAPS[state.self.map], ...t)) scene.marker(...t);
-    send({ t: 'move', x: t[0], y: t[1] });
-  };
-  canvas.addEventListener('mousedown', ev => {
+}
+
+/** Name and, where it matters, level. */
+function label({ kind, name, type, entity }: Pick): string {
+  if (entity?.kind === 'monster') return `${name}  level ${MONSTERS[type].level}`;
+  if (kind === 'node' && NODES[type].skill) return `${name}  ${NODES[type].skill} ${NODES[type].level}`;
+  return name;
+}
+
+/** Starts listening. Call the returned function every frame with the seconds passed. */
+export function bindInput(canvas: HTMLCanvasElement, scene: Scene): (dt: number) => void {
+  bindClicks(canvas, scene);
+  bindHover(canvas, scene);
+  bindCameraDrag(canvas, scene);
+  return bindKeys(scene);
+}
+
+function walkTo(scene: Scene, tile: TilePos | null) {
+  if (!tile || !state.self) return;
+  if (walkable(MAPS[state.self.map], ...tile)) scene.showDestination(tile);
+  send({ type: 'move', x: tile[0], y: tile[1] });
+}
+
+function bindClicks(canvas: HTMLCanvasElement, scene: Scene) {
+  canvas.addEventListener('mousedown', event => {
     closeMenu();
     (document.activeElement as HTMLElement | null)?.blur();
-    if (ev.button === 1) {
-      drag = [ev.clientX, ev.clientY];
-      ev.preventDefault();
-      return;
-    }
-    if (ev.button !== 0) return;
+    if (event.button !== LEFT_BUTTON) return;
     closePanel();
-    const { hits, tile } = scene.pick(ev.clientX, ev.clientY),
-      act = hits.map(verb).find(Boolean);
-    if (act) act[1]();
-    else walk(tile);
+    const { hits, tile } = scene.pick(event.clientX, event.clientY);
+    const interaction = hits.map(interactionWith).find(Boolean);
+    if (interaction) interaction.run();
+    else walkTo(scene, tile);
   });
-  canvas.addEventListener('contextmenu', ev => {
-    ev.preventDefault();
-    const { hits, tile } = scene.pick(ev.clientX, ev.clientY);
-    const items: [string, () => void][] = [];
-    for (const h of hits) {
-      const v = verb(h);
-      if (v) items.push([`${v[0]} ${label(h)}`, v[1]]);
-    }
-    if (tile) items.push(['Walk here', () => walk(tile)]);
-    menu(ev.clientX, ev.clientY, items);
+  canvas.addEventListener('contextmenu', event => {
+    event.preventDefault();
+    const { hits, tile } = scene.pick(event.clientX, event.clientY);
+    const items = hits.flatMap((pick): MenuItem[] => {
+      const interaction = interactionWith(pick);
+      return interaction ? [[`${interaction.verb} ${label(pick)}`, interaction.run]] : [];
+    });
+    if (tile) items.push(['Walk here', () => walkTo(scene, tile)]);
+    showMenu(event.clientX, event.clientY, items);
   });
-  addEventListener('mousemove', ev => {
-    if (drag) {
-      scene.yaw -= (ev.clientX - drag[0]) * 0.006;
-      scene.pitch = Math.max(0.45, Math.min(1.35, scene.pitch + (ev.clientY - drag[1]) * 0.005));
-      drag = [ev.clientX, ev.clientY];
-    }
-  });
-  addEventListener('mouseup', () => {
-    drag = null;
-  });
-  canvas.addEventListener('mousemove', ev => {
-    const { hits, tile } = scene.pick(ev.clientX, ev.clientY);
-    const h = hits.find(verb);
-    scene.setHover(h ? null : tile);
-    canvas.style.cursor = h ? 'pointer' : 'default';
-    tooltip(h ? `${verb(h)![0]} ${label(h)}` : '', ev.clientX, ev.clientY);
+}
+
+function bindHover(canvas: HTMLCanvasElement, scene: Scene) {
+  canvas.addEventListener('mousemove', event => {
+    const { hits, tile } = scene.pick(event.clientX, event.clientY);
+    const pick = hits.find(interactionWith);
+    scene.showHover(pick ? null : tile);
+    canvas.style.cursor = pick ? 'pointer' : 'default';
+    const text = pick ? `${interactionWith(pick)!.verb} ${label(pick)}` : '';
+    showTooltip(text, event.clientX, event.clientY);
   });
   canvas.addEventListener('mouseleave', () => {
-    scene.setHover(null);
-    tooltip('', 0, 0);
+    scene.showHover(null);
+    hideTooltip();
+  });
+}
+
+function bindCameraDrag(canvas: HTMLCanvasElement, scene: Scene) {
+  let last: TilePos | null = null;
+  canvas.addEventListener('mousedown', event => {
+    if (event.button !== MIDDLE_BUTTON) return;
+    last = [event.clientX, event.clientY];
+    event.preventDefault();
+  });
+  addEventListener('mousemove', event => {
+    if (!last) return;
+    scene.rig.rotate((last[0] - event.clientX) * 0.006, (event.clientY - last[1]) * 0.005);
+    last = [event.clientX, event.clientY];
+  });
+  addEventListener('mouseup', () => {
+    last = null;
   });
   canvas.addEventListener(
     'wheel',
-    ev => {
-      ev.preventDefault();
-      scene.dist = Math.max(7, Math.min(26, scene.dist * Math.exp(ev.deltaY * 0.001)));
+    event => {
+      event.preventDefault();
+      scene.rig.zoom(Math.exp(event.deltaY * 0.001));
     },
     { passive: false },
   );
-  addEventListener('keydown', ev => {
-    if (ev.target instanceof HTMLInputElement) return;
-    keys.add(ev.key);
-    if (ev.key === 'Escape') {
+}
+
+function bindKeys(scene: Scene): (dt: number) => void {
+  const held = new Set<string>();
+  addEventListener('keydown', event => {
+    if (event.target instanceof HTMLInputElement) return;
+    held.add(event.key);
+    if (event.key === 'Escape') {
       closeMenu();
       closePanel();
     }
-    if (ev.key === 'Enter' && state.me) {
-      document.getElementById('chat-in')?.focus();
-      ev.preventDefault();
+    if (event.key === 'Enter' && state.me) {
+      focusChat();
+      event.preventDefault();
     }
   });
-  addEventListener('keyup', ev => keys.delete(ev.key));
-  addEventListener('blur', () => keys.clear());
-  return (dt: number) => {
-    if (keys.has('ArrowLeft')) scene.yaw -= dt * 2;
-    if (keys.has('ArrowRight')) scene.yaw += dt * 2;
-    if (keys.has('ArrowUp')) scene.pitch = Math.min(1.35, scene.pitch + dt);
-    if (keys.has('ArrowDown')) scene.pitch = Math.max(0.45, scene.pitch - dt);
-  };
+  addEventListener('keyup', event => held.delete(event.key));
+  addEventListener('blur', () => held.clear());
+  const axis = (negative: string, positive: string) =>
+    Number(held.has(positive)) - Number(held.has(negative));
+  return dt => scene.rig.rotate(axis('ArrowLeft', 'ArrowRight') * dt * 2, axis('ArrowDown', 'ArrowUp') * dt);
 }
