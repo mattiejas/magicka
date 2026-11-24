@@ -116,6 +116,8 @@ export interface SelfState {
   quests: Record<string, number>;
   /** How often each thing in the collection log was found, by "source/item". */
   found: Record<string, number>;
+  /** How many times loot was earned from each boss, by boss id. */
+  kills: Record<string, number>;
   look: Look;
 }
 

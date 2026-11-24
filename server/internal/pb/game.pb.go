@@ -2512,7 +2512,9 @@ type Self struct {
 	// Steps done of every quest begun.
 	Quests map[string]uint32 `protobuf:"bytes,14,rep,name=quests,proto3" json:"quests,omitempty" protobuf_key:"bytes,1,opt,name=key" protobuf_val:"varint,2,opt,name=value"`
 	// How often the player found each thing in the collection log, by "source/item".
-	Found         map[string]uint32 `protobuf:"bytes,15,rep,name=found,proto3" json:"found,omitempty" protobuf_key:"bytes,1,opt,name=key" protobuf_val:"varint,2,opt,name=value"`
+	Found map[string]uint32 `protobuf:"bytes,15,rep,name=found,proto3" json:"found,omitempty" protobuf_key:"bytes,1,opt,name=key" protobuf_val:"varint,2,opt,name=value"`
+	// How many times the player earned loot from each boss, by boss id.
+	Kills         map[string]uint32 `protobuf:"bytes,16,rep,name=kills,proto3" json:"kills,omitempty" protobuf_key:"bytes,1,opt,name=key" protobuf_val:"varint,2,opt,name=value"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -2648,6 +2650,13 @@ func (x *Self) GetQuests() map[string]uint32 {
 func (x *Self) GetFound() map[string]uint32 {
 	if x != nil {
 		return x.Found
+	}
+	return nil
+}
+
+func (x *Self) GetKills() map[string]uint32 {
+	if x != nil {
+		return x.Kills
 	}
 	return nil
 }
@@ -3479,7 +3488,7 @@ const file_driftwake_v1_game_proto_rawDesc = "" +
 	"\x05stack\x18\x02 \x01(\v2\x13.driftwake.v1.StackR\x05stack\"^\n" +
 	"\tEquipSlot\x12&\n" +
 	"\x04slot\x18\x01 \x01(\x0e2\x12.driftwake.v1.SlotR\x04slot\x12)\n" +
-	"\x05stack\x18\x02 \x01(\v2\x13.driftwake.v1.StackR\x05stack\"\xcb\x06\n" +
+	"\x05stack\x18\x02 \x01(\v2\x13.driftwake.v1.StackR\x05stack\"\xba\a\n" +
 	"\x04Self\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\rR\x02id\x12\x12\n" +
 	"\x04name\x18\x02 \x01(\tR\x04name\x12%\n" +
@@ -3496,7 +3505,8 @@ const file_driftwake_v1_game_proto_rawDesc = "" +
 	"\x04kept\x18\f \x03(\v2\x13.driftwake.v1.StackR\x04kept\x12\x18\n" +
 	"\ablocked\x18\r \x03(\tR\ablocked\x126\n" +
 	"\x06quests\x18\x0e \x03(\v2\x1e.driftwake.v1.Self.QuestsEntryR\x06quests\x123\n" +
-	"\x05found\x18\x0f \x03(\v2\x1d.driftwake.v1.Self.FoundEntryR\x05found\x1a5\n" +
+	"\x05found\x18\x0f \x03(\v2\x1d.driftwake.v1.Self.FoundEntryR\x05found\x123\n" +
+	"\x05kills\x18\x10 \x03(\v2\x1d.driftwake.v1.Self.KillsEntryR\x05kills\x1a5\n" +
 	"\aXpEntry\x12\x10\n" +
 	"\x03key\x18\x01 \x01(\tR\x03key\x12\x14\n" +
 	"\x05value\x18\x02 \x01(\rR\x05value:\x028\x01\x1a7\n" +
@@ -3508,6 +3518,10 @@ const file_driftwake_v1_game_proto_rawDesc = "" +
 	"\x05value\x18\x02 \x01(\rR\x05value:\x028\x01\x1a8\n" +
 	"\n" +
 	"FoundEntry\x12\x10\n" +
+	"\x03key\x18\x01 \x01(\tR\x03key\x12\x14\n" +
+	"\x05value\x18\x02 \x01(\rR\x05value:\x028\x01\x1a8\n" +
+	"\n" +
+	"KillsEntry\x12\x10\n" +
 	"\x03key\x18\x01 \x01(\tR\x03key\x12\x14\n" +
 	"\x05value\x18\x02 \x01(\rR\x05value:\x028\x01\"\xce\x01\n" +
 	"\bSnapshot\x12\x12\n" +
@@ -3647,7 +3661,7 @@ func file_driftwake_v1_game_proto_rawDescGZIP() []byte {
 }
 
 var file_driftwake_v1_game_proto_enumTypes = make([]protoimpl.EnumInfo, 7)
-var file_driftwake_v1_game_proto_msgTypes = make([]protoimpl.MessageInfo, 37)
+var file_driftwake_v1_game_proto_msgTypes = make([]protoimpl.MessageInfo, 38)
 var file_driftwake_v1_game_proto_goTypes = []any{
 	(Slot)(0),             // 0: driftwake.v1.Slot
 	(TradeAction)(0),      // 1: driftwake.v1.TradeAction
@@ -3693,6 +3707,7 @@ var file_driftwake_v1_game_proto_goTypes = []any{
 	nil,                   // 41: driftwake.v1.Self.BoatEntry
 	nil,                   // 42: driftwake.v1.Self.QuestsEntry
 	nil,                   // 43: driftwake.v1.Self.FoundEntry
+	nil,                   // 44: driftwake.v1.Self.KillsEntry
 }
 var file_driftwake_v1_game_proto_depIdxs = []int32{
 	9,  // 0: driftwake.v1.ClientMessage.register:type_name -> driftwake.v1.Credentials
@@ -3741,20 +3756,21 @@ var file_driftwake_v1_game_proto_depIdxs = []int32{
 	29, // 43: driftwake.v1.Self.kept:type_name -> driftwake.v1.Stack
 	42, // 44: driftwake.v1.Self.quests:type_name -> driftwake.v1.Self.QuestsEntry
 	43, // 45: driftwake.v1.Self.found:type_name -> driftwake.v1.Self.FoundEntry
-	3,  // 46: driftwake.v1.Snapshot.map:type_name -> driftwake.v1.MapId
-	34, // 47: driftwake.v1.Snapshot.entities:type_name -> driftwake.v1.Entity
-	37, // 48: driftwake.v1.Snapshot.events:type_name -> driftwake.v1.Event
-	35, // 49: driftwake.v1.Entity.gear:type_name -> driftwake.v1.Gear
-	20, // 50: driftwake.v1.Entity.look:type_name -> driftwake.v1.Look
-	36, // 51: driftwake.v1.Entity.boss:type_name -> driftwake.v1.BossView
-	5,  // 52: driftwake.v1.BossView.state:type_name -> driftwake.v1.BossState
-	38, // 53: driftwake.v1.Event.hit:type_name -> driftwake.v1.Hit
-	39, // 54: driftwake.v1.Event.impact:type_name -> driftwake.v1.Impact
-	55, // [55:55] is the sub-list for method output_type
-	55, // [55:55] is the sub-list for method input_type
-	55, // [55:55] is the sub-list for extension type_name
-	55, // [55:55] is the sub-list for extension extendee
-	0,  // [0:55] is the sub-list for field type_name
+	44, // 46: driftwake.v1.Self.kills:type_name -> driftwake.v1.Self.KillsEntry
+	3,  // 47: driftwake.v1.Snapshot.map:type_name -> driftwake.v1.MapId
+	34, // 48: driftwake.v1.Snapshot.entities:type_name -> driftwake.v1.Entity
+	37, // 49: driftwake.v1.Snapshot.events:type_name -> driftwake.v1.Event
+	35, // 50: driftwake.v1.Entity.gear:type_name -> driftwake.v1.Gear
+	20, // 51: driftwake.v1.Entity.look:type_name -> driftwake.v1.Look
+	36, // 52: driftwake.v1.Entity.boss:type_name -> driftwake.v1.BossView
+	5,  // 53: driftwake.v1.BossView.state:type_name -> driftwake.v1.BossState
+	38, // 54: driftwake.v1.Event.hit:type_name -> driftwake.v1.Hit
+	39, // 55: driftwake.v1.Event.impact:type_name -> driftwake.v1.Impact
+	56, // [56:56] is the sub-list for method output_type
+	56, // [56:56] is the sub-list for method input_type
+	56, // [56:56] is the sub-list for extension type_name
+	56, // [56:56] is the sub-list for extension extendee
+	0,  // [0:56] is the sub-list for field type_name
 }
 
 func init() { file_driftwake_v1_game_proto_init() }
@@ -3823,7 +3839,7 @@ func file_driftwake_v1_game_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_driftwake_v1_game_proto_rawDesc), len(file_driftwake_v1_game_proto_rawDesc)),
 			NumEnums:      7,
-			NumMessages:   37,
+			NumMessages:   38,
 			NumExtensions: 0,
 			NumServices:   0,
 		},
