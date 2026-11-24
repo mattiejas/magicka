@@ -64,101 +64,73 @@ func (f *fields) pbLook() *pb.Look {
 	return &pb.Look{Cut: uint32(f.look.Cut), Color: uint32(f.look.Color)}
 }
 
+// changed is what to send of a value: nothing when it is what it was, unless it is always sent.
+func changed[T comparable](now, before *T, always bool) *T {
+	if *now == *before && !always {
+		return nil
+	}
+	return now
+}
+
+func changedNumber(now, before int, always bool) *uint32 {
+	if now == before && !always {
+		return nil
+	}
+	return u32(now)
+}
+
+// describe is the one description of an entity: what is different from before, and all a client needs when it is new.
+func (v *view) describe(before *fields, isNew bool) *pb.Entity {
+	f, b := &v.f, before
+	newPlayer := isNew && v.id&7 == kindPlayer
+	newNPC := isNew && v.id&7 == kindNPC
+	e := &pb.Entity{
+		Id:      v.id,
+		Full:    isNew,
+		X:       changedNumber(f.x, b.x, isNew),
+		Y:       changedNumber(f.y, b.y, isNew),
+		Name:    changed(&f.name, &b.name, newPlayer),
+		Type:    changed(&f.typ, &b.typ, false),
+		Hp:      changedNumber(f.hp, b.hp, newPlayer),
+		MaxHp:   changedNumber(f.maxHP, b.maxHP, newPlayer),
+		Level:   changedNumber(f.level, b.level, newPlayer),
+		Qty:     changedNumber(f.qty, b.qty, false),
+		Act:     changed(&f.act, &b.act, false),
+		Tool:    changed(&f.tool, &b.tool, false),
+		Target:  changed(&f.target, &b.target, false),
+		Rooted:  changed(&f.rooted, &b.rooted, false),
+		Glowing: changed(&f.glowing, &b.glowing, false),
+		Rich:    changed(&f.rich, &b.rich, false),
+		Wants:   changed(&f.wants, &b.wants, newNPC),
+		Until:   changedNumber(f.until, b.until, false),
+	}
+	if f.gear != b.gear || newPlayer {
+		e.Gear = f.pbGear()
+	}
+	if f.look != b.look || newPlayer {
+		e.Look = f.pbLook()
+	}
+	if f.bossSt != b.bossSt || f.bossStart != b.bossStart || f.boss != b.boss {
+		e.Boss = v.bossView()
+	}
+	return e
+}
+
 // fullBytes encodes everything about an entity, for clients that do not know it.
 func (v *view) fullBytes() []byte {
 	if v.full == nil {
-		f := &v.f
-		e := &pb.Entity{Id: v.id, Full: true, X: u32(f.x), Y: u32(f.y)}
-		switch v.id & 7 {
-		case kindPlayer:
-			e.Name, e.Gear, e.Look, e.Level = &f.name, f.pbGear(), f.pbLook(), u32(f.level)
-			e.Hp, e.MaxHp = u32(f.hp), u32(f.maxHP)
-			if f.act != "" {
-				e.Act = &f.act
-			}
-			if f.tool != "" {
-				e.Tool = &f.tool
-			}
-			if f.rooted {
-				e.Rooted = &f.rooted
-			}
-		case kindMonster:
-			e.Type, e.Hp, e.MaxHp = &f.typ, u32(f.hp), u32(f.maxHP)
-			if v.boss != nil {
-				e.Boss = v.bossView()
-			}
-		case kindNode:
-			if f.glowing {
-				e.Glowing = &f.glowing
-			}
-			if f.rich {
-				e.Rich = &f.rich
-			}
-		case kindNPC:
-			e.Type, e.Wants = &f.typ, &f.wants
-		case kindDrop:
-			e.Type, e.Qty, e.Until = &f.typ, u32(f.qty), u32(f.until)
-		}
-		if f.target != 0 {
-			e.Target = &f.target
-		}
-		v.full, _ = proto.Marshal(e)
+		v.full, _ = proto.Marshal(v.describe(&fields{}, true))
 	}
 	return v.full
 }
 
 // diff encodes what changed since the previous tick, or nothing.
-func (v *view) diff(o *fields) {
-	f := &v.f
-	if *f == *o && v.via == nil {
+func (v *view) diff(before *fields) {
+	if v.f == *before && v.via == nil {
 		return
 	}
-	e := &pb.Entity{Id: v.id, Via: flat(v.via)}
-	if f.x != o.x {
-		e.X = u32(f.x)
-	}
-	if f.y != o.y {
-		e.Y = u32(f.y)
-	}
-	if f.hp != o.hp {
-		e.Hp = u32(f.hp)
-	}
-	if f.maxHP != o.maxHP {
-		e.MaxHp = u32(f.maxHP)
-	}
-	if f.level != o.level {
-		e.Level = u32(f.level)
-	}
-	if f.act != o.act {
-		e.Act = &f.act
-	}
-	if f.tool != o.tool {
-		e.Tool = &f.tool
-	}
-	if f.target != o.target {
-		e.Target = &f.target
-	}
-	if f.gear != o.gear {
-		e.Gear = f.pbGear()
-	}
-	if f.look != o.look {
-		e.Look = f.pbLook()
-	}
-	if f.rooted != o.rooted {
-		e.Rooted = &f.rooted
-	}
-	if f.rich != o.rich {
-		e.Rich = &f.rich
-	}
-	if f.glowing != o.glowing {
-		e.Glowing = &f.glowing
-	}
-	if f.until != o.until {
-		e.Until = u32(f.until)
-	}
-	if v.boss != nil && (f.bossSt != o.bossSt || f.bossStart != o.bossStart) {
-		e.Boss = v.bossView()
-	}
+	e := v.describe(before, false)
+	e.Via = flat(v.via)
 	v.delta, _ = proto.Marshal(e)
 }
 

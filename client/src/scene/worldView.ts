@@ -8,7 +8,6 @@ import {
   mulberry,
   NODES,
   type SelfState,
-  type StationType,
   type TilePos,
 } from '@driftwake/shared';
 import * as THREE from 'three';
@@ -17,19 +16,9 @@ import { boatGeo, keeperOf, nodeGeo, stationGeo } from '../models';
 import { FallingTrees } from './fallingTrees';
 import { Glows } from './glows';
 import { groundDetail } from './groundDetail';
-import { type Pick, pickBox } from './picking';
+import { type FixedPick, pickBox } from './picking';
 import { terrain } from './terrain';
 
-const STATION_NAMES: Record<StationType, string> = {
-  bank: 'Bank chest',
-  furnace: 'Furnace',
-  anvil: 'Anvil',
-  workbench: 'Workbench',
-  reaper: 'Reaper',
-  shop: 'Shopkeeper',
-  mine: 'Old mine',
-  dock: 'Shipwright',
-};
 const HIDDEN = new THREE.Matrix4().makeScale(0, 0, 0);
 const UP = new THREE.Vector3(0, 1, 0);
 const WATER_LEVEL = -0.22;
@@ -51,7 +40,7 @@ interface NodeInstance {
 
 export class WorldView {
   readonly group = new THREE.Group();
-  readonly picks: Pick[] = [];
+  readonly picks: FixedPick[] = [];
   private nodes = new Map<string, NodeInstance>();
   private water: THREE.Mesh;
   private glows = new Glows('#ffd27a');
@@ -127,7 +116,7 @@ export class WorldView {
         depleted.setMatrixAt(index, HIDDEN);
         this.nodes.set(node.id, { node, whole, depleted, index, placement, isDepleted: false });
         const box = pickBox(node.x, node.y, NODES[type].size, shape.height);
-        this.picks.push({ kind: 'node', id: node.id, name: NODES[type].name, type, box });
+        this.picks.push({ kind: 'node', id: node.id, type, box });
       });
       this.group.add(whole, depleted);
     }
@@ -140,8 +129,7 @@ export class WorldView {
     this.group.add(mesh);
     const keeper = keeperOf(type);
     if (keeper) mesh.add(keeper);
-    const name = type === 'mine' && this.map.cave ? 'Daylight' : STATION_NAMES[type];
-    this.picks.push({ kind: 'station', id, name, type, box: pickBox(x, y, 1, 1.5) });
+    this.picks.push({ kind: 'station', id, type, map: this.map.id, box: pickBox(x, y, 1, 1.5) });
   }
 
   /** Rebuilds the boat when its parts change. */

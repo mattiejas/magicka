@@ -31,8 +31,7 @@ func (w *World) keepTarget(m *Monster) *Player {
 	if t.C.Map == m.Map.ID && m.distanceFromHome() <= leashRange && !w.safe(t) {
 		return t
 	}
-	m.target, m.HP = 0, m.MaxHP
-	m.damage.clear()
+	m.restore()
 	return nil
 }
 

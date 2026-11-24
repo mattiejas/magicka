@@ -1,5 +1,5 @@
 // The panel on the left: one station's window, or the hair picker.
-import { MAPS, type MapId, type SelfState, type StationType } from '@driftwake/shared';
+import type { ClientMsg, SelfState, StationType } from '@driftwake/shared';
 import { myTrack, state } from '../../net/state';
 import { button, byId, h, uiRoot } from '../dom';
 import { hideTooltip } from '../popups';
@@ -8,25 +8,34 @@ import { craftingPanel } from './crafting';
 import { dockPanel } from './dock';
 import { hairPanel } from './hair';
 import { lampPanel } from './lamp';
+import type { Place } from './place';
 import { gravePanel, reaperPanel } from './reclaim';
 import { shopPanel } from './shop';
 import { tradePanel } from './trade';
-import { traderInSight, traderPanel } from './trader';
+import { traderPanel } from './trader';
 
-export { clickQuantity } from './quantity';
-
+/** What is done with items in the inventory while a panel is open. */
+interface ItemUse {
+  /** Replaces what clicking the item does otherwise. */
+  click: (item: string) => ClientMsg;
+  /** Added to the item's right-click menu. */
+  menu: (item: string) => [label: string, msg: ClientMsg][];
+}
 export interface Panel {
   title: string;
+  place: Place;
   render: (self: SelfState, refresh: () => void) => (Node | string)[];
   onOpen?: () => void;
   onClose?: () => void;
-  /** When given, the panel is only redrawn when this changes, so updates never swallow a click or the focus. */
-  key?: (self: SelfState) => string;
+  /**
+   * Everything the panel shows that can change. It is only redrawn when this does, so updates never swallow a
+   * click or the focus.
+   */
+  key: (self: SelfState) => string;
+  itemUse?: ItemUse;
 }
 /** The mine entrance is walked through, not opened. */
 export type PanelId = Exclude<StationType, 'mine'> | 'grave' | 'hair' | 'trade' | 'trader' | 'lamp';
-/** Panels that do not belong to a place. */
-const ANYWHERE: PanelId[] = ['hair', 'trade', 'lamp'];
 
 const PANELS: Record<PanelId, Panel> = {
   bank: bankPanel,
@@ -48,7 +57,13 @@ const STATION_REACH = 2;
 let openPanelId: PanelId | null = null;
 let drawnKey: string | null = null;
 
-export const isPanelOpen = (id: PanelId) => openPanelId === id;
+const isPanelOpen = (id: PanelId) => openPanelId === id;
+
+/** The panel that is open, if any. */
+export const currentPanel = (): Panel | null => openPanelId && PANELS[openPanelId];
+
+/** Whether there is such a panel. The server may name one that this client does not know. */
+export const isPanelId = (id: string): id is PanelId => Object.hasOwn(PANELS, id);
 
 export function openPanel(id: PanelId) {
   closePanel();
@@ -63,7 +78,7 @@ export function togglePanel(id: PanelId) {
 }
 
 export function closePanel() {
-  const closed = openPanelId && PANELS[openPanelId];
+  const closed = currentPanel();
   openPanelId = null;
   drawnKey = null;
   element()?.remove();
@@ -81,14 +96,14 @@ export function showTrade() {
 
 const element = () => byId('station');
 
-/** Redraws the open panel, keeping its scroll position and keyboard focus. */
+/** Redraws the open panel if what it shows has changed, keeping its scroll position and keyboard focus. */
 export function updatePanel() {
   const { self } = state;
-  if (!openPanelId || !self) return;
-  const panel = PANELS[openPanelId];
-  const key = panel.key?.(self) ?? null;
+  const panel = currentPanel();
+  if (!panel || !self) return;
+  const key = panel.key(self);
   const old = element();
-  if (old && key !== null && key === drawnKey) return;
+  if (old && key === drawnKey) return;
   drawnKey = key;
 
   const body = h('div', { class: 'body' });
@@ -107,15 +122,10 @@ export function updatePanel() {
   if (focused) drawn.querySelector<HTMLElement>(`[data-focus="${focused}"]`)?.focus();
 }
 
-function placeOf(panel: PanelId, map: MapId) {
-  if (panel === 'grave') return state.entities.get('grave')?.entity;
-  if (panel === 'trader') return traderInSight();
-  return MAPS[map].stations.find(station => station.type === panel);
-}
-
 export function closePanelWhenFar() {
   const me = myTrack()?.entity;
-  if (!openPanelId || ANYWHERE.includes(openPanelId) || !state.self || !me) return;
-  const place = placeOf(openPanelId, state.self.map);
+  const panel = currentPanel();
+  if (!panel || panel.place === 'anywhere' || !state.self || !me) return;
+  const place = panel.place(state.self.map);
   if (!place || Math.max(Math.abs(me.x - place.x), Math.abs(me.y - place.y)) > STATION_REACH) closePanel();
 }

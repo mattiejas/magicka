@@ -13,13 +13,12 @@ import {
 import { send } from '../net/connection';
 import { state } from '../net/state';
 import { collectionLog } from './collection';
-import { bar, button, h } from './dom';
-import { ALL_ITEMS, isSellable, isTradable, itemSlot, level } from './items';
-import { clickQuantity, isPanelOpen, openPanel } from './panels';
-import type { MenuItem } from './popups';
+import { bar, button, h, renderIfChanged } from './dom';
+import { clickAction, type ItemAction, menuActions } from './itemActions';
+import { itemSlot, level } from './items';
+import { currentPanel, openPanel } from './panels';
 
 const TABS = ['inventory', 'equipment', 'skills', 'quests', 'log'] as const;
-const LAMP = 'genie_lamp';
 type Tab = (typeof TABS)[number];
 let currentTab: Tab = 'inventory';
 
@@ -38,22 +37,28 @@ function selectTab(tab: Tab) {
   updateSidebar();
 }
 
-const RENDER: Record<Tab, (self: SelfState) => Node[]> = {
-  inventory,
-  equipment,
-  skills,
-  quests,
-  log: collectionLog,
+interface TabContent {
+  render: (self: SelfState) => Node[];
+  /** Everything the tab shows that can change. It is only redrawn when this does. */
+  shows: (self: SelfState) => unknown;
+}
+const CONTENT: Record<Tab, TabContent> = {
+  inventory: { render: inventory, shows: self => self.inv },
+  equipment: { render: equipment, shows: self => self.equip },
+  skills: { render: skills, shows: self => self.xp },
+  quests: { render: quests, shows: self => [self.quests, self.boatDone] },
+  log: { render: collectionLog, shows: self => self.found },
 };
 
 export function updateSidebar() {
   const { self } = state;
-  const body = document.querySelector('#side .body');
+  const body = document.querySelector<HTMLElement>('#side .body');
   if (!self || !body) return;
   for (const tab of document.querySelectorAll<HTMLElement>('#side .tabs button'))
     tab.classList.toggle('on', tab.dataset.tab === currentTab);
   body.classList.toggle('log', currentTab === 'log');
-  body.replaceChildren(...RENDER[currentTab](self));
+  const { render, shows } = CONTENT[currentTab];
+  renderIfChanged(body, JSON.stringify([currentTab, shows(self)]), () => render(self));
 }
 
 // --- inventory
@@ -63,39 +68,18 @@ function inventory({ inv }: SelfState): Node[] {
 
 function inventorySlot(stack: Stack | null, slot: number): HTMLElement {
   const element = itemSlot(stack, {
-    onClick: () => stack && useItem(stack, slot),
-    menu: () => itemMenu(stack!, slot),
+    onClick: () => stack && perform(clickAction(stack, slot, currentPanel())),
+    menu: () =>
+      menuActions(stack!, slot, currentPanel()).map(([label, action]) => [label, () => perform(action)]),
   });
   if (!stack) element.removeAttribute('disabled'); // empty slots still accept a dragged item
   makeDraggable(element, !!stack, slot);
   return element;
 }
 
-function useItem({ id }: Stack, slot: number) {
-  const item = ITEMS[id];
-  if (isPanelOpen('bank')) send({ type: 'bank', op: 'deposit', item: id, qty: clickQuantity() });
-  else if (isPanelOpen('shop')) sell(id, clickQuantity());
-  else if (isPanelOpen('trade')) offer(id, clickQuantity());
-  else if (id === LAMP) openPanel('lamp');
-  else if (item.heal) send({ type: 'eat', slot });
-  else if (item.slot) send({ type: 'equip', slot });
-}
-
-const sell = (item: string, qty: number) => send({ type: 'shop', op: 'sell', item, qty });
-
-const offer = (item: string, qty: number) => send({ type: 'tradeStep', action: 'offer', item, qty });
-
-function itemMenu({ id }: Stack, slot: number): MenuItem[] {
-  const item = ITEMS[id];
-  const entries: MenuItem[] = [];
-  if (item.heal) entries.push([`Eat ${item.name}`, () => send({ type: 'eat', slot })]);
-  if (item.slot) entries.push([`Equip ${item.name}`, () => send({ type: 'equip', slot })]);
-  if (isPanelOpen('bank'))
-    entries.push(['Deposit all', () => send({ type: 'bank', op: 'deposit', item: id, qty: ALL_ITEMS })]);
-  if (isPanelOpen('shop') && isSellable(id)) entries.push(['Sell all', () => sell(id, ALL_ITEMS)]);
-  if (isPanelOpen('trade') && isTradable(id)) entries.push(['Offer all', () => offer(id, ALL_ITEMS)]);
-  if (!item.trophy) entries.push([`Drop ${item.name}`, () => send({ type: 'drop', slot })]);
-  return entries;
+function perform(action: ItemAction | undefined) {
+  if (action?.type === 'openPanel') openPanel(action.panel);
+  else if (action) send(action);
 }
 
 function makeDraggable(element: HTMLElement, hasItem: boolean, slot: number) {

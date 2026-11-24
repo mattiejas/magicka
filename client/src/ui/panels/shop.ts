@@ -1,10 +1,13 @@
-import { ECONOMY, ITEMS } from '@driftwake/shared';
+import { type ClientMsg, ECONOMY, ITEMS } from '@driftwake/shared';
 import { send } from '../../net/connection';
 import { button, h } from '../dom';
 import { icon } from '../icons';
-import { carried, coins, describe } from '../items';
+import { ALL_ITEMS, carried, coins, describe, isSellable } from '../items';
 import type { Panel } from '.';
+import { atStation } from './place';
 import { clickQuantity, quantityBar, resetQuantity } from './quantity';
+
+const sell = (item: string, qty: number): ClientMsg => ({ type: 'shop', op: 'sell', item, qty });
 
 function stockRow(id: string): HTMLElement {
   const { name, value } = ITEMS[id];
@@ -29,6 +32,12 @@ function stockRow(id: string): HTMLElement {
 
 export const shopPanel: Panel = {
   title: 'Shop',
+  place: atStation('shop'),
+  key: () => JSON.stringify([carried('coin'), clickQuantity()]),
+  itemUse: {
+    click: item => sell(item, clickQuantity()),
+    menu: item => (isSellable(item) ? [['Sell all', sell(item, ALL_ITEMS)]] : []),
+  },
   onOpen: resetQuantity,
   render(_self, refresh) {
     return [

@@ -6,6 +6,7 @@ import { closePanel, type Panel } from '.';
 
 export const lampPanel: Panel = {
   title: "Genie's lamp",
+  place: 'anywhere',
   key: ({ xp }) => JSON.stringify(xp),
   render() {
     const choose = SKILLS.map(skill =>

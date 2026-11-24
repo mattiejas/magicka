@@ -1,11 +1,13 @@
 // What both sides of a trade offer. Clicking items in the inventory offers them.
-import { ITEMS, type Stack } from '@driftwake/shared';
+import { type ClientMsg, ITEMS, type Stack } from '@driftwake/shared';
 import { send } from '../../net/connection';
 import { state } from '../../net/state';
 import { button, h } from '../dom';
-import { ALL_ITEMS, coins, itemSlot } from '../items';
+import { ALL_ITEMS, coins, isTradable, itemSlot } from '../items';
 import type { Panel } from '.';
 import { clickQuantity, quantityBar, resetQuantity } from './quantity';
+
+const offer = (item: string, qty: number): ClientMsg => ({ type: 'tradeStep', action: 'offer', item, qty });
 
 const takeBack = (item: string, qty: number) => send({ type: 'tradeStep', action: 'takeBack', item, qty });
 
@@ -39,6 +41,13 @@ const isReady = () => !!state.trade && state.tick >= state.trade.readyAt;
 
 export const tradePanel: Panel = {
   title: 'Trade',
+  place: 'anywhere',
+  // The accept button becomes usable as ticks pass, without a message about the trade.
+  key: () => JSON.stringify([state.trade, isReady(), clickQuantity()]),
+  itemUse: {
+    click: item => offer(item, clickQuantity()),
+    menu: item => (isTradable(item) ? [['Offer all', offer(item, ALL_ITEMS)]] : []),
+  },
   onOpen: resetQuantity,
   onClose() {
     if (state.trade) send({ type: 'tradeStep', action: 'decline' });

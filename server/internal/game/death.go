@@ -31,20 +31,17 @@ func (w *World) die(p *Player) {
 	c.X, c.Y, c.HP = spawn.X, spawn.Y, MaxHP(p.level("vitality"))
 	w.stop(p)
 	p.via, p.rooted, p.lastCombat = nil, 0, longAgo
-	for _, m := range w.monsters {
-		m.forget(p)
-	}
+	w.forget(p)
+	w.halveContributions(p)
 	w.info(p, text, pb.InfoKind_INFO_KIND_BAD)
 	w.save(p)
 }
 
-// forget stops fighting a player who died. It costs them part of their contribution to a boss.
-func (m *Monster) forget(p *Player) {
-	if m.target == p.ID {
-		m.target = 0
-	}
-	m.active.del(p.ID)
-	if m.Def.Boss != nil && m.damage.has(p.ID) {
-		m.damage.set(p.ID, m.damage.get(p.ID)*deathKeeps)
+// halveContributions costs a player who died part of their contribution to every boss.
+func (w *World) halveContributions(p *Player) {
+	for _, m := range w.monsters {
+		if m.Def.Boss != nil && m.damage.has(p.ID) {
+			m.damage.set(p.ID, m.damage.get(p.ID)*deathKeeps)
+		}
 	}
 }

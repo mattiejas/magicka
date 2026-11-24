@@ -127,6 +127,7 @@ func (w *World) removeGone() {
 			if !inCombat || w.Tick-p.leftAt >= lingerTime {
 				w.save(p)
 				delete(w.players, p.ID)
+				w.forget(p)
 				continue
 			}
 		}
