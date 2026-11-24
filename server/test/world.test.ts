@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it } from 'vitest';
-import { BOAT_PARTS, MAPS, MONSTERS, RECIPES, SKILLS, bossMaxHp, maxHp, mulberry, xpForLevel, type ClientMsg, type MapId, type ServerMsg } from '@magicka/shared';
+import { BOAT_PARTS, MAPS, MONSTERS, RECIPES, SKILLS, bossMaxHp, decodeClient, maxHp, mulberry, xpForLevel, type ClientMsg, type MapId, type ServerMsg } from '@magicka/shared';
 import { Auth } from '../src/auth';
 import { hurtPlayer, rollLoot } from '../src/combat';
 import { bossShare, resetBoss } from '../src/bosses';
@@ -133,6 +133,16 @@ describe('boat and abuse', () => {
     give(p, 'iron_sword', 1); doIt(p, { t: 'equip', slot: p.c.inv.findIndex(s => s?.id === 'iron_sword') }); expect(p.c.equip.weapon).toBeUndefined();
     doIt(p, { t: 'chat', text: '/give gem_5 5' }); expect(count(p, 'gem_5')).toBe(0); doIt(p, { t: 'attack', id: 'nope' }); doIt(p, { t: 'bank', op: 'withdraw', item: '__proto__', qty: 1 });
   });
+});
+describe('appearance', () => {
+  it('saves a chosen look, shows it to others, and rejects invalid ones', () => {
+    const p = mk(), seen: ServerMsg[] = []; w.join(2, 'P2', null, m => seen.push(m)); run(1);
+    doIt(p, { t: 'look', cut: 2, color: 7 });
+    expect(JSON.parse(saved.get(1)!).look).toEqual({ cut: 2, color: 7 });
+    const ent = seen.flatMap(m => (m.t === 'snap' ? m.ents : [])).filter(e => e.id === p.id).at(-1)!; expect(ent.look).toEqual({ cut: 2, color: 7 });
+    for (const bad of ['{"t":"look","cut":4,"color":0}', '{"t":"look","cut":0,"color":8}', '{"t":"look","cut":-1,"color":0}', '{"t":"look","cut":0.5,"color":0}', '{"t":"look","cut":0}']) expect(decodeClient(bad)).toBeNull();
+  });
+  it('characters saved before looks existed still load', () => { const old = JSON.parse(JSON.stringify(mk().c)); delete old.look; const w2 = new World({ saveMany() {} }); const p = w2.join(9, 'Old', old, m => out.push(m)); w2.step(); expect(p.c.look).toBeNull(); expect(out.some(m => m.t === 'self' && m.s.name === 'Old' && m.s.look.cut >= 0)).toBe(true); });
 });
 describe('accounts', () => {
   it('registers, logs in, resumes, revokes and persists', async () => {

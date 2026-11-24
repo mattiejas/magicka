@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { SLOTS, type Skill, type Slot } from './content';
+import { HAIRCUTS, HAIR_COLORS, SLOTS, type Look, type Skill, type Slot } from './content';
 import type { MapId, StationType } from './map';
 const id = z.string().min(1).max(48), n = z.number().int().min(0).max(255), slot = z.number().int().min(0).max(23);
 const qty = z.number().int().min(1).max(1_000_000);
@@ -15,6 +15,7 @@ export const ClientMsg = z.discriminatedUnion('t', [
   z.object({ t: z.literal('eat'), slot }), z.object({ t: z.literal('drop'), slot }), z.object({ t: z.literal('swap'), a: slot, b: slot }),
   z.object({ t: z.literal('bank'), op: z.enum(['deposit', 'withdraw']), item: id, qty }), z.object({ t: z.literal('depositAll') }),
   z.object({ t: z.literal('boat'), op: z.enum(['build', 'sail']) }),
+  z.object({ t: z.literal('look'), cut: z.number().int().min(0).max(HAIRCUTS.length - 1), color: z.number().int().min(0).max(HAIR_COLORS.length - 1) }),
   z.object({ t: z.literal('chat'), text: z.string().trim().min(1).max(160) }),
 ]);
 export type ClientMsg = z.infer<typeof ClientMsg>;
@@ -22,7 +23,7 @@ export interface Stack { id: string; qty: number }
 export interface BossView { st: 'choose' | 'windup' | 'execute'; atk?: string; tiles?: [number, number][]; start: number; end: number; tgt?: string }
 export interface Ent {
   id: string; k: 'p' | 'm' | 'n' | 'd' | 'g'; x: number; y: number;
-  via?: [number, number][]; name?: string; type?: string; hp?: number; mhp?: number; act?: string; tgt?: string; gear?: (string | null)[]; lvl?: number; rooted?: boolean; tool?: string;
+  via?: [number, number][]; name?: string; type?: string; hp?: number; mhp?: number; act?: string; tgt?: string; gear?: (string | null)[]; look?: Look; lvl?: number; rooted?: boolean; tool?: string;
   qty?: number; boss?: BossView;
 }
 export type GameEvent =
@@ -30,7 +31,7 @@ export type GameEvent =
   | { e: 'death'; id: string };
 export interface SelfState {
   id: string; name: string; map: MapId; xp: Record<Skill, number>; inv: (Stack | null)[]; equip: Partial<Record<Slot, Stack>>; bank: Stack[];
-  boat: Record<string, number>; boatDone: boolean; reaper: Stack[];
+  boat: Record<string, number>; boatDone: boolean; reaper: Stack[]; look: Look;
 }
 export type ServerMsg =
   | { t: 'welcome'; token: string; id: string } | { t: 'error'; msg: string } | { t: 'kicked'; msg: string }

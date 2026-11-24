@@ -1,4 +1,4 @@
-import { GAME_NAME, ITEMS, MAPS, MONSTERS, RECIPES, SKILLS, findPath, inReach, maxHp, rectDist, ticks, xpForLevel, MAX_LEVEL, type ClientMsg, type Ent, type GameEvent, type MapId, type Rect, type ServerMsg, type Skill, type StationType } from '@magicka/shared';
+import { GAME_NAME, defaultLook, ITEMS, MAPS, MONSTERS, RECIPES, SKILLS, findPath, inReach, maxHp, rectDist, ticks, xpForLevel, MAX_LEVEL, type ClientMsg, type Ent, type GameEvent, type MapId, type Rect, type ServerMsg, type Skill, type StationType } from '@magicka/shared';
 import { bossAi, resetBoss } from './bosses';
 import { claimGrave, monsterAi, playerAttack, rectOf, stats } from './combat';
 import { deposit, equip, level, newChar, unequip, withdraw } from './inventory';
@@ -103,6 +103,7 @@ export class World {
         else if (!c.boatDone) this.info(p, 'Your boat is not finished.');
         else { c.map = c.map === 'island' ? 'mainland' : 'island'; const l = MAPS[c.map].landing; c.x = l.x; c.y = l.y; this.stop(p); p.via = []; p.dirty = true; this.save([p]); }
         break;
+      case 'look': c.look = { cut: m.cut, color: m.color }; p.dirty = true; this.save([p]); break;
       case 'chat': if (m.text[0] === '/' && this.dev) this.devCmd(p, m.text.slice(1).split(' ')); else this.broadcast({ t: 'chat', from: p.name, text: m.text }); break;
     }
   }
@@ -182,14 +183,14 @@ export class World {
     const add = (map: MapId, e: Ent, owner?: string | null) => ents.push({ map, e, s: JSON.stringify(e), owner });
     for (const p of this.players.values()) {
       const g = p.c.equip, a = p.action;
-      add(p.c.map, { id: p.id, k: 'p', x: p.c.x, y: p.c.y, via: p.via.length ? p.via : undefined, name: p.name, hp: p.c.hp, mhp: maxHp(level(p, 'vitality')), act: p.act || undefined, tool: p.tool, tgt: a && 'id' in a && a.type !== 'craft' ? a.id : undefined, rooted: p.rootedUntil > this.tick || undefined, gear: [g.weapon?.id ?? null, g.head?.id ?? null, g.body?.id ?? null, g.legs?.id ?? null], lvl: Math.max(level(p, 'melee'), level(p, 'ranged'), level(p, 'magic')) });
+      add(p.c.map, { id: p.id, k: 'p', x: p.c.x, y: p.c.y, via: p.via.length ? p.via : undefined, name: p.name, hp: p.c.hp, mhp: maxHp(level(p, 'vitality')), act: p.act || undefined, tool: p.tool, tgt: a && 'id' in a && a.type !== 'craft' ? a.id : undefined, rooted: p.rootedUntil > this.tick || undefined, gear: [g.weapon?.id ?? null, g.head?.id ?? null, g.body?.id ?? null, g.legs?.id ?? null], look: p.c.look ?? defaultLook(p.name), lvl: Math.max(level(p, 'melee'), level(p, 'ranged'), level(p, 'magic')) });
     }
     for (const m of this.monsters.values()) if (!m.dead) add(m.map, { id: m.id, k: 'm', type: m.def.id, x: m.x, y: m.y, via: m.via.length ? m.via : undefined, hp: Math.ceil(m.hp), mhp: m.mhp, tgt: m.target ?? undefined, boss: m.boss ? { st: m.boss.st, atk: m.boss.atk?.id, tiles: m.boss.tiles, start: m.boss.start, end: m.boss.end, tgt: m.boss.tgt ?? undefined } : undefined });
     for (const n of this.nodes.values()) if (n.depletedUntil > this.tick) add(n.map, { id: n.id, k: 'n', x: n.x, y: n.y });
     for (const d of this.drops.values()) add(d.map, { id: d.id, k: 'd', type: d.item, qty: d.qty, x: d.x, y: d.y }, d.publicAt <= this.tick ? null : d.owner);
     for (const p of this.players.values()) {
       if (!p.send) continue;
-      if (p.dirty) { const c = p.c; p.dirty = false; p.send({ t: 'self', s: { id: p.id, name: p.name, map: c.map, xp: c.xp, inv: c.inv, equip: c.equip, bank: c.bank, boat: c.boat, boatDone: c.boatDone, reaper: c.grave?.items ?? [] } }); }
+      if (p.dirty) { const c = p.c; p.dirty = false; p.send({ t: 'self', s: { id: p.id, name: p.name, map: c.map, xp: c.xp, inv: c.inv, equip: c.equip, bank: c.bank, boat: c.boat, boatDone: c.boatDone, reaper: c.grave?.items ?? [], look: c.look ?? defaultLook(p.name) } }); }
       const reset = p.knownMap !== p.c.map; if (reset) { p.known.clear(); p.knownMap = p.c.map; }
       const out: Ent[] = [], seen = new Set<string>();
       const see = (e: Ent, s: string) => { seen.add(e.id); if (p.known.get(e.id) !== s) { p.known.set(e.id, s); out.push(e); } };

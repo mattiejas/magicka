@@ -1,8 +1,8 @@
-import type { BossAttack, GameEvent, GameMap, MapId, MonsterDef, ServerMsg, Skill, Slot, Stack } from '@magicka/shared';
+import type { BossAttack, GameEvent, GameMap, Look, MapId, MonsterDef, ServerMsg, Skill, Slot, Stack } from '@magicka/shared';
 export interface Grave { map: MapId; x: number; y: number; items: Stack[] }
 export interface SavedChar {
   map: MapId; x: number; y: number; hp: number; xp: Record<Skill, number>; inv: (Stack | null)[]; equip: Partial<Record<Slot, Stack>>;
-  bank: Stack[]; boat: Record<string, number>; boatDone: boolean; grave: Grave | null;
+  bank: Stack[]; boat: Record<string, number>; boatDone: boolean; grave: Grave | null; look: Look | null;
 }
 export type Action =
   | { type: 'move'; x: number; y: number } | { type: 'gather'; id: string } | { type: 'station'; id: string } | { type: 'attack'; id: string }

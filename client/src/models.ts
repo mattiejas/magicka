@@ -1,6 +1,6 @@
 import * as THREE from 'three';
-import { HAIRCUTS, HEAD, fade, haircut } from './hair';
-import { ITEMS, MONSTERS, NODES, WOOD_COLORS } from '@magicka/shared';
+import { HEAD, fade, haircut } from './hair';
+import { HAIR_COLORS, ITEMS, defaultLook, nameHash, type Look, MONSTERS, NODES, WOOD_COLORS } from '@magicka/shared';
 import { MAT, ball, bend, loft, sculpt, type Ring, blob, capsule, cone, crystal, cyl, gem, lathe, merge, part, plate, rbox, shade, taper, torus, type V3 } from './geo';
 type G = THREE.BufferGeometry;
 const TAU = Math.PI * 2, ring = (n: number) => Array.from({ length: n }, (_, i) => (i / n) * TAU);
@@ -79,7 +79,6 @@ export function heldGeo(icon: string, c: string, unique = false): G {
 export interface Model { root: THREE.Group; parts: Record<string, THREE.Object3D>; h: number; kind: string; gear?: string }
 export const mesh = (g: G) => { const m = new THREE.Mesh(g, MAT); m.castShadow = true; m.receiveShadow = true; return m; };
 const pivot = (g: G | null, x: number, y: number, z = 0) => { const p = new THREE.Group(); p.position.set(x, y, z); if (g) p.add(mesh(g)); return p; };
-const hash = (s: string) => { let h = 0; for (const ch of s) h = (h * 31 + ch.charCodeAt(0)) % 9973; return h; };
 // Body plan in metres at rest: hip 0.92, shoulder 1.36, crown about 1.8.
 const LEG = 1.07, HIP = 0.86 * LEG, SHOULDER = 0.47;
 const grow = (r: Ring[], k: number, from = 0, to = r.length): Ring[] => r.slice(from, to).map(([y, x, z, oz, ox]) => [y, x + k, z + k, oz, ox]);
@@ -94,8 +93,10 @@ const THIGH: Ring[] = [[0.07, 0.02, 0.02], [0.045, 0.066, 0.07], [-0.02, 0.088, 
 const SHIN: Ring[] = [[0.03, 0.053, 0.056, 0.006], [-0.03, 0.05, 0.056, 0.004], [-0.1, 0.063, 0.068, -0.016], [-0.17, 0.06, 0.066, -0.02], [-0.28, 0.039, 0.044, -0.008], [-0.38, 0.031, 0.036], [-0.42, 0.036, 0.044]];
 /** Relaxed hand with curled fingers. */
 function handGeo(skin: string, s: number): G[] { return [part(loft([[0.015, 0.026, 0.026], [-0.03, 0.024, 0.042, 0.004], [-0.075, 0.02, 0.042, 0.006]], 9), skin, [0, -0.215, 0]), ...[0, 1, 2, 3].map(i => part(taper([[0, -0.28, 0.038 - i * 0.022], [-s * 0.004, -0.318 + i * 0.004, 0.044 - i * 0.02], [-s * 0.026, -0.338 + i * 0.006, 0.046 - i * 0.018]], 0.0125, 0.009, 4, 5), shade(skin, 0.97))), part(taper([[0, -0.232, 0.04], [-s * 0.012, -0.268, 0.066], [-s * 0.024, -0.298, 0.064]], 0.0145, 0.01, 4, 5), skin)]; }
-export function playerModel(name: string, gear: (string | null)[], cut = (hash(name) >> 5) % HAIRCUTS.length): Model {
-  const h = hash(name), skin = ['#f5cbaa', '#e6b18a', '#b98260', '#865d46'][h % 4], hair = ['#7a5236', '#9c6b40', '#4a3a32', '#a5603c', '#c9a468'][(h >> 2) % 5], cloth = ['#c9c6c2', '#8fa3b5', '#b3a486', '#9aa88a', '#a893a5'][(h >> 4) % 5];
+/** Changes whenever a player's model has to be rebuilt. */
+export const modelKey = (gear: (string | null)[], look: Look) => `${gear.join()}|${look.cut}|${look.color}`;
+export function playerModel(name: string, gear: (string | null)[], look: Look = defaultLook(name)): Model {
+  const h = nameHash(name), cut = look.cut, skin = ['#f5cbaa', '#e6b18a', '#b98260', '#865d46'][h % 4], hair: string = HAIR_COLORS[look.color].color, cloth = ['#c9c6c2', '#8fa3b5', '#b3a486', '#9aa88a', '#a893a5'][(h >> 4) % 5];
   const it = (i: number) => (gear[i] ? ITEMS[gear[i]!] : null), head = it(1), body = it(2), legs = it(3), bc = body?.color ?? skin, lc = legs?.color ?? cloth;
   const plateB = !!body?.id.endsWith('_plate'), robe = !!body?.id.startsWith('cloth_'), leather = !!body && !plateB && !robe;
   const plateL = !!legs?.id.endsWith('_greaves'), skirt = !!legs?.id.startsWith('cloth_'), chaps = !!legs && !plateL && !skirt, strap = '#6b4a32', lips = new THREE.Color(skin).lerp(new THREE.Color('#9c3f3a'), 0.4).getStyle();
@@ -145,7 +146,7 @@ export function playerModel(name: string, gear: (string | null)[], cut = (hash(n
   if (skirt || robe) hips.add(pivot(part(loft([[0.07, 0.156, 0.116], [-0.1, 0.188, 0.16], [-0.36, 0.25, 0.23], [-0.6, 0.29, 0.27]], 11, (a, i) => 1 + (i > 1 ? Math.sin(a * 5) * 0.06 : 0)), skirt ? lc : shade(bc, 0.92)), 0, 0));
   root.add(upper);
   const wp = it(0); if (wp) { const g = mesh(heldGeo(wp.icon, wp.color, wp.unique)); g.scale.setScalar(1.1); if (wp.icon === 'bow') { g.rotation.x = Math.PI / 2 - 0.05; parts.lah.add(g); } else { g.rotation.x = 1.5; parts.rah.add(g); } parts.weapon = g; }
-  return { root, parts, h: 1.85, kind: 'p', gear: gear.join() };
+  return { root, parts, h: 1.85, kind: 'p', gear: modelKey(gear, look) };
 }
 // --- monsters
 const eyes = (x: number, y: number, z: number, r = 0.045, c = '#26231f'): G[] => [-1, 1].flatMap(s => [part(ball(r, 10), c, [x * s, y, z]), part(ball(r * 0.35, 6), '#f5f0e4', [x * s + r * 0.3, y + r * 0.35, z + r * 0.8])]);

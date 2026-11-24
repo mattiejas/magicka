@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import { BOAT_PARTS, ITEMS, MAPS, MONSTERS, NODES, T, mulberry, type Ent, type GameEvent, type GameMap, type MapId } from '@magicka/shared';
 import { MAT, blob, merge, noise, part, rbox, shade, taper } from './geo';
-import { STRIKE_AT, boatGeo, dropModel, graveModel, monsterModel, nodeGeo, playerModel, poseMonster, posePlayer, stationGeo, type Model } from './models';
+import { STRIKE_AT, boatGeo, dropModel, graveModel, modelKey, monsterModel, nodeGeo, playerModel, poseMonster, posePlayer, stationGeo, type Model } from './models';
 import { moving, posOf, state, tickNow, type Track } from './net';
 const COLORS = ['#3f93a8', '#f2d79a', '#86b574', '#d3b088', '#aaa49e', '#b07a4a'];
 export interface Pick { kind: 'node' | 'station' | 'ent'; id: string; name: string; type: string; box: THREE.Box3; e?: Ent }
@@ -108,9 +108,9 @@ export class Scene {
   }
   private entity(t: Track, now: number, dt: number) {
     const e = t.e; if (e.k === 'n') return;
-    let o = this.models.get(e.id); const gear = e.gear?.join();
+    let o = this.models.get(e.id); const gear = e.k === 'p' ? modelKey(e.gear!, e.look!) : '';
     if (o && e.k === 'p' && o.m.gear !== gear) { this.remove(e.id); o = undefined; }
-    if (!o) { const m = e.k === 'p' ? playerModel(e.name!, e.gear!) : e.k === 'm' ? monsterModel(e.type!) : e.k === 'd' ? dropModel(e.type!) : graveModel(); o = { m, yaw: 0 }; this.models.set(e.id, o); this.s.add(m.root); }
+    if (!o) { const m = e.k === 'p' ? playerModel(e.name!, e.gear!, e.look!) : e.k === 'm' ? monsterModel(e.type!) : e.k === 'd' ? dropModel(e.type!) : graveModel(); o = { m, yaw: 0 }; this.models.set(e.id, o); this.s.add(m.root); }
     const [x, y] = posOf(t), sz = e.k === 'm' ? MONSTERS[e.type!].size : 1, mv = moving(t), root = o.m.root, p = o.m.parts;
     root.position.set(x + sz / 2, e.k === 'd' ? 0.04 + Math.sin(now / 500) * 0.04 : 0, y + sz / 2);
     let face: number | null = null;

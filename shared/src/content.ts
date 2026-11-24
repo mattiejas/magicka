@@ -140,6 +140,12 @@ mon({ id: 'colossus', name: 'Orrumax, the Rooted', style: 'melee', level: 45, hp
     { id: 'vines', name: 'Creeping vines', weight: 3, windup: 6, execute: 2, damage: [8, 14], root: 5, count: 5 },
     { id: 'quake', name: 'Root quake', weight: 2, windup: 4, execute: 2, damage: [24, 36] }] } });
 
+export interface Look { cut: number; color: number }
+export const HAIRCUTS = [{ id: 'quiff', name: 'Quiff' }, { id: 'crop', name: 'Textured crop' }, { id: 'sidepart', name: 'Side part' }, { id: 'curls', name: 'Curly top' }] as const;
+export const HAIR_COLORS = [{ name: 'Brown', color: '#7a5236' }, { name: 'Chestnut', color: '#9c6b40' }, { name: 'Dark brown', color: '#4a3a32' }, { name: 'Copper', color: '#a5603c' }, { name: 'Blond', color: '#c9a468' }, { name: 'Black', color: '#2c2a2e' }, { name: 'Ash', color: '#8f8a84' }, { name: 'Platinum', color: '#ddd3bf' }] as const;
+export const nameHash = (s: string) => { let h = 0; for (const ch of s) h = (h * 31 + ch.charCodeAt(0)) % 9973; return h; };
+/** What a character looks like until its player chooses. */
+export const defaultLook = (name: string): Look => { const h = nameHash(name); return { cut: (h >> 5) % HAIRCUTS.length, color: (h >> 2) % 5 }; };
 export const BOAT_PARTS: { id: string; name: string; item: string; qty: number }[] = [
   { id: 'hull', name: 'Ash hull', item: 'ash_log', qty: 20 },
   { id: 'fittings', name: 'Copper fittings', item: 'copper_bar', qty: 8 },

@@ -1,5 +1,6 @@
-import { BOAT_PARTS, GAME_NAME, ITEMS, MAPS, MAX_LEVEL, MONSTERS, RECIPES, SKILLS, SLOTS, TICK_MS, levelForXp, maxHp, xpForLevel, type ServerMsg, type Skill, type Stack, type StationType } from '@magicka/shared';
+import { BOAT_PARTS, GAME_NAME, HAIRCUTS, HAIR_COLORS, ITEMS, MAPS, MAX_LEVEL, MONSTERS, RECIPES, SKILLS, SLOTS, TICK_MS, levelForXp, maxHp, xpForLevel, type ServerMsg, type Skill, type Stack, type StationType } from '@magicka/shared';
 import { connect, hasToken, logout, onClosed, onMsg, posOf, resume, send, state } from '../net';
+import { portrait } from '../portrait';
 import { icon } from './icons';
 import './style.css';
 type Child = Node | string | null | false;
@@ -10,7 +11,7 @@ export function h(tag: string, props: Record<string, unknown> = {}, ...kids: Chi
 }
 const $ = (id: string) => document.getElementById(id)!;
 const ui = () => $('ui');
-let tab: 'inventory' | 'equipment' | 'skills' = 'inventory', open: StationType | null = null, qty = 1, tier = 1;
+let tab: 'inventory' | 'equipment' | 'skills' = 'inventory', open: StationType | 'look' | null = null, lookKey = '', fresh = false, qty = 1, tier = 1;
 const lvl = (s: Skill) => levelForXp(state.self!.xp[s]);
 const have = (id: string) => state.self!.inv.reduce((n, s) => n + (s?.id === id ? s.qty : 0), 0);
 const fmt = (n: number) => (n >= 10000 ? `${Math.floor(n / 1000)}k` : String(n));
@@ -32,7 +33,7 @@ export function showLogin(msg = '') {
   ui().replaceChildren(); $('overlay').replaceChildren();
   const name = h('input', { name: 'name', autocomplete: 'username', maxlength: 16, required: true, pattern: '[A-Za-z0-9_]{3,16}', title: '3 to 16 letters, digits or underscores' }) as HTMLInputElement, pw = h('input', { name: 'pw', type: 'password', autocomplete: 'current-password', minlength: 8, maxlength: 128, required: true }) as HTMLInputElement;
   const err = h('div', { class: 'err', role: 'alert' }, msg), form = h('form', {}) as HTMLFormElement;
-  const go = (t: 'login' | 'register') => { if (!form.reportValidity()) return; err.textContent = ''; connect({ t, name: name.value, pw: pw.value }); };
+  const go = (t: 'login' | 'register') => { if (!form.reportValidity()) return; err.textContent = ''; fresh = t === 'register'; connect({ t, name: name.value, pw: pw.value }); };
   form.append(h('h1', {}, GAME_NAME), h('div', { class: 'mute' }, 'Gather, craft, build a boat, and bring friends for what waits on the mainland.'), h('label', {}, 'Name', name), h('label', {}, 'Password, at least 8 characters', pw), err, h('div', { class: 'row' }, h('button', { class: 'primary', type: 'submit' }, 'Log in'), h('button', { type: 'button', onclick: () => go('register') }, 'Create account')));
   form.addEventListener('submit', ev => { ev.preventDefault(); go('login'); });
   ui().append(h('div', { id: 'login', class: 'panel' }, form)); name.focus();
@@ -52,7 +53,7 @@ function vitals() {
   const s = state.self, me = state.ents.get(state.me)?.e, v = document.getElementById('vitals'); if (!s || !v) return;
   const mx = maxHp(lvl('vitality')), hp = me?.hp ?? mx;
   const key = `${hp}/${mx}`; if (v.dataset.k === key) return; v.dataset.k = key;
-  v.replaceChildren(h('div', { class: 'row' }, h('h2', {}, s.name), h('button', { onclick: () => { logout(); showLogin(); } }, 'Log out')), h('div', { class: 'row' }, h('span', { class: 'mute' }, 'Health'), h('span', { class: 'num' }, `${hp} / ${mx}`)), h('div', { class: `bar ${hp < mx * 0.3 ? 'low' : ''}` }, h('i', { style: `width:${(100 * hp) / mx}%` })));
+  v.replaceChildren(h('div', { class: 'row' }, h('h2', {}, s.name), h('span', { class: 'btns' }, h('button', { onclick: openLook }, 'Hair'), h('button', { onclick: () => { logout(); showLogin(); } }, 'Log out'))), h('div', { class: 'row' }, h('span', { class: 'mute' }, 'Health'), h('span', { class: 'num' }, `${hp} / ${mx}`)), h('div', { class: `bar ${hp < mx * 0.3 ? 'low' : ''}` }, h('i', { style: `width:${(100 * hp) / mx}%` })));
 }
 function side() {
   const s = state.self, b = document.querySelector('#side .body'); if (!s || !b) return;
@@ -66,14 +67,24 @@ function side() {
   else b.replaceChildren(h('div', { class: 'skills' }, ...SKILLS.map(k => { const l = lvl(k), x = s.xp[k], lo = xpForLevel(l), hi = xpForLevel(l + 1); return h('div', { class: 'skill', title: l >= MAX_LEVEL ? `${x} xp` : `${x} xp, ${hi - x} to level ${l + 1}` }, h('span', {}, k), h('b', { class: 'num' }, String(l)), h('div', { class: 'bar' }, h('i', { style: `width:${l >= MAX_LEVEL ? 100 : (100 * (x - lo)) / (hi - lo)}%` }))); })));
 }
 // --- station panels
-export function closePanel() { open = null; document.getElementById('station')?.remove(); tooltip('', 0, 0); }
-const TITLES: Record<StationType, string> = { bank: 'Bank', furnace: 'Furnace', anvil: 'Anvil', workbench: 'Workbench', reaper: 'Reaper', dock: 'Shipwright' };
+const openLook = () => { if (open === 'look') return closePanel(); closePanel(); open = 'look'; panel(); side(); };
+export function closePanel() { open = null; lookKey = ''; document.getElementById('station')?.remove(); tooltip('', 0, 0); }
+const TITLES: Record<StationType | 'look', string> = { look: 'Hair', bank: 'Bank', furnace: 'Furnace', anvil: 'Anvil', workbench: 'Workbench', reaper: 'Reaper', dock: 'Shipwright' };
 function panel() {
   const s = state.self; if (!open || !s) return;
+  // Redrawn only when the look changes, so a background update never swallows a click or the keyboard focus.
+  if (open === 'look') { const k = `${s.name}${s.look.cut},${s.look.color}`; if (k === lookKey && document.getElementById('station')) return; lookKey = k; }
   const old = document.getElementById('station'), top = old?.querySelector('.body')?.scrollTop ?? 0, body = h('div', { class: 'body' });
   const qtys = (l: [string, number][]) => h('div', { class: 'bar2' }, ...l.map(([t, n]) => h('button', { class: qty === n ? 'on' : '', onclick: () => { qty = n; panel(); } }, t)), open === 'bank' && h('button', { style: 'margin-left:auto', onclick: () => send({ t: 'depositAll' }) }, 'Deposit inventory'));
   if (open === 'bank') body.append(qtys([['1', 1], ['5', 5], ['All', 1_000_000]]), s.bank.length ? h('div', { class: 'grid' }, ...s.bank.map(b => slot(b, { click: () => send({ t: 'bank', op: 'withdraw', item: b.id, qty }), ctx: () => [['Withdraw all', () => send({ t: 'bank', op: 'withdraw', item: b.id, qty: 1_000_000 })]] }))) : h('p', { class: 'mute' }, 'Nothing stored. Click items in your inventory to deposit them.'));
   else if (open === 'reaper') body.append(h('p', {}, s.reaper.length ? 'I kept what you dropped. Take it, there is no charge.' : 'Nothing of yours has come to me.'), h('div', { class: 'grid', style: 'margin-bottom:12px' }, ...s.reaper.map(b => slot(b))), ...(s.reaper.length ? [h('button', { onclick: () => send({ t: 'claim' }) }, 'Take my items')] : []));
+  else if (open === 'look') {
+    const set = (cut: number, color: number) => send({ t: 'look', cut, color });
+    body.append(h('div', { class: 'cuts' }, ...HAIRCUTS.map((c, i) => h('button', { class: s.look.cut === i ? 'on' : '', 'aria-pressed': String(s.look.cut === i), 'data-f': `cut${i}`, onclick: () => set(i, s.look.color) }, h('img', { src: portrait(s.name, { cut: i, color: s.look.color }), alt: '', width: 88, height: 88 }), c.name))),
+      h('div', { class: 'row mute', style: 'margin:12px 0 4px' }, `Colour: ${HAIR_COLORS[s.look.color].name}`),
+      h('div', { class: 'swatches' }, ...HAIR_COLORS.map((c, i) => h('button', { class: s.look.color === i ? 'on' : '', 'aria-pressed': String(s.look.color === i), 'aria-label': c.name, title: c.name, 'data-f': `col${i}`, onclick: () => set(s.look.cut, i) }, h('i', { style: `background:${c.color}` })))));
+    if (s.equip.head) body.append(h('p', { class: 'mute', style: 'margin:12px 0 0' }, 'Your headgear covers your hair while you wear it.'));
+  }
   else if (open === 'dock') {
     for (const p of BOAT_PARTS) { const n = s.boat[p.id] ?? 0; body.append(h('div', { class: 'recipe' }, h('span', { html: icon(p.item) }), h('div', {}, p.name, h('small', { class: 'num' }, `${ITEMS[p.item].name}: ${n} of ${p.qty} placed, ${have(p.item)} carried`)), h('span', { class: n >= p.qty ? 'k-level' : 'mute' }, n >= p.qty ? 'Done' : ''))); }
     body.append(h('div', { style: 'margin-top:12px' }, s.boatDone ? h('button', { onclick: () => { send({ t: 'boat', op: 'sail' }); closePanel(); } }, s.map === 'island' ? `Sail to ${MAPS.mainland.name}` : `Sail to ${MAPS.island.name}`) : h('button', { onclick: () => send({ t: 'boat', op: 'build' }) }, 'Add what I am carrying')));
@@ -87,7 +98,9 @@ function panel() {
     }
   }
   const el = h('div', { id: 'station', class: 'panel', role: 'dialog', 'aria-label': TITLES[open] }, h('header', {}, h('h2', {}, TITLES[open]), h('button', { onclick: () => { closePanel(); side(); } }, 'Close')), body);
+  const focus = (document.activeElement as HTMLElement | null)?.dataset?.f;
   if (old) old.replaceWith(el); else ui().append(el); body.scrollTop = top;
+  if (focus) el.querySelector<HTMLElement>(`[data-f="${focus}"]`)?.focus();
 }
 // --- hints: first unmet step wins
 function hint() {
@@ -142,12 +155,12 @@ export function initUi() {
       case 'welcome': closePanel(); shell(); break;
       case 'error': { const e = document.querySelector('#login .err'); if (e) e.textContent = m.msg; else showLogin(m.msg); break; }
       case 'kicked': showLogin(m.msg); break;
-      case 'self': side(); panel(); hint(); break;
+      case 'self': side(); panel(); hint(); if (fresh) { fresh = false; openLook(); } break;
       case 'chat': log(m.text, 'chat', m.from); break;
       case 'info': log(m.text, m.kind ?? 'info'); break;
       case 'xp': gain(m.skill, m.amount); break;
       case 'open': open = m.station; qty = 1; tier = Math.max(1, Math.min(5, tier)); panel(); side(); break;
-      case 'snap': vitals(); hint(); bossUi(); if (open && state.self) { const s = MAPS[state.self.map].stations.find(s => s.type === open)!, me = state.ents.get(state.me)?.e; if (me && Math.max(Math.abs(me.x - s.x), Math.abs(me.y - s.y)) > 2) closePanel(); } break;
+      case 'snap': vitals(); hint(); bossUi(); if (open && open !== 'look' && state.self) { const s = MAPS[state.self.map].stations.find(s => s.type === open)!, me = state.ents.get(state.me)?.e; if (me && Math.max(Math.abs(me.x - s.x), Math.abs(me.y - s.y)) > 2) closePanel(); } break;
     }
   });
   onClosed(why => { if (why) log(why, 'bad'); else if (!document.getElementById('login')) showLogin('Disconnected.'); else { const e = document.querySelector('#login .err'); if (e && !e.textContent) e.textContent = 'Could not reach the server.'; } });

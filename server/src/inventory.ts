@@ -4,7 +4,7 @@ export function newChar(): SavedChar {
   const xp = Object.fromEntries(SKILLS.map(s => [s, 0])) as Record<Skill, number>;
   const inv: (Stack | null)[] = Array(INV_SIZE).fill(null);
   ['worn_pickaxe', 'worn_axe', 'worn_sword'].forEach((id, i) => (inv[i] = { id, qty: 1 }));
-  return { map: 'island', x: 32, y: 35, hp: maxHp(1), xp, inv, equip: {}, bank: [], boat: {}, boatDone: false, grave: null };
+  return { map: 'island', x: 32, y: 35, hp: maxHp(1), xp, inv, equip: {}, bank: [], boat: {}, boatDone: false, grave: null, look: null };
 }
 export const level = (p: Player, s: Skill) => levelForXp(p.c.xp[s]);
 export const count = (p: Player, id: string) => p.c.inv.reduce((n, s) => n + (s?.id === id ? s.qty : 0), 0);

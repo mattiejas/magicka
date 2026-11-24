@@ -1,10 +1,10 @@
 // Haircuts: a skin fade that follows the skull, with layered locks on top. Head space: chin near y 0.04, crown 0.335, face towards +z.
 import * as THREE from 'three';
+import { HAIRCUTS } from '@magicka/shared';
 import { blob, part, shade, type Ring, type V3 } from './geo';
 type G = THREE.BufferGeometry;
 // Eight-sided so the face is a few broad planes. The step between rings 4 and 5 is the brow ledge over the eye sockets.
 export const HEAD: Ring[] = [[0.035, 0.044, 0.026, 0.07], [0.05, 0.05, 0.042, 0.06], [0.105, 0.09, 0.08, 0.024], [0.165, 0.102, 0.1, 0.006], [0.208, 0.102, 0.095, 0.002], [0.226, 0.104, 0.11, 0.0], [0.29, 0.098, 0.108, -0.012], [0.335, 0.055, 0.07, -0.02]];
-export const HAIRCUTS = ['quiff', 'crop', 'sidepart', 'curls'] as const;
 const clamp = (v: number, a: number, b: number) => Math.max(a, Math.min(b, v)), mix = (a: number, b: number, t: number) => a + (b - a) * t;
 /** Point on the skull at angle `a` and height `y`, pushed out by `off`. */
 function skull(a: number, y: number, off: number): V3 {
@@ -47,7 +47,7 @@ export function haircut(style: number, hair: string, seed: number): G[] {
   const out: G[] = [], f = (seed >> 3) % 2 ? 1 : -1; let n = 0;
   const r = () => { const v = Math.sin(++n * 78.233 + seed * 0.37) * 43758.5453; return v - Math.floor(v); }, j = (k: number) => (r() - 0.5) * 2 * k;
   const add = (pts: V3[], w: number, th: number, tone = 1, blunt = 0) => out.push(part(lock(pts.map(([x, y, z]): V3 => [x * f, y, z]), w * (1 + j(0.22)), th * (1 + j(0.2)), j(0.35), blunt), shade(hair, tone * (1 + j(0.1)))));
-  const cut = HAIRCUTS[style % HAIRCUTS.length];
+  const cut = HAIRCUTS[style % HAIRCUTS.length].id;
   if (cut === 'quiff') {
     // Lifted off the forehead, highest off-centre, rolling back over a flatter crown.
     for (const [u, lift] of [[-0.95, 0.35], [-0.55, 0.62], [-0.15, 0.85], [0.28, 1], [0.66, 0.8], [1, 0.4]]) add([[u * 0.078, 0.282 + j(0.004), 0.084 - Math.abs(u) * 0.026], [u * 0.08 + 0.008, 0.318 + lift * 0.038, 0.112 - Math.abs(u) * 0.026], [u * 0.074 + 0.026, 0.342 + lift * 0.074, 0.09 - Math.abs(u) * 0.02], [u * 0.064 + 0.056 + j(0.012), 0.35 + lift * 0.07 + j(0.008), 0.026 + j(0.014)]], 0.027, 0.02, 1.1);
