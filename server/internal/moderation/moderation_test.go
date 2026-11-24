@@ -139,6 +139,7 @@ func TestNames(t *testing.T) {
 	for _, name := range []string{
 		"Robin", "testtest", "TestA", "Nazir", "Therapist", "Ashitaka", "Nigeria", "Cassandra", "BigStaffer",
 		"Hancock", "Dickens", "Assassin", "Modest", "xX_Robin_Xx", "Scunthorpe", "Peacock7", "Systematic",
+		"Asuka", "Conrad", "Essex", "Unique", "Dominique", "Figaro", "Shore",
 	} {
 		if !NameAllowed(name) {
 			t.Error(name, "should be allowed")
@@ -147,6 +148,7 @@ func TestNames(t *testing.T) {
 	for _, name := range []string{
 		"fuck_you", "Fuuuuck", "f_u_c_k", "Sh1t", "BigDick", "n1gger", "niggggger", "Admin", "admin_Bob", "GM_Anna",
 		"TheModerator", "Driftwake1", "Hitler88", "a55hole",
+		"Kurwa_1", "Puto", "Putain99", "Scheisse", "Blyat", "Maricon", "Arschloch", "F1tta",
 	} {
 		if NameAllowed(name) {
 			t.Error(name, "should be refused")

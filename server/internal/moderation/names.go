@@ -7,7 +7,7 @@ import (
 )
 
 // Words refused in names, one per line. Those marked with = are refused only as a whole word, because they also
-// occur inside harmless ones.
+// occur inside harmless ones. Lines may end with a # comment.
 //
 //go:embed names.txt
 var refusedWords string
@@ -21,11 +21,16 @@ var (
 )
 
 func init() {
-	for _, w := range strings.Fields(refusedWords) {
-		if whole, ok := strings.CutPrefix(w, "="); ok {
-			wholeWord[whole] = true
-		} else {
-			anywhere = append(anywhere, w)
+	for _, line := range strings.Split(refusedWords, "\n") {
+		if i := strings.IndexByte(line, '#'); i >= 0 {
+			line = line[:i]
+		}
+		for _, w := range strings.Fields(line) {
+			if whole, ok := strings.CutPrefix(w, "="); ok {
+				wholeWord[strings.ToLower(whole)] = true
+			} else {
+				anywhere = append(anywhere, strings.ToLower(w))
+			}
 		}
 	}
 }
