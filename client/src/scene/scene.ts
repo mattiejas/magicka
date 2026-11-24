@@ -2,6 +2,8 @@
 import { type Entity, type GameEvent, MAPS, type TilePos } from '@driftwake/shared';
 import * as THREE from 'three';
 import { centreOf, isMoving, myTrack, positionOf, state } from '../net/state';
+import { PROFILE, type Quality } from '../quality';
+import { onSettings, settings } from '../settings';
 import { CameraRig } from './cameraRig';
 import { Effects, PROJECTILE_MS } from './effects';
 import { EntityLayer } from './entityLayer';
@@ -11,7 +13,6 @@ import { entityPicks, type Pick, picksOnRay, rayAt, tileOnRay } from './picking'
 import { TileMarker } from './tileMarkers';
 import { WorldView } from './worldView';
 
-const MAX_PIXEL_RATIO = 2;
 const SUNLIGHT = 2.5;
 /** Half the width of the area around the camera that casts shadows. */
 const SHADOW_RANGE = 24;
@@ -29,12 +30,22 @@ export class Scene {
   private hover = new TileMarker('#f0ead8', 0.55, 0.025);
   private destination = new TileMarker('#8fd0c0', 0.8, 0.03);
   private ownTile = new TileMarker('#8fd0c0', 0.28, 0.02);
+  private quality = settings().quality;
+  /** When quality changes the ground clutter, the map is rebuilt on the next frame. */
+  private reloadWorld = false;
 
   constructor(canvas: HTMLCanvasElement, overlayRoot: HTMLElement) {
     this.renderer = createRenderer(canvas);
     this.scene.add(this.sky, this.sun, this.sun.target);
     this.scene.add(this.hover.mesh, this.destination.mesh, this.ownTile.mesh);
     this.overlay = new Overlay(overlayRoot, this.project, id => this.entities.heightOf(id));
+    this.applyQuality(this.quality);
+    onSettings(({ quality }) => {
+      if (quality === this.quality) return;
+      const before = PROFILE[this.quality].groundDetail;
+      this.applyQuality(quality);
+      if (PROFILE[quality].groundDetail !== before) this.reloadWorld = true;
+    });
     this.resize();
     addEventListener('resize', () => this.resize());
   }
@@ -79,8 +90,25 @@ export class Scene {
     };
   };
 
+  private applyQuality(quality: Quality) {
+    this.quality = quality;
+    const profile = PROFILE[quality];
+    this.renderer.setPixelRatio(Math.min(profile.pixelRatio, devicePixelRatio));
+    this.renderer.setSize(innerWidth, innerHeight);
+    this.renderer.shadowMap.enabled = profile.shadows;
+    this.renderer.shadowMap.type = profile.softShadows ? THREE.PCFSoftShadowMap : THREE.BasicShadowMap;
+    this.renderer.shadowMap.needsUpdate = true;
+    this.sun.castShadow = profile.shadows;
+    if (this.sun.shadow.mapSize.x !== profile.shadowMapSize) {
+      this.sun.shadow.mapSize.set(profile.shadowMapSize, profile.shadowMapSize);
+      this.sun.shadow.map?.dispose();
+      this.sun.shadow.map = null;
+    }
+  }
+
   private resize() {
-    this.renderer.setPixelRatio(Math.min(MAX_PIXEL_RATIO, devicePixelRatio));
+    const { pixelRatio } = PROFILE[this.quality];
+    this.renderer.setPixelRatio(Math.min(pixelRatio, devicePixelRatio));
     this.renderer.setSize(innerWidth, innerHeight);
     this.rig.resize(innerWidth, innerHeight);
   }
@@ -95,13 +123,14 @@ export class Scene {
   }
 
   private worldFor(id: keyof typeof MAPS): WorldView {
-    if (this.world?.map.id === id) return this.world;
+    if (this.world?.map.id === id && !this.reloadWorld) return this.world;
+    this.reloadWorld = false;
     if (this.world) {
       this.scene.remove(this.world.group);
       this.world.dispose();
     }
     this.entities.clear();
-    this.world = new WorldView(MAPS[id]);
+    this.world = new WorldView(MAPS[id], PROFILE[this.quality].groundDetail);
     this.scene.add(this.world.group);
     this.setMood(this.world.map.cave);
     return this.world;

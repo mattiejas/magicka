@@ -10,6 +10,7 @@ import { updateHint } from './hints';
 import { isLoginShown, loginError, showLogin, showLoginError, takeJustRegistered } from './login';
 import { drawMinimap, minimapPanel } from './minimap';
 import { closePanel, closePanelWhenFar, openPanel, showTrade, updatePanel } from './panels';
+import { warmPortraits } from './portrait';
 import { sidebar, updateSidebar } from './sidebar';
 import { updateVitals } from './vitals';
 import { showXp } from './xpGains';
@@ -64,6 +65,7 @@ function handleMessage(msg: ServerMsg) {
       updateSidebar();
       updatePanel();
       updateHint();
+      if (state.self) warmPortraits(state.self.name);
       if (takeJustRegistered()) openPanel('hair');
       return;
     case 'snapshot':

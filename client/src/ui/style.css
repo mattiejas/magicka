@@ -658,6 +658,15 @@ h2 {
   left: 22px;
   background: var(--accent);
 }
+.setting .choices {
+  display: flex;
+  flex: none;
+  gap: 4px;
+}
+.setting .choices button {
+  padding: 4px 10px;
+  font-size: 13px;
+}
 #fps {
   position: fixed;
   top: 16px;

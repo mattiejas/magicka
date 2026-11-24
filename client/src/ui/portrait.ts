@@ -1,5 +1,5 @@
 // Head-and-shoulders pictures for the hair picker, drawn once each by a small renderer of their own.
-import type { Look } from '@driftwake/shared';
+import { HAIR_COLORS, HAIRCUTS, type Look } from '@driftwake/shared';
 import * as THREE from 'three';
 import { playerModel, posePlayer } from '../models';
 
@@ -12,6 +12,9 @@ interface Studio {
   camera: THREE.PerspectiveCamera;
 }
 let studio: Studio | null = null;
+
+/** One name at a time; a second call for the same name is ignored. */
+let warming: string | null = null;
 
 function createStudio(): Studio {
   const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, preserveDrawingBuffer: true });
@@ -27,9 +30,11 @@ function createStudio(): Studio {
   return { renderer, scene, camera };
 }
 
+const keyOf = (name: string, look: Look) => `${name}:${look.cut}:${look.color}`;
+
 /** A data URL of a player's head with the given hair. */
 export function portrait(name: string, look: Look): string {
-  const key = `${name}:${look.cut}:${look.color}`;
+  const key = keyOf(name, look);
   const known = pictures.get(key);
   if (known) return known;
   studio ??= createStudio();
@@ -45,4 +50,38 @@ export function portrait(name: string, look: Look): string {
   const picture = studio.renderer.domElement.toDataURL('image/png');
   pictures.set(key, picture);
   return picture;
+}
+
+/**
+ * Builds every cut and colour for this player in the background, so opening the
+ * hair picker does not stall a frame on the first model builds.
+ */
+export function warmPortraits(name: string) {
+  if (warming === name) return;
+  warming = name;
+  const jobs: Look[] = [];
+  for (let cut = 0; cut < HAIRCUTS.length; cut++) {
+    for (let color = 0; color < HAIR_COLORS.length; color++) {
+      if (!pictures.has(keyOf(name, { cut, color }))) jobs.push({ cut, color });
+    }
+  }
+  const next = () => {
+    if (warming !== name) return;
+    const look = jobs.shift();
+    if (!look) {
+      warming = null;
+      return;
+    }
+    portrait(name, look);
+    schedule(next);
+  };
+  if (jobs.length) schedule(next);
+  else warming = null;
+}
+
+function schedule(work: () => void) {
+  const idle = (globalThis as { requestIdleCallback?: (cb: () => void, opts?: { timeout: number }) => void })
+    .requestIdleCallback;
+  if (idle) idle(work, { timeout: 120 });
+  else requestAnimationFrame(work);
 }
