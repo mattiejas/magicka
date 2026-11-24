@@ -23,7 +23,8 @@ Use the words in [GLOSSARY.md](GLOSSARY.md). What the game should become is in [
 - **The server decides everything.** Browsers send intents; the server checks and carries them out on the next tick.
 - **`internal/game` is pure.** It knows no sockets and no database, and takes its randomness from outside, so tests can run thousands of ticks in a moment. Nothing in it may read the clock.
 - **One tick** is `Step` in `step.go`: intents, players, monsters and bosses, clean-up, snapshots.
-- **Snapshots hold changes only.** A new visible field of an entity needs `fields`, `fullBytes`, `diff` and `mergeEntity`. `TestDeltasRebuildTheWorld` catches a forgotten one.
+- **Snapshots hold changes only.** A new visible field of an entity needs `fields`, its view, one line in `describe`, and `mergeEntity`. `TestDeltasRebuildTheWorld` compares and exercises every field, so it needs `shown` and, if play rarely changes the field, `disturb`.
+- **`mergeEntity` is tested with bytes the server wrote.** Put a new field in `record_test.go`, then `npm run record`. The tests fail when the recording is out of date, lacks a field, or holds one that `mergeEntity` ignores.
 - **The browser** keeps what it knows in `net/state.ts`. Only `net/connection.ts` writes to it; the scene and the interface read it.
 
 ## Style
