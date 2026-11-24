@@ -5,6 +5,7 @@ import { state } from './net/state';
 import type { Scene } from './scene/scene';
 import { mainAction, type Option, optionsFor, type Thing } from './things';
 import { focusChat } from './ui/chat';
+import { byId } from './ui/dom';
 import { closePanel } from './ui/panels';
 import { playerMenu } from './ui/players';
 import { closeMenu, hideTooltip, showMenu, showTooltip } from './ui/popups';
@@ -12,6 +13,10 @@ import { isSettingsOpen } from './ui/settingsModal';
 
 const MIDDLE_BUTTON = 1;
 const LEFT_BUTTON = 0;
+
+/** True while Alt is held to show every ground label. */
+let revealLabels = false;
+export const revealAllLabels = () => revealLabels;
 
 /** The main action of the nearest thing that has one. */
 function firstAction(things: Thing[]): Option | null {
@@ -74,11 +79,21 @@ function bindHover(canvas: HTMLCanvasElement, scene: Scene) {
 
 function bindCameraDrag(canvas: HTMLCanvasElement, scene: Scene) {
   let last: TilePos | null = null;
-  canvas.addEventListener('mousedown', event => {
+  const startDrag = (event: MouseEvent) => {
     if (event.button !== MIDDLE_BUTTON) return;
     last = [event.clientX, event.clientY];
     event.preventDefault();
-  });
+  };
+  const zoom = (event: WheelEvent) => {
+    event.preventDefault();
+    scene.rig.zoom(Math.exp(event.deltaY * 0.001));
+  };
+  canvas.addEventListener('mousedown', startDrag);
+  canvas.addEventListener('wheel', zoom, { passive: false });
+  // Labels sit above the canvas; wheel and middle-drag must still reach the camera.
+  const overlay = byId('overlay');
+  overlay?.addEventListener('mousedown', startDrag);
+  overlay?.addEventListener('wheel', zoom, { passive: false });
   addEventListener('mousemove', event => {
     if (!last) return;
     scene.rig.rotate((last[0] - event.clientX) * 0.006, (event.clientY - last[1]) * 0.005);
@@ -87,21 +102,22 @@ function bindCameraDrag(canvas: HTMLCanvasElement, scene: Scene) {
   addEventListener('mouseup', () => {
     last = null;
   });
-  canvas.addEventListener(
-    'wheel',
-    event => {
-      event.preventDefault();
-      scene.rig.zoom(Math.exp(event.deltaY * 0.001));
-    },
-    { passive: false },
-  );
+}
+
+function typing(): boolean {
+  const target = document.activeElement;
+  return target instanceof HTMLInputElement || target instanceof HTMLTextAreaElement || isSettingsOpen();
 }
 
 function bindKeys(scene: Scene): (dt: number) => void {
   const held = new Set<string>();
   addEventListener('keydown', event => {
-    if (event.target instanceof HTMLInputElement || isSettingsOpen()) return;
+    if (typing()) return;
     held.add(event.key);
+    if (event.key === 'Alt') {
+      revealLabels = true;
+      event.preventDefault();
+    }
     if (event.key === 'Escape') {
       closeMenu();
       closePanel();
@@ -111,8 +127,14 @@ function bindKeys(scene: Scene): (dt: number) => void {
       event.preventDefault();
     }
   });
-  addEventListener('keyup', event => held.delete(event.key));
-  addEventListener('blur', () => held.clear());
+  addEventListener('keyup', event => {
+    held.delete(event.key);
+    if (event.key === 'Alt') revealLabels = false;
+  });
+  addEventListener('blur', () => {
+    held.clear();
+    revealLabels = false;
+  });
   const axis = (negative: string, positive: string) =>
     Number(held.has(positive)) - Number(held.has(negative));
   return dt => scene.rig.rotate(axis('ArrowLeft', 'ArrowRight') * dt * 2, axis('ArrowDown', 'ArrowUp') * dt);

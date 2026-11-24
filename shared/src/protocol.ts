@@ -85,6 +85,8 @@ export interface Entity {
   wants?: string;
   /** Tick at which a drop disappears. */
   until?: number;
+  /** Tick at which a drop becomes public; zero means never. */
+  publicAt?: number;
   tool?: string;
   qty?: number;
   boss?: BossView;

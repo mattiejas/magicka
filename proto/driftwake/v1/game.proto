@@ -99,6 +99,8 @@ message Entity {
   optional bool rich = 20; optional string wants = 21;
   // Tick at which a drop disappears.
   optional uint32 until = 22;
+  // Tick at which a drop becomes public; zero means never.
+  optional uint32 public_at = 23;
 }
 message Gear { string weapon = 1; string head = 2; string body = 3; string legs = 4; string cape = 5; }
 message BossView { BossState state = 1; string attack = 2; repeated uint32 tiles = 3; uint32 start = 4; uint32 end = 5; uint32 target = 6; }

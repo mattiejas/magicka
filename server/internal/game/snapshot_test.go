@@ -39,6 +39,7 @@ func shown(g *pb.Entity) fields {
 		bossSt:    boss.GetState(),
 		bossStart: int(boss.GetStart()),
 		until:     int(g.GetUntil()),
+		publicAt:  int(g.GetPublicAt()),
 	}
 }
 
@@ -54,7 +55,7 @@ func differing(a, b fields) (names []string) {
 }
 
 // Fields an entity keeps for as long as it exists. All others can change while a client watches.
-var constantFields = []string{"name", "typ", "qty", "wants", "boss"}
+var constantFields = []string{"name", "typ", "qty", "wants", "boss", "publicAt"}
 
 // disturb changes something about a player or near them that ordinary play rarely changes.
 func (e *env) disturb(p *Player, r func() float64) {
