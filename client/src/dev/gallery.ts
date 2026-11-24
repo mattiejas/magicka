@@ -36,7 +36,11 @@ const name = query.get('name') ?? 'Matts';
 const UNARMED: Gear = [null, null, null, null];
 const STILL = { moving: false, walk: 0, hit: 0, time };
 
-function person(gear: Gear, pose: { action?: string; hit?: number; tool?: string }, who = name) {
+function person(
+  gear: Gear,
+  pose: { action?: string; hit?: number; tool?: string; time?: number },
+  who = name,
+) {
   const model = playerModel(who, gear);
   const moving = pose.action === 'walk';
   posePlayer(model, { ...STILL, ...pose, action: moving ? undefined : pose.action, moving, walk: 1 });
@@ -122,6 +126,22 @@ const SETS: Record<string, GallerySet> = {
       { object: person(UNARMED, { action: 'pick' }), turn: 1.1 },
       { object: person(UNARMED, { action: 'walk' }), turn: 1.1 },
     ],
+  },
+  // The same fighter at moments between blows; nobody should look frozen.
+  guard: {
+    columns: 6,
+    gap: 1.3,
+    exhibits: () =>
+      [
+        ['iron_sword', 'melee'],
+        ['oak_bow', 'ranged'],
+        ['oak_staff', 'magic'],
+      ].flatMap(([weapon, action]) =>
+        [0, 1, 2, 3, 4, 5].map(i => ({
+          object: person([weapon, null, null, null], { action, time: time + i * 400 }),
+          turn: 0.9,
+        })),
+      ),
   },
   monsters: {
     columns: 5,
