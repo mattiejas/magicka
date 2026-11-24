@@ -1,18 +1,15 @@
 // Finding out what is under the mouse.
-import { type Entity, ITEMS, MONSTERS, type TilePos } from '@driftwake/shared';
+import type { TilePos } from '@driftwake/shared';
 import * as THREE from 'three';
 import { positionOf, sizeOf, state } from '../net/state';
+import type { FixedThing, Thing } from '../things';
 
-/** Something that can be clicked. */
-export interface Pick {
-  kind: 'node' | 'station' | 'entity';
-  id: string;
-  name: string;
-  /** Node, station, monster or item id. */
-  type: string;
+interface Boxed {
   box: THREE.Box3;
-  entity?: Entity;
 }
+/** Something that can be clicked. */
+export type Pick = Thing & Boxed;
+export type FixedPick = FixedThing & Boxed;
 
 const BOX_INSET = 0.08;
 /** Monsters win over things standing just in front of them. */
@@ -25,23 +22,6 @@ export const pickBox = (x: number, y: number, size: number, height: number) =>
     new THREE.Vector3(x + size - BOX_INSET, height, y + size - BOX_INSET),
   );
 
-const NPC_NAMES: Record<string, string> = { trader: 'Stranded trader', genie: 'Genie' };
-
-function entityName(entity: Entity): string {
-  switch (entity.kind) {
-    case 'monster':
-      return MONSTERS[entity.type!].name;
-    case 'drop':
-      return ITEMS[entity.type!].name + (entity.qty! > 1 ? ` (${entity.qty})` : '');
-    case 'npc':
-      return NPC_NAMES[entity.type!];
-    case 'grave':
-      return 'Your grave';
-    default:
-      return entity.name ?? '';
-  }
-}
-
 /** Everything clickable that moves or comes and goes. */
 export function entityPicks(heightOf: (id: string) => number): Pick[] {
   const out: Pick[] = [];
@@ -50,14 +30,7 @@ export function entityPicks(heightOf: (id: string) => number): Pick[] {
     if (entity.kind === 'node' || entity.id === state.me) continue;
     const [x, y] = positionOf(track);
     const box = pickBox(x, y, sizeOf(entity), heightOf(entity.id));
-    out.push({
-      kind: 'entity',
-      id: entity.id,
-      name: entityName(entity),
-      type: entity.type ?? '',
-      box,
-      entity,
-    });
+    out.push({ kind: 'entity', entity, box });
   }
   return out;
 }
@@ -75,7 +48,7 @@ export function picksOnRay(ray: THREE.Ray, picks: Pick[]): Pick[] {
   const found: { distance: number; pick: Pick }[] = [];
   for (const pick of picks) {
     if (!ray.intersectBox(pick.box, hit)) continue;
-    const priority = pick.entity?.kind === 'monster' ? MONSTER_PRIORITY : 0;
+    const priority = pick.kind === 'entity' && pick.entity.kind === 'monster' ? MONSTER_PRIORITY : 0;
     found.push({ distance: hit.distanceTo(ray.origin) - priority, pick });
   }
   return found.sort((a, b) => a.distance - b.distance).map(f => f.pick);

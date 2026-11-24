@@ -1,53 +1,25 @@
 // Mouse and keyboard.
-import { MAPS, MONSTERS, NODES, type TilePos, walkable } from '@driftwake/shared';
+import { MAPS, type TilePos, walkable } from '@driftwake/shared';
 import { send } from './net/connection';
 import { state } from './net/state';
-import type { Pick } from './scene/picking';
 import type { Scene } from './scene/scene';
+import { mainAction, type Option, optionsFor, type Thing } from './things';
 import { focusChat } from './ui/chat';
 import { closePanel } from './ui/panels';
 import { playerMenu } from './ui/players';
-import { closeMenu, hideTooltip, type MenuItem, showMenu, showTooltip } from './ui/popups';
+import { closeMenu, hideTooltip, showMenu, showTooltip } from './ui/popups';
 import { isSettingsOpen } from './ui/settingsModal';
 
 const MIDDLE_BUTTON = 1;
 const LEFT_BUTTON = 0;
-const GATHER_VERBS = { rock: 'Mine', tree: 'Chop', plant: 'Pick' };
 
-/** What clicking a thing does. */
-interface Interaction {
-  verb: string;
-  run: () => void;
-}
-
-function interactionWith({ kind, id, type, entity }: Pick): Interaction | null {
-  if (kind === 'node') {
-    const node = state.entities.get(id)?.entity;
-    const verb = GATHER_VERBS[NODES[type].kind];
-    const special = node?.rich ? ' rich' : node?.glowing ? ' glowing' : '';
-    return { verb: verb + special, run: () => send({ type: 'gather', id }) };
+/** The main action of the nearest thing that has one. */
+function firstAction(things: Thing[]): Option | null {
+  for (const thing of things) {
+    const action = mainAction(thing, { send });
+    if (action) return action;
   }
-  if (kind === 'station')
-    return { verb: type === 'mine' ? 'Enter' : 'Use', run: () => send({ type: 'station', id }) };
-  switch (entity!.kind) {
-    case 'monster':
-      return { verb: 'Attack', run: () => send({ type: 'attack', id }) };
-    case 'drop':
-      return { verb: 'Take', run: () => send({ type: 'pickup', id }) };
-    case 'npc':
-      return { verb: 'Talk to', run: () => send({ type: 'npc', id }) };
-    case 'grave':
-      return { verb: 'Recover', run: () => send({ type: 'grave' }) };
-    default:
-      return null;
-  }
-}
-
-/** Name and, where it matters, level. */
-function label({ kind, name, type, entity }: Pick): string {
-  if (entity?.kind === 'monster') return `${name}  level ${MONSTERS[type].level}`;
-  if (kind === 'node' && NODES[type].skill) return `${name}  ${NODES[type].skill} ${NODES[type].level}`;
-  return name;
+  return null;
 }
 
 /** Starts listening. Call the returned function every frame with the seconds passed. */
@@ -71,19 +43,16 @@ function bindClicks(canvas: HTMLCanvasElement, scene: Scene) {
     if (event.button !== LEFT_BUTTON) return;
     closePanel();
     const { hits, tile } = scene.pick(event.clientX, event.clientY);
-    const interaction = hits.map(interactionWith).find(Boolean);
-    if (interaction) interaction.run();
+    const action = firstAction(hits);
+    if (action) action[1]();
     else walkTo(scene, tile);
   });
   canvas.addEventListener('contextmenu', event => {
     event.preventDefault();
     const { hits, tile } = scene.pick(event.clientX, event.clientY);
     const place = { x: event.clientX, y: event.clientY };
-    const items = hits.flatMap((pick): MenuItem[] => {
-      if (pick.entity?.kind === 'player') return playerMenu(pick.name, pick.id, place);
-      const interaction = interactionWith(pick);
-      return interaction ? [[`${interaction.verb} ${label(pick)}`, interaction.run]] : [];
-    });
+    const playerOptions = (name: string, id: string) => playerMenu(name, id, place);
+    const items = hits.flatMap(thing => optionsFor(thing, { send, playerOptions }));
     if (tile) items.push(['Walk here', () => walkTo(scene, tile)]);
     showMenu(event.clientX, event.clientY, items);
   });
@@ -92,11 +61,10 @@ function bindClicks(canvas: HTMLCanvasElement, scene: Scene) {
 function bindHover(canvas: HTMLCanvasElement, scene: Scene) {
   canvas.addEventListener('mousemove', event => {
     const { hits, tile } = scene.pick(event.clientX, event.clientY);
-    const pick = hits.find(interactionWith);
-    scene.showHover(pick ? null : tile);
-    canvas.style.cursor = pick ? 'pointer' : 'default';
-    const text = pick ? `${interactionWith(pick)!.verb} ${label(pick)}` : '';
-    showTooltip(text, event.clientX, event.clientY);
+    const action = firstAction(hits);
+    scene.showHover(action ? null : tile);
+    canvas.style.cursor = action ? 'pointer' : 'default';
+    showTooltip(action?.[0] ?? '', event.clientX, event.clientY);
   });
   canvas.addEventListener('mouseleave', () => {
     scene.showHover(null);
