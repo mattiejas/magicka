@@ -82,14 +82,14 @@ const hash = (s: string) => { let h = 0; for (const ch of s) h = (h * 31 + ch.ch
 // Body plan in metres at rest: hip 0.92, shoulder 1.36, crown about 1.8.
 const LEG = 1.07, HIP = 0.86 * LEG, SHOULDER = 0.47;
 const grow = (r: Ring[], k: number, from = 0, to = r.length): Ring[] => r.slice(from, to).map(([y, x, z, oz, ox]) => [y, x + k, z + k, oz, ox]);
-const TORSO: Ring[] = [[-0.07, 0.12, 0.1], [0.0, 0.15, 0.108, -0.004], [0.08, 0.137, 0.094], [0.16, 0.128, 0.086, 0.004], [0.24, 0.137, 0.09, 0.005], [0.29, 0.149, 0.096, 0.006], [0.335, 0.163, 0.108, 0.01], [0.4, 0.176, 0.108, 0.004], [0.455, 0.168, 0.084, -0.008], [0.5, 0.115, 0.07, -0.014], [0.54, 0.06, 0.056, -0.012]];
+const TORSO: Ring[] = [[-0.05, 0.07, 0.04], [0.0, 0.11, 0.075, -0.004], [0.08, 0.135, 0.092], [0.16, 0.128, 0.086, 0.004], [0.24, 0.137, 0.09, 0.005], [0.29, 0.149, 0.096, 0.006], [0.335, 0.163, 0.108, 0.01], [0.4, 0.176, 0.108, 0.004], [0.455, 0.168, 0.084, -0.008], [0.5, 0.115, 0.07, -0.014], [0.54, 0.06, 0.056, -0.012]];
 /** Uneven facets, the same on every model. */
 const chip = (amt: number) => (a: number, i: number) => 1 + amt * Math.sin(a * 5.3 + i * 4.1) * Math.sin(a * 2.7 - i * 1.9);
 /** Chest shelf, breastbone, ribs, shoulder blades and spine. */
 const torsoShape = (a: number, i: number) => { const f = Math.sin(a), side = Math.abs(Math.cos(a)), k = chip(0.04)(a, i); if (f > 0.9) return k * (i === 6 || i === 7 ? 0.92 : i === 5 ? 0.96 : 1); if (f > 0.3 && side > 0.3) return k * (i === 6 ? 1.08 : i === 7 ? 1.05 : i === 5 ? 0.96 : 1); if (f < -0.9) return k * (i >= 3 && i <= 8 ? 0.84 : 1); if (f < -0.3) return k * (i === 7 || i === 8 ? 1.12 : 1); return k; };
 const UPPER_ARM: Ring[] = [[0.04, 0.03, 0.04, -0.004, -0.024], [0.02, 0.052, 0.056, 0, -0.008], [-0.04, 0.06, 0.06], [-0.11, 0.048, 0.054, 0.006], [-0.2, 0.047, 0.052, 0.006], [-0.285, 0.036, 0.04]];
 const FOREARM: Ring[] = [[0.02, 0.036, 0.04], [-0.05, 0.05, 0.047, 0.002], [-0.11, 0.045, 0.042], [-0.22, 0.027, 0.026]];
-const THIGH: Ring[] = [[0.06, 0.08, 0.085], [-0.02, 0.092, 0.1], [-0.14, 0.085, 0.095, 0.006], [-0.29, 0.066, 0.074, 0.006], [-0.39, 0.054, 0.06, 0.006]];
+const THIGH: Ring[] = [[0.07, 0.02, 0.02], [0.045, 0.066, 0.07], [-0.02, 0.088, 0.098], [-0.14, 0.085, 0.095, 0.006], [-0.29, 0.066, 0.074, 0.006], [-0.39, 0.054, 0.06, 0.006]];
 const SHIN: Ring[] = [[0.03, 0.053, 0.056, 0.006], [-0.03, 0.05, 0.056, 0.004], [-0.1, 0.063, 0.068, -0.016], [-0.17, 0.06, 0.066, -0.02], [-0.28, 0.039, 0.044, -0.008], [-0.38, 0.031, 0.036], [-0.42, 0.036, 0.044]];
 // Eight-sided so the face is a few broad planes. The step between rings 4 and 5 is the brow ledge over the eye sockets.
 const HEAD: Ring[] = [[0.035, 0.044, 0.026, 0.07], [0.05, 0.05, 0.042, 0.06], [0.105, 0.09, 0.08, 0.024], [0.165, 0.102, 0.1, 0.006], [0.208, 0.102, 0.095, 0.002], [0.226, 0.104, 0.11, 0.0], [0.29, 0.098, 0.108, -0.012], [0.335, 0.055, 0.07, -0.02]];
@@ -102,8 +102,9 @@ export function playerModel(name: string, gear: (string | null)[]): Model {
   const plateL = !!legs?.id.endsWith('_greaves'), skirt = !!legs?.id.startsWith('cloth_'), chaps = !!legs && !plateL && !skirt, strap = '#6b4a32', lips = new THREE.Color(skin).lerp(new THREE.Color('#9c3f3a'), 0.4).getStyle();
   const parts: Model['parts'] = {}, root = new THREE.Group(), upper = pivot(null, 0, HIP); parts.upper = upper;
   const t: G[] = [part(sculpt(TORSO, 16, torsoShape), skin), part(loft([[0.47, 0.078, 0.062, -0.014], [0.53, 0.052, 0.052, -0.008], [0.6, 0.05, 0.05, 0.004]], 8), skin), ...(body ? [] : [part(gem(0.011), shade(skin, 0.6), [0, 0.135, 0.088], [0, 0, 0], [0.8, 1.2, 0.4])])];
-  // Waistband of the shorts or trousers.
-  t.push(part(sculpt([[-0.13, 0.02, 0.1], [-0.05, 0.15, 0.122], [0.03, 0.17, 0.122], [0.085, 0.152, 0.106]], 16, chip(0.045)), lc), part(loft([[0.07, 0.156, 0.11], [0.1, 0.15, 0.105]], 16), legs ? strap : shade(lc, 0.88)));
+  // The waist of the shorts or trousers hangs on the hips, so it stays with the legs when the torso swings.
+  const hips = pivot(merge([part(sculpt([[-0.13, 0.02, 0.05], [-0.09, 0.1, 0.092], [-0.03, 0.172, 0.12], [0.03, 0.17, 0.122], [0.085, 0.154, 0.112]], 16, chip(0.03)), lc), part(loft([[0.07, 0.158, 0.116], [0.1, 0.152, 0.11]], 16), legs ? strap : shade(lc, 0.88))]), 0, HIP);
+  parts.hips = hips; root.add(hips);
   if (body) t.push(part(sculpt(grow(TORSO, plateB ? 0.022 : 0.013, robe ? 1 : 2, 10), 16, torsoShape), bc));
   if (plateB) t.push(part(loft([[0.18, 0.15, 0.118, 0.01], [0.33, 0.19, 0.145, 0.014], [0.43, 0.185, 0.125, 0.006]], 8), shade(bc, 1.1)), part(loft([[0.48, 0.1, 0.085, -0.01], [0.535, 0.085, 0.08, -0.008]], 8), shade(bc, 0.85)), part(rbox(0.31, 0.05, 0.23, 0.02), strap, [0, 0.1, 0]));
   if (leather) t.push(part(rbox(0.045, 0.52, 0.02), strap, [0, 0.27, 0.13], [0, 0, 0.6]), part(loft([[0.48, 0.095, 0.08, -0.01], [0.535, 0.078, 0.075, -0.008]], 8), shade(bc, 0.8)), part(rbox(0.32, 0.055, 0.24, 0.02), strap, [0, 0.07, 0]), part(rbox(0.09, 0.09, 0.07, 0.02), shade(strap, 1.2), [0.13, 0.03, 0.09]));
@@ -116,17 +117,20 @@ export function playerModel(name: string, gear: (string | null)[]): Model {
       ...(head?.id.endsWith('_helm') ? [] : [part(rbox(0.05, 0.015, 0.02), shade(hair, 0.8), [s * 0.044, 0.233, 0.1], [0, s * 0.1, s * 0.04]), part(rbox(0.022, 0.014, 0.02), shade(hair, 0.74), [s * 0.076, 0.228, 0.09], [0, s * 0.7, -s * 0.45])]),
       part(loft([[-0.045, 0.008, 0.014], [-0.01, 0.016, 0.026, -0.004], [0.03, 0.02, 0.028, -0.008], [0.042, 0.01, 0.016, -0.01]], 5), shade(skin, 0.97), [s * 0.106, 0.18, -0.008], [0.1, 0, -s * 0.18])])];
   if (!head) {
-    // Cropped back and sides, then overlapping slabs swept across the crown and fringe.
-    hd.push(part(loft([[0.1, 0.07, 0.026, -0.078], [0.16, 0.1, 0.064, -0.054], [0.24, 0.113, 0.1, -0.03], [0.31, 0.11, 0.11, -0.018], [0.355, 0.07, 0.08, -0.012]], 8), hair));
-    for (const s of [-1, 1]) hd.push(part(loft([[0.14, 0.004, 0.006, 0.05], [0.19, 0.011, 0.024, 0.042], [0.3, 0.02, 0.05, 0.03]], 4), shade(hair, 0.92), [s * 0.1, 0, 0]));
-    const f = (h >> 6) % 2 ? 1 : -1, sweep = (pts: V3[], r0: number, r1: number, k: number) => hd.push(part(taper(pts.map(([x, y, z]): V3 => [x * f, y, z]), r0, r1, 9, 6), shade(hair, k)));
-    sweep([[-0.095, 0.275, 0.05], [-0.04, 0.322, 0.096], [0.035, 0.318, 0.108], [0.1, 0.27, 0.08]], 0.032, 0.014, 0.95);
-    sweep([[-0.085, 0.31, 0.04], [-0.02, 0.362, 0.078], [0.06, 0.356, 0.085], [0.118, 0.3, 0.056]], 0.042, 0.014, 1.12);
-    sweep([[-0.08, 0.34, 0.0], [-0.01, 0.384, 0.03], [0.065, 0.37, 0.034], [0.122, 0.31, 0.01]], 0.046, 0.016, 1.2);
-    sweep([[-0.07, 0.345, -0.05], [0.0, 0.376, -0.025], [0.07, 0.352, -0.028], [0.118, 0.292, -0.045]], 0.046, 0.016, 1.06);
-    sweep([[-0.05, 0.33, -0.09], [0.02, 0.344, -0.075], [0.08, 0.31, -0.08], [0.1, 0.25, -0.085]], 0.042, 0.014, 0.98);
-    sweep([[0.02, 0.325, 0.098], [0.062, 0.29, 0.112], [0.078, 0.25, 0.102]], 0.026, 0.006, 1.02);
-    sweep([[-0.03, 0.325, 0.1], [-0.008, 0.292, 0.116], [0.022, 0.268, 0.112]], 0.024, 0.005, 0.9);
+    // Cropped cap, then rings of spikes growing out, up and forward.
+    hd.push(part(loft([[0.11, 0.07, 0.024, -0.078], [0.16, 0.098, 0.06, -0.054], [0.235, 0.109, 0.096, -0.03], [0.3, 0.106, 0.108, -0.018], [0.345, 0.068, 0.078, -0.014]], 10), shade(hair, 0.92)));
+    for (const s of [-1, 1]) hd.push(part(loft([[0.15, 0.004, 0.006, 0.05], [0.2, 0.01, 0.022, 0.042], [0.29, 0.018, 0.045, 0.03]], 5), shade(hair, 0.88), [s * 0.1, 0, 0]));
+    const jit = (i: number) => Math.sin(i * 12.9898 + h) * 0.5;
+    ([[8, 1, 0.07, 0.04], [32, 8, 0.075, 0.041], [58, 13, 0.066, 0.038], [80, 16, 0.048, 0.03]] as const).forEach(([tilt, n, len, r], row) => {
+      for (let i = 0; i < n; i++) {
+        const az = ((i + (row % 2) * 0.5) / n) * TAU + jit(i + row * 9) * 0.25, el = (tilt * Math.PI) / 180, front = Math.sin(az);
+        if (row === 3 && front > 0.1) continue; // keep the face clear
+        const nx = Math.sin(el) * Math.cos(az), ny = Math.cos(el), nz = Math.sin(el) * front;
+        const fringe = row === 2 && front > 0.5, dir = new THREE.Vector3(nx + jit(i + 3) * 0.35, ny * 0.9 + (fringe ? 0.25 : 0.3), nz + 0.35).normalize();
+        const e = new THREE.Euler().setFromQuaternion(new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0, 1, 0), dir)), L = len * (1 + jit(i * 3 + row) * 0.4);
+        hd.push(part(loft([[-0.03, r, r * 0.85], [L * 0.35, r * 0.72, r * 0.6], [L, 0.003, 0.003]], 5), shade(hair, 0.98 + jit(i + row * 5) * 0.3 + (2 - row) * 0.05), [nx * 0.094, 0.248 + ny * 0.09, nz * 0.1 - 0.012], [e.x, e.y, e.z]));
+      }
+    });
   } else if (head.id.endsWith('_helm')) hd.push(part(loft([[0.232, 0.122, 0.13, -0.006], [0.29, 0.12, 0.13, -0.01], [0.345, 0.085, 0.1, -0.014], [0.385, 0.03, 0.04, -0.016]], 8), head.color), part(loft([[0.23, 0.13, 0.138, -0.006], [0.258, 0.129, 0.138, -0.006]], 8), shade(head.color, 0.8)), part(rbox(0.022, 0.1, 0.02), shade(head.color, 0.85), [0, 0.19, 0.14]), part(rbox(0.026, 0.06, 0.2, 0.01), shade(head.color, 1.15), [0, 0.365, -0.012]), ...[-1, 1].map(s => part(plate(q => { q.moveTo(-0.05, 0); q.lineTo(0.04, 0); q.lineTo(0.03, -0.13); q.lineTo(-0.03, -0.1); q.closePath(); }, 0.012, 0.005), head.color, [s * 0.122, 0.235, -0.005], [0, -Math.PI / 2, 0])));
   else hd.push(part(loft([[0.0, 0.13, 0.1, -0.03], [0.08, 0.126, 0.08, -0.045], [0.18, 0.13, 0.085, -0.045], [0.25, 0.128, 0.126, -0.01], [0.32, 0.112, 0.12, -0.01], [0.37, 0.045, 0.06, -0.03]], 8), head.color), part(loft([[0.25, 0.122, 0.132, 0.0], [0.285, 0.12, 0.13, 0.0]], 8), shade(head.color, 0.8)), ...[-1, 1].map(s => part(loft([[0.02, 0.02, 0.04], [0.14, 0.018, 0.045], [0.25, 0.018, 0.03]], 5), shade(head.color, 0.88), [s * 0.112, 0, 0.04])));
   parts.head = pivot(merge(hd), 0, 0.515, 0.01); parts.head.scale.setScalar(1.04);
@@ -143,16 +147,16 @@ export function playerModel(name: string, gear: (string | null)[]): Model {
   const leg = (n: string, s: number) => {
     const th: G[] = [part(sculpt(THIGH, 12, chip(0.045)), chaps || plateL ? shade(lc, 0.85) : skin)], sh: G[] = [part(sculpt(SHIN, 12, chip(0.045)), legs && !skirt ? shade(lc, 0.85) : skin)];
     // Loose shorts: wider at the hem, with uneven folds.
-    if (!legs) th.push(part(sculpt([[0.07, 0.085, 0.1], [-0.03, 0.102, 0.116], [-0.12, 0.104, 0.118, 0.002], [-0.21, 0.108, 0.12, 0.004], [-0.31, 0.112, 0.122, 0.006]], 13, chip(0.085)), cloth), part(loft([[-0.29, 0.1, 0.11, 0.006], [-0.312, 0.1, 0.11, 0.006]], 10), shade(cloth, 0.7)));
+    if (!legs) th.push(part(sculpt([[0.085, 0.02, 0.02], [0.06, 0.07, 0.078], [0.0, 0.098, 0.112], [-0.12, 0.104, 0.118, 0.002], [-0.21, 0.108, 0.12, 0.004], [-0.31, 0.112, 0.122, 0.006]], 13, chip(0.085)), cloth), part(loft([[-0.29, 0.1, 0.11, 0.006], [-0.312, 0.1, 0.11, 0.006]], 10), shade(cloth, 0.7)));
     if (chaps) th.push(part(sculpt(grow(THIGH, 0.012), 12), lc)), sh.push(part(sculpt(grow(SHIN, 0.01, 0, 6), 12), lc));
-    if (plateL) th.push(part(sculpt(grow(THIGH, 0.018, 1, 4), 12), lc)), sh.push(part(sculpt(grow(SHIN, 0.016, 1, 6), 12), lc), part(loft([[0.05, 0.045, 0.045], [0, 0.07, 0.078], [-0.05, 0.045, 0.05]], 7), shade(lc, 1.12), [0, 0.01, 0.018]));
+    if (plateL) th.push(part(sculpt(grow(THIGH, 0.018, 2, 5), 12), lc)), sh.push(part(sculpt(grow(SHIN, 0.016, 1, 6), 12), lc), part(loft([[0.05, 0.045, 0.045], [0, 0.07, 0.078], [-0.05, 0.045, 0.05]], 7), shade(lc, 1.12), [0, 0.01, 0.018]));
     const foot = (c: string, k: number) => part(sculpt([[-0.445, 0.048 + k, 0.115 + k, 0.045], [-0.42, 0.048 + k, 0.112 + k, 0.045], [-0.385, 0.04 + k, 0.07 + k, 0.018], [-0.34, 0.036 + k, 0.044 + k, 0]], 11), c);
     sh.push(legs ? foot(strap, 0.012) : foot(skin, 0));
     if (legs) sh.push(part(loft([[-0.35, 0.055, 0.062], [-0.22, 0.064, 0.07, -0.014], [-0.19, 0.074, 0.08, -0.016]], 8), strap)); else for (let i = 0; i < 4; i++) sh.push(part(rbox(0.019, 0.022, 0.035), skin, [(i - 1.5) * 0.021, -0.432, 0.148 - Math.abs(i - (s > 0 ? 0.6 : 2.4)) * 0.008]));
-    const t2 = pivot(merge(th), s * 0.09, HIP), s2 = pivot(merge(sh), 0, -0.4); t2.scale.y = LEG; t2.add(s2); parts[n] = t2; parts[n + '2'] = s2; root.add(t2);
+    const tall = (l: G[]) => merge(l).scale(1, LEG, 1), t2 = pivot(tall(th), s * 0.086, HIP), s2 = pivot(tall(sh), 0, -0.4 * LEG); t2.add(s2); parts[n] = t2; parts[n + '2'] = s2; root.add(t2);
   };
   leg('ll', 1); leg('rl', -1);
-  if (skirt || robe) root.add(pivot(part(loft([[0.07, 0.156, 0.116], [-0.1, 0.188, 0.16], [-0.36, 0.25, 0.23], [-0.6, 0.29, 0.27]], 11, (a, i) => 1 + (i > 1 ? Math.sin(a * 5) * 0.06 : 0)), skirt ? lc : shade(bc, 0.92)), 0, HIP));
+  if (skirt || robe) hips.add(pivot(part(loft([[0.07, 0.156, 0.116], [-0.1, 0.188, 0.16], [-0.36, 0.25, 0.23], [-0.6, 0.29, 0.27]], 11, (a, i) => 1 + (i > 1 ? Math.sin(a * 5) * 0.06 : 0)), skirt ? lc : shade(bc, 0.92)), 0, 0));
   root.add(upper);
   const wp = it(0); if (wp) { const g = mesh(heldGeo(wp.icon, wp.color, wp.unique)); g.scale.setScalar(1.1); if (wp.icon === 'bow') { g.rotation.x = Math.PI / 2 - 0.05; parts.lah.add(g); } else { g.rotation.x = 1.5; parts.rah.add(g); } parts.weapon = g; }
   return { root, parts, h: 1.85, kind: 'p', gear: gear.join() };
@@ -242,8 +246,12 @@ export function posePlayer(m: Model, o: Pose) {
   else if (a === 'eat') { ra = -1.2; ra2 = -1.7 + Math.sin(o.t / 90) * 0.12; rz = 0.3; hx = 0.12; }
   else if (a === 'ranged') { stance(); twist = 0.55; la = -1.5; la2 = -0.06; lz = -0.45; const d = 1 - o.hit; ra = -1.45; ra2 = mix(-0.7, -1.9, ease(Math.min(1, d * 1.6))); rz = -0.35; hx = 0; }
   else if (a === 'magic') { stance(); const f = o.hit; ra = mix(-1.25, -1.75, f); ra2 = mix(-0.5, -0.05, f); la = mix(-0.5, -1.6, f); la2 = mix(-0.7, -0.15, f); lean = f * 0.14; }
-  else if (a === 'melee') { stance(); ra = -0.7; ra2 = -0.75; la = -0.5; la2 = -0.9; if (o.hit > 0) { const q = 1 - o.hit, s = q < 0.35 ? ease(q / 0.35) : 1 - ease((q - 0.35) / 0.65); const down = q < 0.35; ra = down ? mix(-0.7, -2.5, s) : mix(-0.35, -2.5, s); ra2 = mix(-0.2, -0.8, s); twist = mix(-0.4, 0.35, s); lean = mix(0.22, -0.06, s); } }
-  p.upper.rotation.set(lean, twist, 0); p.upper.position.y = HIP + drop; p.head.rotation.set(hx - lean * 0.6, -twist * 0.7, 0);
+  else if (a === 'melee') { stance(); ra = -0.7; ra2 = -0.75; la = -0.5; la2 = -0.9; if (o.hit > 0) {
+      // Wind up, cut down fast, hold, then return to guard.
+      const q = 1 - o.hit, key = (g: number, up: number, down: number) => (q < 0.3 ? mix(g, up, ease(q / 0.3)) : q < 0.5 ? mix(up, down, ((q - 0.3) / 0.2) ** 2) : q < 0.75 ? down : mix(down, g, ease((q - 0.75) / 0.25)));
+      ra = key(-0.7, -2.5, -0.45); ra2 = key(-0.75, -0.8, 0); twist = key(0, 0.4, -0.45); lean = key(lean, -0.08, 0.26); la = key(-0.5, -0.8, 0.2); hx = key(0, 0.05, 0.1);
+    } }
+  p.upper.rotation.set(lean, twist, 0); p.upper.position.y = p.hips.position.y = HIP + drop; p.hips.rotation.set(lean * 0.45, twist * 0.3, 0); p.head.rotation.set(hx - lean * 0.6, -twist * 0.7, 0);
   p.la.rotation.set(la, 0, lz); p.ra.rotation.set(ra, 0, rz); p.la2.rotation.x = la2; p.ra2.rotation.x = ra2;
   p.ll.rotation.x = ll; p.rl.rotation.x = rl; p.ll.rotation.z = o.moving ? 0.015 : 0.055; p.rl.rotation.z = -p.ll.rotation.z; p.ll2.rotation.x = ll2; p.rl2.rotation.x = rl2; p.ll.position.y = p.rl.position.y = HIP + drop;
   const want = a === 'mine' || a === 'chop' ? o.tool : a === 'craft' ? 'hammer' : undefined;
