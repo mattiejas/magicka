@@ -3,26 +3,7 @@
 import * as THREE from 'three';
 import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
-// Four light steps instead of a smooth falloff.
-const STEPS = new THREE.DataTexture(new Uint8Array([120, 175, 225, 255].flatMap(v => [v, v, v, 255])), 4, 1); STEPS.needsUpdate = true;
-export const MAT = new THREE.MeshToonMaterial({ vertexColors: true, gradientMap: STEPS });
-/** Ink line: a slightly inflated copy drawn inside out. Works for instanced meshes too. */
-const INK = new THREE.MeshBasicMaterial({ color: '#2b2438', side: THREE.BackSide });
-INK.onBeforeCompile = s => { s.vertexShader = s.vertexShader.replace('#include <common>', '#include <common>\nattribute vec3 inkNormal;').replace('#include <begin_vertex>', 'vec3 transformed = position + inkNormal * 0.014;'); };
-/** Adds normals averaged across shared corners, so the inflated copy has no gaps at hard edges. */
-function inkNormals(g: THREE.BufferGeometry) {
-  if (g.attributes.inkNormal) return;
-  const p = g.attributes.position, n = g.attributes.normal, sum = new Map<string, THREE.Vector3>(), key = (i: number) => `${Math.round(p.getX(i) * 500)},${Math.round(p.getY(i) * 500)},${Math.round(p.getZ(i) * 500)}`;
-  for (let i = 0; i < p.count; i++) { const k = key(i); let v = sum.get(k); if (!v) sum.set(k, (v = new THREE.Vector3())); v.x += n.getX(i); v.y += n.getY(i); v.z += n.getZ(i); }
-  for (const v of sum.values()) v.normalize();
-  const a = new Float32Array(p.count * 3); for (let i = 0; i < p.count; i++) sum.get(key(i))!.clone().multiplyScalar(g.attributes.ink?.getX(i) ?? 1).toArray(a, i * 3);
-  g.setAttribute('inkNormal', new THREE.BufferAttribute(a, 3));
-}
-export function outline<M extends THREE.Mesh>(m: M): M {
-  inkNormals(m.geometry); let o: THREE.Mesh;
-  if (m instanceof THREE.InstancedMesh) { const i = new THREE.InstancedMesh(m.geometry, INK, m.count); i.instanceMatrix = m.instanceMatrix; i.frustumCulled = false; o = i; } else o = new THREE.Mesh(m.geometry, INK);
-  m.add(o); return m;
-}
+export const MAT = new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.9, metalness: 0 });
 export type V3 = [number, number, number];
 type G = THREE.BufferGeometry;
 export function part(g: G, color: string, pos: V3 = [0, 0, 0], rot: V3 = [0, 0, 0], scale: V3 | number = 1): G {
@@ -35,17 +16,14 @@ export function part(g: G, color: string, pos: V3 = [0, 0, 0], rot: V3 = [0, 0, 
   const p = o.attributes.position, c = new THREE.Color(color), a = new Float32Array(p.count * 3);
   for (let i = 0; i < p.count; i += 3) {
     const x = (p.getX(i) + p.getX(i + 1) + p.getX(i + 2)) / 3, y = (p.getY(i) + p.getY(i + 1) + p.getY(i + 2)) / 3, z = (p.getZ(i) + p.getZ(i + 1) + p.getZ(i + 2)) / 3, k = 1 + noise(x * 11, y * 11, z * 11) * 0.06, up = o.attributes.normal.getY(i);
-    // Painted light: faces looking up drift warm, faces looking down drift violet.
-    const f = c.clone().multiplyScalar(k); if (up > 0) f.lerp(WARM, up * 0.14); else f.lerp(COOL, -up * 0.3);
-    f.lerp(COOL, 0.22 * (1 - (y - y0) / hh) ** 2);
+    // Painted light: faces looking up drift warm, faces looking down drift plum.
+    const f = c.clone().multiplyScalar(k); if (up > 0) f.lerp(WARM, up * 0.08); else f.lerp(COOL, -up * 0.2);
+    f.lerp(COOL, 0.1 * (1 - (y - y0) / hh) ** 2);
     for (let j = 0; j < 3; j++) f.toArray(a, (i + j) * 3);
   }
-  // Small details get a thinner line or none, so it never swallows them.
-  const size = o.boundingBox!.getSize(new THREE.Vector3()), big = Math.max(size.x, size.y, size.z), ink = big < 0.14 ? 0 : big < 0.32 ? 0.6 : 1;
-  o.setAttribute('ink', new THREE.BufferAttribute(new Float32Array(p.count).fill(ink), 1));
   o.setAttribute('color', new THREE.BufferAttribute(a, 3)); return o;
 }
-const WARM = new THREE.Color('#ffe2a0'), COOL = new THREE.Color('#4a3a78');
+const WARM = new THREE.Color('#ffe2a0'), COOL = new THREE.Color('#6a4258');
 /** Bends a whole shape sideways as it rises. */
 export function bend(g: THREE.BufferGeometry, amt: number, freq = 1.1) { const p = g.attributes.position; for (let i = 0; i < p.count; i++) { const y = p.getY(i); p.setX(i, p.getX(i) + Math.sin(y * freq) * amt * Math.min(1, y)); p.setZ(i, p.getZ(i) + Math.sin(y * freq * 0.7 + 1) * amt * 0.5 * Math.min(1, y)); } g.computeVertexNormals(); return g; }
 export const merge = (l: G[]) => mergeGeometries(l)!;
@@ -64,6 +42,17 @@ export const lathe = (pts: [number, number][], seg = 8): G => {
   if (area < 0) pts = [...pts].reverse();
   return new THREE.LatheGeometry(pts.map(p => new THREE.Vector2(Math.max(0.001, p[0]), p[1])), seg >= 30 ? 11 : Math.min(seg, 8));
 };
+/** Sculpted tube: stacked elliptical rings of [y, radiusX, radiusZ, offsetZ, offsetX], capped at both ends.
+ *  `shape` scales a vertex by its angle (0 = +x, PI/2 = front) and ring. */
+export type Ring = [number, number, number, number?, number?];
+export function loft(rings: Ring[], n = 10, shape: (a: number, i: number) => number = () => 1): G {
+  const up = rings[0][0] < rings.at(-1)![0], rs = up ? rings : [...rings].reverse(), pos: number[] = [], idx = (i: number) => (up ? i : rings.length - 1 - i);
+  const at = (i: number, k: number): V3 => { const [y, rx, rz, oz = 0, ox = 0] = rs[i], a = ((k % n) / n) * Math.PI * 2 + Math.PI / n, f = shape(a, idx(i)); return [Math.cos(a) * rx * f + ox, y, Math.sin(a) * rz * f + oz]; };
+  const tri = (...v: V3[]) => v.forEach(p => pos.push(...p));
+  for (let i = 0; i < rs.length - 1; i++) for (let k = 0; k < n; k++) { const a = at(i, k), b = at(i, k + 1), c = at(i + 1, k), d = at(i + 1, k + 1); if ((i + k) % 2) tri(a, c, b, b, c, d); else tri(a, c, d, a, d, b); }
+  for (const [i, flip] of [[0, false], [rs.length - 1, true]] as const) { const [y, , , oz = 0, ox = 0] = rs[i]; for (let k = 0; k < n; k++) { const a = at(i, k), b = at(i, k + 1), m: V3 = [ox, y, oz]; if (flip) tri(m, b, a); else tri(m, a, b); } }
+  const g = new THREE.BufferGeometry(); g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3)); g.computeVertexNormals(); return g;
+}
 /** Organic lump. `rough` distorts it; `facet` keeps crisp stone-like faces. */
 export function blob(r: number, _detail = 3, rough = 0.15, seed = 0, _facet = false): G {
   const g = new THREE.IcosahedronGeometry(r, r < 0.16 ? 0 : r < 0.9 ? 1 : 2), p = g.attributes.position, v = new THREE.Vector3();

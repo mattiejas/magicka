@@ -1,25 +1,25 @@
 import * as THREE from 'three';
 import { BOAT_PARTS, ITEMS, MAPS, MONSTERS, NODES, T, mulberry, type Ent, type GameEvent, type GameMap, type MapId } from '@magicka/shared';
-import { MAT, outline, blob, merge, noise, part, rbox, shade, taper } from './geo';
+import { MAT, blob, merge, noise, part, rbox, shade, taper } from './geo';
 import { STRIKE_AT, boatGeo, dropModel, graveModel, monsterModel, nodeGeo, playerModel, poseMonster, posePlayer, stationGeo, type Model } from './models';
 import { moving, posOf, state, tickNow, type Track } from './net';
-const COLORS = ['#3f93a8', '#f2d79a', '#6fb069', '#d3ad80', '#a09ab8', '#b07a4a'];
+const COLORS = ['#3f93a8', '#f2d79a', '#86b574', '#d3b088', '#aaa49e', '#b07a4a'];
 export interface Pick { kind: 'node' | 'station' | 'ent'; id: string; name: string; type: string; box: THREE.Box3; e?: Ent }
 export class Scene {
   r: THREE.WebGLRenderer; s = new THREE.Scene(); cam = new THREE.PerspectiveCamera(45, 1, 0.1, 140);
   yaw = 0; pitch = 0.95; dist = 15; private focus = new THREE.Vector3(32, 0, 35);
   private world = new THREE.Group(); private map: MapId | null = null; private models = new Map<string, { m: Model; yaw: number }>();
   private nodeInst = new Map<string, { full: THREE.InstancedMesh; spent: THREE.InstancedMesh; i: number; m: THREE.Matrix4; on: boolean }>();
-  private picks: Pick[] = []; private sun = new THREE.DirectionalLight('#ffe3b0', 2.5);
+  private picks: Pick[] = []; private sun = new THREE.DirectionalLight('#fff0d6', 2.5);
   private hover = square('#f0ead8', 0.55); private dest = square('#8fd0c0', 0.8); private mine = square('#8fd0c0', 0.28);
   private tele = new Map<string, { g: THREE.Group; key: string; fx: ((k: number, st: string) => void)[] }>();
   private boat: THREE.Mesh | null = null; private boatKey = ''; private fx: { o: THREE.Object3D; t0: number; ms: number; f: (o: THREE.Object3D, k: number) => void }[] = [];
   texts: { x: number; y: number; h: number; text: string; cls: string; at: number; el?: HTMLElement }[] = [];
   private lastAct = new Map<string, number>(); private water: THREE.Mesh | null = null;
   constructor(canvas: HTMLCanvasElement, private overlay: HTMLElement) {
-    this.r = new THREE.WebGLRenderer({ canvas, antialias: true }); this.r.toneMapping = THREE.NeutralToneMapping; this.r.toneMappingExposure = 1.1; this.r.shadowMap.enabled = true; this.r.shadowMap.type = THREE.PCFSoftShadowMap;
-    this.s.background = new THREE.Color('#a9d8dc'); this.s.fog = new THREE.Fog('#a9d8dc', 32, 66);
-    this.s.add(new THREE.HemisphereLight('#dfe8ff', '#8c74a8', 1.7), this.sun, this.sun.target, this.world, this.hover, this.dest, this.mine);
+    this.r = new THREE.WebGLRenderer({ canvas, antialias: true }); this.r.toneMapping = THREE.NeutralToneMapping; this.r.toneMappingExposure = 0.9; this.r.shadowMap.enabled = true; this.r.shadowMap.type = THREE.PCFSoftShadowMap;
+    this.s.background = new THREE.Color('#c4dfe2'); this.s.fog = new THREE.Fog('#c4dfe2', 32, 66);
+    this.s.add(new THREE.HemisphereLight('#fff6ee', '#d0b8a4', 2.2), this.sun, this.sun.target, this.world, this.hover, this.dest, this.mine);
     this.sun.castShadow = true; this.sun.shadow.mapSize.set(2048, 2048); const c = this.sun.shadow.camera; c.left = c.bottom = -24; c.right = c.top = 24; c.far = 80; this.sun.shadow.bias = -0.001; this.sun.shadow.normalBias = 0.03;
     this.dest.visible = this.hover.visible = false; this.resize(); addEventListener('resize', () => this.resize());
   }
@@ -36,13 +36,13 @@ export class Scene {
     for (const [type, list] of Object.entries(by)) {
       const g = nodeGeo(type), full = new THREE.InstancedMesh(g.full, MAT, list.length), spent = new THREE.InstancedMesh(g.spent, MAT, list.length); full.castShadow = spent.castShadow = full.receiveShadow = spent.receiveShadow = true; full.frustumCulled = spent.frustumCulled = false;
       list.forEach((n, i) => { const k = 0.9 + rnd() * 0.25, mt = new THREE.Matrix4().compose(new THREE.Vector3(n.x + 0.5, 0, n.y + 0.5), new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 1, 0), rnd() * 6.28), new THREE.Vector3(k, k, k)); full.setMatrixAt(i, mt); spent.setMatrixAt(i, ZERO); this.nodeInst.set(n.id, { full, spent, i, m: mt, on: true }); this.picks.push({ kind: 'node', id: n.id, name: NODES[type].name, type, box: bx(n.x, n.y, 1, g.h) }); });
-      this.world.add(outline(full), outline(spent));
+      this.world.add(full, spent);
     }
-    for (const s of m.stations) { const o = new THREE.Mesh(stationGeo(s.type), MAT); o.position.set(s.x + 0.5, 0, s.y + 0.5); o.castShadow = o.receiveShadow = true; this.world.add(outline(o)); this.picks.push({ kind: 'station', id: s.id, name: STATION[s.type], type: s.type, box: bx(s.x, s.y, 1, 1.5) }); }
+    for (const s of m.stations) { const o = new THREE.Mesh(stationGeo(s.type), MAT); o.position.set(s.x + 0.5, 0, s.y + 0.5); o.castShadow = o.receiveShadow = true; this.world.add(o); this.picks.push({ kind: 'station', id: s.id, name: STATION[s.type], type: s.type, box: bx(s.x, s.y, 1, 1.5) }); }
     this.detail(m, rnd);
   }
   private detail(m: GameMap, rnd: () => number) {
-    const blades = [0, 1, 2, 3, 4].map(i => { const a = i * 1.26; return part(taper([[Math.cos(a) * 0.03, 0, Math.sin(a) * 0.03], [Math.cos(a) * 0.05, 0.12, Math.sin(a) * 0.05], [Math.cos(a) * 0.13, 0.2 + (i % 2) * 0.06, Math.sin(a) * 0.13]], 0.016, 0.002, 4, 3), shade('#86c86a', 0.9 + (i % 3) * 0.08)); });
+    const blades = [0, 1, 2, 3, 4].map(i => { const a = i * 1.26; return part(taper([[Math.cos(a) * 0.03, 0, Math.sin(a) * 0.03], [Math.cos(a) * 0.05, 0.12, Math.sin(a) * 0.05], [Math.cos(a) * 0.13, 0.2 + (i % 2) * 0.06, Math.sin(a) * 0.13]], 0.016, 0.002, 4, 3), shade('#97c47c', 0.9 + (i % 3) * 0.08)); });
     const kinds: [THREE.BufferGeometry, number, number][] = [[merge(blades.slice(0, 3)), m.size * 10, T.GRASS], [merge([...blades.slice(0, 2), part(taper([[0, 0, 0], [0.02, 0.26, 0]], 0.012, 0.01, 3, 4), '#7d9660'), ...[0, 1, 2, 3, 4].map(i => part(blob(0.03, 1, 0, 0), '#f0e6c8', [0.02 + Math.cos(i * 1.26) * 0.045, 0.27, Math.sin(i * 1.26) * 0.045])), part(blob(0.028, 1, 0, 0), '#dcb45e', [0.02, 0.28, 0])]), m.size * 1.5, T.GRASS], [merge([part(blob(0.07, 2, 0.25, 1, true), '#a39d92', [0, 0.02, 0]), part(blob(0.04, 1, 0.2, 2, true), '#938d84', [0.09, 0.01, 0.04])]), m.size * 3, -1]];
     for (const [g, n, tile] of kinds) {
       const list: THREE.Matrix4[] = [];
@@ -104,7 +104,7 @@ export class Scene {
   private boatModel() {
     const s = state.self!, m = MAPS[s.map], d = m.stations.find(s => s.type === 'dock')!, key = s.map + JSON.stringify(s.boat);
     if (key === this.boatKey) return; this.boatKey = key; if (this.boat) this.world.remove(this.boat);
-    this.boat = new THREE.Mesh(boatGeo(p => Math.min(1, (s.boat[p] ?? 0) / BOAT_PARTS.find(b => b.id === p)!.qty)), MAT); this.boat.position.set(d.x + 2.2, -0.05, d.y + 2.4); this.boat.castShadow = true; this.world.add(outline(this.boat));
+    this.boat = new THREE.Mesh(boatGeo(p => Math.min(1, (s.boat[p] ?? 0) / BOAT_PARTS.find(b => b.id === p)!.qty)), MAT); this.boat.position.set(d.x + 2.2, -0.05, d.y + 2.4); this.boat.castShadow = true; this.world.add(this.boat);
   }
   private entity(t: Track, now: number, dt: number) {
     const e = t.e; if (e.k === 'n') return;
@@ -212,7 +212,7 @@ function terrain(m: GameMap) {
   const grp = new THREE.Group(), gm = new THREE.Mesh(g, new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 1 })); gm.receiveShadow = true; grp.add(gm);
   // Faint tile lines keep distances readable.
   const line: number[] = []; for (let y = 0; y < N; y++) for (let x = 0; x < N; x++) if (at(x, y) !== T.WATER) line.push(x, 0.012, y, x + 1, 0.012, y, x, 0.012, y, x, 0.012, y + 1);
-  const lg = new THREE.BufferGeometry(); lg.setAttribute('position', new THREE.Float32BufferAttribute(line, 3)); grp.add(new THREE.LineSegments(lg, new THREE.LineBasicMaterial({ color: '#35305a', transparent: true, opacity: 0.1, depthWrite: false })));
+  const lg = new THREE.BufferGeometry(); lg.setAttribute('position', new THREE.Float32BufferAttribute(line, 3)); grp.add(new THREE.LineSegments(lg, new THREE.LineBasicMaterial({ color: '#4a3f30', transparent: true, opacity: 0.1, depthWrite: false })));
   const planks: THREE.BufferGeometry[] = []; for (let y = 0; y < N; y++) for (let x = 0; x < N; x++) if (m.tiles[y * N + x] === T.WOOD) { for (let i = 0; i < 3; i++) planks.push(part(rbox(0.99, 0.09, 0.3, 0.02, 2), shade('#a3825a', 0.93 + ((x * 3 + y * 5 + i * 2) % 5) * 0.035), [x + 0.5, -0.045, y + 0.17 + i * 0.33])); if (y % 3 === 0 && (m.tiles[y * N + x - 1] !== T.WOOD || m.tiles[y * N + x + 1] !== T.WOOD)) planks.push(part(new THREE.CylinderGeometry(0.09, 0.1, 1.1, 12), '#7d6144', [x + (m.tiles[y * N + x - 1] !== T.WOOD ? 0.02 : 0.98), -0.2, y + 0.5])); }
   if (planks.length) { const pm = new THREE.Mesh(merge(planks), MAT); pm.receiveShadow = pm.castShadow = true; grp.add(pm); }
   return grp;
