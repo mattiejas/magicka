@@ -130,8 +130,8 @@ mon({ id: 'gnashclaw', name: 'Old Gnashclaw', style: 'melee', level: 8, hp: 90, 
   loot: { always: [['rudder', 1, 1]], common: [['copper_bar', 2, 5], ['essence', 15, 30], ['iron_ore', 2, 4]], rare: [['gem_1', 1, 0.3], ['gem_2', 1, 0.1]], unique: [['barnacle_charm', 1 / 12]] },
   boss: { baseHp: 90, arena: 9, world: false, attacks: [
     { id: 'melee', name: 'Claw', weight: 4, windup: 3, execute: 1, damage: [3, 6] },
-    { id: 'boulder', name: 'Hurled stone', weight: 3, windup: 5, execute: 2, damage: [6, 10], count: 1 },
-    { id: 'vines', name: 'Grasping kelp', weight: 2, windup: 6, execute: 2, damage: [2, 4], root: 4, count: 1 }] } });
+    { id: 'boulder', name: 'Hurled stone', weight: 3, windup: 5, execute: 2, damage: [9, 14], count: 1 },
+    { id: 'vines', name: 'Grasping kelp', weight: 2, windup: 6, execute: 2, damage: [4, 7], root: 4, count: 1 }] } });
 mon({ id: 'colossus', name: 'Orrumax, the Rooted', style: 'melee', level: 45, hp: 900, aggro: 0, respawn: 600, size: 3, color: '#5d6b45', shape: 'treant',
   loot: { always: [['essence', 40, 80], ['feast', 1, 3]], common: [['adamantite_bar', 2, 5], ['ebony_log', 4, 8], ['cobalt_bar', 4, 8], ['hide_5', 2, 5]], rare: [['gem_5', 1, 0.25], ['amulet_5', 1, 0.05]], unique: [['rootcleaver', 1 / 40], ['briarstring', 1 / 40], ['heartwood', 1 / 40]] },
   boss: { baseHp: 900, arena: 12, world: true, attacks: [

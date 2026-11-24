@@ -142,3 +142,22 @@ describe('accounts', () => {
     const p = mk(); db.saveMany([[r.account, p.c]]); expect(db.load(r.account)).toEqual(p.c); db.close();
   });
 });
+
+describe('balance', () => {
+  // A level 8 player in copper with six rations who steps off marked ground.
+  const solo = (seed: number, dodge: boolean) => {
+    w = new World({ saveMany() {} }, mulberry(seed)); const p = mk(50 + seed), m = mini(); lv(p, 8);
+    p.c.equip = { weapon: { id: 'copper_sword', qty: 1 }, body: { id: 'copper_plate', qty: 1 }, legs: { id: 'copper_greaves', qty: 1 }, head: { id: 'copper_helm', qty: 1 } }; give(p, 'ration', 6); at(p, m.x - 1, m.y);
+    for (let i = 0; i < 900; i++) {
+      const b = m.boss!, hot = b.st === 'windup' && b.tiles.some(t => t[0] === p.c.x && t[1] === p.c.y), food = p.c.inv.findIndex(s => s?.id === 'ration');
+      if (p.c.hp < 20 && food >= 0) w.enqueue(p.id, { t: 'eat', slot: food });
+      if (dodge && hot) w.enqueue(p.id, { t: 'move', x: p.c.x - 3, y: p.c.y }); else if (!(dodge && b.st === 'windup' && b.atk!.id !== 'melee' && b.end > w.tick + 1 && p.action === null) && p.action?.type !== 'attack' && !(dodge && b.st === 'windup' && b.atk!.id !== 'melee')) w.enqueue(p.id, { t: 'attack', id: m.id });
+      w.step(); if (m.dead) return true; if (p.c.grave) return false;
+    }
+    return false;
+  };
+  it('the mini boss is soloable in tier 1 gear by dodging, and dodging matters', () => {
+    let a = 0, b = 0; for (let s = 1; s <= 30; s++) { if (solo(s, true)) a++; if (solo(s, false)) b++; }
+    process.stdout.write(`\nmini boss solo wins of 30: dodging ${a}, standing still ${b}\n`); expect(a).toBeGreaterThanOrEqual(24); expect(a).toBeGreaterThan(b);
+  });
+});

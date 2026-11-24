@@ -95,7 +95,7 @@ export class Scene {
   private boatModel() {
     const s = state.self!, m = MAPS[s.map], d = m.stations.find(s => s.type === 'dock')!, key = s.map + JSON.stringify(s.boat);
     if (key === this.boatKey) return; this.boatKey = key; if (this.boat) this.world.remove(this.boat);
-    this.boat = new THREE.Mesh(boatGeo(p => Math.min(1, (s.boat[p] ?? 0) / BOAT_PARTS.find(b => b.id === p)!.qty)), MAT); this.boat.position.set(d.x + 2.2, -0.05, d.y + 1); this.boat.castShadow = true; this.world.add(this.boat);
+    this.boat = new THREE.Mesh(boatGeo(p => Math.min(1, (s.boat[p] ?? 0) / BOAT_PARTS.find(b => b.id === p)!.qty)), MAT); this.boat.position.set(d.x + 2.2, -0.05, d.y + 2.4); this.boat.castShadow = true; this.world.add(this.boat);
   }
   private entity(t: Track, now: number, dt: number) {
     const e = t.e; if (e.k === 'n') return;

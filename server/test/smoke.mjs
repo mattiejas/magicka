@@ -1,0 +1,8 @@
+import { spawn } from 'node:child_process'; import { WebSocket } from 'ws';
+const boot = () => new Promise(r => { const s = spawn('node', ['server/dist/index.js'], { env: { ...process.env, MAGICKA_DEV: '', NODE_ENV: 'production', PORT: '3998', DB_PATH: process.argv[2] } }); s.stderr.on('data', d => console.error(String(d))); s.stdout.on('data', () => r(s)); });
+const play = first => new Promise(r => { const w = new WebSocket('ws://localhost:3998/ws', { origin: 'http://localhost:3998' }); let token, pos; w.on('open', () => w.send(JSON.stringify(first))); w.on('message', d => { const m = JSON.parse(d); if (m.t === 'welcome') token = m.token; if (m.t === 'error') r(m); if (m.t === 'snap') { const e = m.ents.find(e => e.k === 'p'); if (e) pos = [e.x, e.y]; } }); setTimeout(() => w.readyState === 1 && w.send('{"t":"move","x":26,"y":40}'), 1000); setTimeout(() => r({ token, pos }), 5500); });
+let s = await boot(); console.log('page', (await fetch('http://localhost:3998/')).status, 'traversal', (await fetch('http://localhost:3998/..%2f..%2fpackage.json')).status);
+const bad = new WebSocket('ws://localhost:3998/ws', { origin: 'http://elsewhere.test' }); bad.on('error', e => console.log('foreign origin:', e.message));
+const a = await play({ t: 'register', name: 'Smoke', pw: 'smoke-test-pw' }); console.log('before restart', a.pos);
+const done = new Promise(r => s.on('exit', r)); s.kill('SIGTERM'); await done; s = await boot();
+const b = await play({ t: 'resume', token: a.token }); console.log('after restart', b.pos); s.kill('SIGTERM'); process.exit(JSON.stringify(a.pos) === JSON.stringify(b.pos) ? 0 : 1);
