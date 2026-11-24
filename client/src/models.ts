@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { HAIRCUTS, HEAD, fade, haircut } from './hair';
 import { ITEMS, MONSTERS, NODES, WOOD_COLORS } from '@magicka/shared';
 import { MAT, ball, bend, loft, sculpt, type Ring, blob, capsule, cone, crystal, cyl, gem, lathe, merge, part, plate, rbox, shade, taper, torus, type V3 } from './geo';
 type G = THREE.BufferGeometry;
@@ -91,11 +92,9 @@ const UPPER_ARM: Ring[] = [[0.04, 0.03, 0.04, -0.004, -0.024], [0.02, 0.052, 0.0
 const FOREARM: Ring[] = [[0.02, 0.036, 0.04], [-0.05, 0.05, 0.047, 0.002], [-0.11, 0.045, 0.042], [-0.22, 0.027, 0.026]];
 const THIGH: Ring[] = [[0.07, 0.02, 0.02], [0.045, 0.066, 0.07], [-0.02, 0.088, 0.098], [-0.14, 0.085, 0.095, 0.006], [-0.29, 0.066, 0.074, 0.006], [-0.39, 0.054, 0.06, 0.006]];
 const SHIN: Ring[] = [[0.03, 0.053, 0.056, 0.006], [-0.03, 0.05, 0.056, 0.004], [-0.1, 0.063, 0.068, -0.016], [-0.17, 0.06, 0.066, -0.02], [-0.28, 0.039, 0.044, -0.008], [-0.38, 0.031, 0.036], [-0.42, 0.036, 0.044]];
-// Eight-sided so the face is a few broad planes. The step between rings 4 and 5 is the brow ledge over the eye sockets.
-const HEAD: Ring[] = [[0.035, 0.044, 0.026, 0.07], [0.05, 0.05, 0.042, 0.06], [0.105, 0.09, 0.08, 0.024], [0.165, 0.102, 0.1, 0.006], [0.208, 0.102, 0.095, 0.002], [0.226, 0.104, 0.11, 0.0], [0.29, 0.098, 0.108, -0.012], [0.335, 0.055, 0.07, -0.02]];
 /** Relaxed hand with curled fingers. */
 function handGeo(skin: string, s: number): G[] { return [part(loft([[0.015, 0.026, 0.026], [-0.03, 0.024, 0.042, 0.004], [-0.075, 0.02, 0.042, 0.006]], 9), skin, [0, -0.215, 0]), ...[0, 1, 2, 3].map(i => part(taper([[0, -0.28, 0.038 - i * 0.022], [-s * 0.004, -0.318 + i * 0.004, 0.044 - i * 0.02], [-s * 0.026, -0.338 + i * 0.006, 0.046 - i * 0.018]], 0.0125, 0.009, 4, 5), shade(skin, 0.97))), part(taper([[0, -0.232, 0.04], [-s * 0.012, -0.268, 0.066], [-s * 0.024, -0.298, 0.064]], 0.0145, 0.01, 4, 5), skin)]; }
-export function playerModel(name: string, gear: (string | null)[]): Model {
+export function playerModel(name: string, gear: (string | null)[], cut = (hash(name) >> 5) % HAIRCUTS.length): Model {
   const h = hash(name), skin = ['#f5cbaa', '#e6b18a', '#b98260', '#865d46'][h % 4], hair = ['#7a5236', '#9c6b40', '#4a3a32', '#a5603c', '#c9a468'][(h >> 2) % 5], cloth = ['#c9c6c2', '#8fa3b5', '#b3a486', '#9aa88a', '#a893a5'][(h >> 4) % 5];
   const it = (i: number) => (gear[i] ? ITEMS[gear[i]!] : null), head = it(1), body = it(2), legs = it(3), bc = body?.color ?? skin, lc = legs?.color ?? cloth;
   const plateB = !!body?.id.endsWith('_plate'), robe = !!body?.id.startsWith('cloth_'), leather = !!body && !plateB && !robe;
@@ -113,25 +112,12 @@ export function playerModel(name: string, gear: (string | null)[]): Model {
   // Head
   const hd: G[] = [part(loft(HEAD, 8), skin),
     part(loft([[0.12, 0.026, 0.03, 0.102], [0.128, 0.031, 0.044, 0.104], [0.165, 0.025, 0.034, 0.098], [0.222, 0.018, 0.022, 0.088]], 4), shade(skin, 1.03)),
-    ...[-1, 1].flatMap(s => [part(rbox(0.02, 0.02, 0.012), '#2b2a2e', [s * 0.046, 0.187, 0.087], [0.1, s * 0.12, 0]),
-      ...(head?.id.endsWith('_helm') ? [] : [part(rbox(0.05, 0.015, 0.02), shade(hair, 0.8), [s * 0.044, 0.233, 0.1], [0, s * 0.1, s * 0.04]), part(rbox(0.022, 0.014, 0.02), shade(hair, 0.74), [s * 0.076, 0.228, 0.09], [0, s * 0.7, -s * 0.45])]),
+    ...[-1, 1].flatMap(s => [part(rbox(0.02, 0.02, 0.012), '#2b2a2e', [s * 0.045, 0.187, 0.084], [-0.04, s * 0.45, 0]),
+      ...(head?.id.endsWith('_helm') ? [] : [part(rbox(0.05, 0.015, 0.02), shade(hair, 0.8), [s * 0.04, 0.232, 0.0935], [0, s * 0.22, s * 0.04]), part(rbox(0.022, 0.014, 0.02), shade(hair, 0.74), [s * 0.066, 0.228, 0.078], [0, s * 0.8, -s * 0.4])]),
       part(loft([[-0.045, 0.008, 0.014], [-0.01, 0.016, 0.026, -0.004], [0.03, 0.02, 0.028, -0.008], [0.042, 0.01, 0.016, -0.01]], 5), shade(skin, 0.97), [s * 0.106, 0.18, -0.008], [0.1, 0, -s * 0.18])])];
   if (!head) {
-    // Cropped cap, then rings of spikes growing out, up and forward.
-    hd.push(part(loft([[0.11, 0.07, 0.024, -0.078], [0.16, 0.098, 0.06, -0.054], [0.235, 0.109, 0.096, -0.03], [0.3, 0.106, 0.108, -0.018], [0.345, 0.068, 0.078, -0.014]], 10), shade(hair, 0.92)));
-    for (const s of [-1, 1]) hd.push(part(loft([[0.15, 0.004, 0.006, 0.05], [0.2, 0.01, 0.022, 0.042], [0.29, 0.018, 0.045, 0.03]], 5), shade(hair, 0.88), [s * 0.1, 0, 0]));
-    const jit = (i: number) => Math.sin(i * 12.9898 + h) * 0.5;
-    ([[8, 1, 0.07, 0.04], [32, 8, 0.075, 0.041], [58, 13, 0.066, 0.038], [80, 16, 0.048, 0.03]] as const).forEach(([tilt, n, len, r], row) => {
-      for (let i = 0; i < n; i++) {
-        const az = ((i + (row % 2) * 0.5) / n) * TAU + jit(i + row * 9) * 0.25, el = (tilt * Math.PI) / 180, front = Math.sin(az);
-        if (row === 3 && front > 0.1) continue; // keep the face clear
-        const nx = Math.sin(el) * Math.cos(az), ny = Math.cos(el), nz = Math.sin(el) * front;
-        const fringe = row === 2 && front > 0.5, dir = new THREE.Vector3(nx + jit(i + 3) * 0.35, ny * 0.9 + (fringe ? 0.25 : 0.3), nz + 0.35).normalize();
-        const e = new THREE.Euler().setFromQuaternion(new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0, 1, 0), dir)), L = len * (1 + jit(i * 3 + row) * 0.4);
-        hd.push(part(loft([[-0.03, r, r * 0.85], [L * 0.35, r * 0.72, r * 0.6], [L, 0.003, 0.003]], 5), shade(hair, 0.98 + jit(i + row * 5) * 0.3 + (2 - row) * 0.05), [nx * 0.094, 0.248 + ny * 0.09, nz * 0.1 - 0.012], [e.x, e.y, e.z]));
-      }
-    });
-  } else if (head.id.endsWith('_helm')) hd.push(part(loft([[0.232, 0.122, 0.13, -0.006], [0.29, 0.12, 0.13, -0.01], [0.345, 0.085, 0.1, -0.014], [0.385, 0.03, 0.04, -0.016]], 8), head.color), part(loft([[0.23, 0.13, 0.138, -0.006], [0.258, 0.129, 0.138, -0.006]], 8), shade(head.color, 0.8)), part(rbox(0.022, 0.1, 0.02), shade(head.color, 0.85), [0, 0.19, 0.14]), part(rbox(0.026, 0.06, 0.2, 0.01), shade(head.color, 1.15), [0, 0.365, -0.012]), ...[-1, 1].map(s => part(plate(q => { q.moveTo(-0.05, 0); q.lineTo(0.04, 0); q.lineTo(0.03, -0.13); q.lineTo(-0.03, -0.1); q.closePath(); }, 0.012, 0.005), head.color, [s * 0.122, 0.235, -0.005], [0, -Math.PI / 2, 0])));
+    hd.push(...fade(skin, hair, [0.8, 0.95, 0.8, 1.05][cut]), ...haircut(cut, hair, h));
+  } else if (head.id.endsWith('_helm')) hd.push(...fade(skin, hair, 0.9), part(loft([[0.232, 0.122, 0.13, -0.006], [0.29, 0.12, 0.13, -0.01], [0.345, 0.085, 0.1, -0.014], [0.385, 0.03, 0.04, -0.016]], 8), head.color), part(loft([[0.23, 0.13, 0.138, -0.006], [0.258, 0.129, 0.138, -0.006]], 8), shade(head.color, 0.8)), part(rbox(0.022, 0.1, 0.02), shade(head.color, 0.85), [0, 0.19, 0.14]), part(rbox(0.026, 0.06, 0.2, 0.01), shade(head.color, 1.15), [0, 0.365, -0.012]), ...[-1, 1].map(s => part(plate(q => { q.moveTo(-0.05, 0); q.lineTo(0.04, 0); q.lineTo(0.03, -0.13); q.lineTo(-0.03, -0.1); q.closePath(); }, 0.012, 0.005), head.color, [s * 0.122, 0.235, -0.005], [0, -Math.PI / 2, 0])));
   else hd.push(part(loft([[0.0, 0.13, 0.1, -0.03], [0.08, 0.126, 0.08, -0.045], [0.18, 0.13, 0.085, -0.045], [0.25, 0.128, 0.126, -0.01], [0.32, 0.112, 0.12, -0.01], [0.37, 0.045, 0.06, -0.03]], 8), head.color), part(loft([[0.25, 0.122, 0.132, 0.0], [0.285, 0.12, 0.13, 0.0]], 8), shade(head.color, 0.8)), ...[-1, 1].map(s => part(loft([[0.02, 0.02, 0.04], [0.14, 0.018, 0.045], [0.25, 0.018, 0.03]], 5), shade(head.color, 0.88), [s * 0.112, 0, 0.04])));
   parts.head = pivot(merge(hd), 0, 0.515, 0.01); parts.head.scale.setScalar(1.04);
   // Arms
