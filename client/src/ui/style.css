@@ -251,7 +251,7 @@ h2 {
 }
 #side .tabs {
   display: grid;
-  grid-template-columns: auto auto auto auto;
+  grid-template-columns: repeat(5, auto);
   border-bottom: 1px solid var(--line);
 }
 #side .tabs button {
@@ -298,6 +298,19 @@ h2 {
   font-size: 12px;
   font-variant-numeric: tabular-nums;
   text-shadow: 0 1px 2px #1d2429;
+}
+.slot.missing svg {
+  filter: grayscale(1);
+  opacity: 0.3;
+}
+#side .log {
+  max-height: 46vh;
+  overflow-y: auto;
+}
+.log h2 {
+  display: flex;
+  justify-content: space-between;
+  margin: 12px 0 4px;
 }
 .slot:disabled {
   opacity: 1;

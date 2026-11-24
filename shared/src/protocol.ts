@@ -112,6 +112,8 @@ export interface SelfState {
   blocked: string[];
   /** Steps done of every quest begun. */
   quests: Record<string, number>;
+  /** How often each thing in the collection log was found, by "source/item". */
+  found: Record<string, number>;
   look: Look;
 }
 

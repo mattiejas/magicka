@@ -53,6 +53,7 @@ func (c *Char) fill() {
 	}
 	c.renameItems()
 	c.updateXP()
+	c.logOwnedTrophies()
 	if content.MapByID[c.Map] == nil {
 		c.Map, c.X, c.Y = n.Map, n.X, n.Y
 	}

@@ -73,6 +73,8 @@ message Self {
   repeated string blocked = 13;
   // Steps done of every quest begun.
   map<string, uint32> quests = 14;
+  // How often the player found each thing in the collection log, by "source/item".
+  map<string, uint32> found = 15;
 }
 // `entities` hold only what changed, except for entities the browser did not know yet.
 message Snapshot { uint32 tick = 1; MapId map = 2; bool reset = 3; repeated Entity entities = 4; repeated uint32 gone = 5; repeated Event events = 6; }

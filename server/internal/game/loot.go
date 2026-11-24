@@ -97,7 +97,9 @@ func (w *World) dropLoot(m *Monster, winner uint32) {
 	if m.Def.Boss != nil {
 		times = bossLoot
 	}
-	for i, loot := range rollLoot(w.rnd, &m.Def.Loot) {
+	rolls := rollLoot(w.rnd, &m.Def.Loot)
+	w.logLoot(m.Def, winner, rolls)
+	for i, loot := range rolls {
 		at := Point{X: m.X, Y: m.Y}
 		if spread := at.X + i%m.Def.Size; m.Map.Walkable(spread, at.Y) {
 			at.X = spread

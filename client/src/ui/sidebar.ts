@@ -12,12 +12,13 @@ import {
 } from '@driftwake/shared';
 import { send } from '../net/connection';
 import { state } from '../net/state';
+import { collectionLog } from './collection';
 import { bar, button, h } from './dom';
 import { ALL_ITEMS, isSellable, isTradable, itemSlot, level } from './items';
 import { clickQuantity, isPanelOpen, openPanel } from './panels';
 import type { MenuItem } from './popups';
 
-const TABS = ['inventory', 'equipment', 'skills', 'quests'] as const;
+const TABS = ['inventory', 'equipment', 'skills', 'quests', 'log'] as const;
 const LAMP = 'genie_lamp';
 type Tab = (typeof TABS)[number];
 let currentTab: Tab = 'inventory';
@@ -37,7 +38,13 @@ function selectTab(tab: Tab) {
   updateSidebar();
 }
 
-const RENDER: Record<Tab, (self: SelfState) => Node[]> = { inventory, equipment, skills, quests };
+const RENDER: Record<Tab, (self: SelfState) => Node[]> = {
+  inventory,
+  equipment,
+  skills,
+  quests,
+  log: collectionLog,
+};
 
 export function updateSidebar() {
   const { self } = state;
@@ -45,6 +52,7 @@ export function updateSidebar() {
   if (!self || !body) return;
   for (const tab of document.querySelectorAll<HTMLElement>('#side .tabs button'))
     tab.classList.toggle('on', tab.dataset.tab === currentTab);
+  body.classList.toggle('log', currentTab === 'log');
   body.replaceChildren(...RENDER[currentTab](self));
 }
 

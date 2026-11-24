@@ -17,6 +17,7 @@ func (w *World) grantCapes(p *Player) {
 			p.C.Kept = addTo(p.C.Kept, cape, 1)
 			text = "The reaper is keeping your " + content.Items[cape].Name + "."
 		}
+		p.C.logFind(skillSource, cape)
 		p.dirty = true
 		w.info(p, text, pb.InfoKind_INFO_KIND_UNIQUE)
 		w.save(p)

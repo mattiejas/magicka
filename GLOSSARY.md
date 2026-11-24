@@ -42,6 +42,10 @@ _Avoid_: Legendary, rare
 An item that can never be traded, so that owning it proves its holder earned it.
 _Avoid_: Bound item, untradable
 
+**Collection log**:
+A character's record of what bosses dropped for them and which trophies they earned. What they bought or were given does not count.
+_Avoid_: Achievements, checklist
+
 ## Methods
 
 **Relaxed method**:

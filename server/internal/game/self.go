@@ -37,10 +37,14 @@ func (w *World) self(p *Player) *pb.Self {
 		Bank:     pbStacks(c.Bank),
 		Blocked:  c.Blocked,
 		Quests:   map[string]uint32{},
+		Found:    map[string]uint32{},
 		Look:     &pb.Look{Cut: uint32(l.Cut), Color: uint32(l.Color)},
 	}
 	for id, done := range c.Quests {
 		s.Quests[id] = uint32(done)
+	}
+	for key, n := range c.Found {
+		s.Found[key] = uint32(n)
 	}
 	for skill, xp := range c.XP {
 		s.Xp[skill] = uint32(xp)
