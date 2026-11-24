@@ -10,12 +10,17 @@ import type { Panel } from '.';
 /** In per cent of shop value. Keep in step with traderPercent on the server. */
 const PAYS = 200;
 
-export const traderInSight = () =>
+const traderInSight = () =>
   [...state.entities.values()].find(({ entity }) => entity.kind === 'npc' && entity.type === 'trader')
     ?.entity;
 
 export const traderPanel: Panel = {
   title: 'Stranded trader',
+  place: traderInSight,
+  key() {
+    const wants = traderInSight()?.wants;
+    return JSON.stringify(wants ? [wants, carried(wants)] : null);
+  },
   render() {
     const wants = traderInSight()?.wants;
     if (!wants) return [h('p', {}, 'The trader has moved on.')];

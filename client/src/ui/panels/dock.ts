@@ -4,6 +4,7 @@ import { button, h } from '../dom';
 import { icon } from '../icons';
 import { carried } from '../items';
 import { closePanel, type Panel } from '.';
+import { atStation } from './place';
 
 function partRow({ id, name, item, qty }: (typeof BOAT_PARTS)[number], self: SelfState) {
   const placed = self.boat[id] ?? 0;
@@ -37,6 +38,9 @@ function sail() {
 
 export const dockPanel: Panel = {
   title: 'Shipwright',
+  place: atStation('dock'),
+  key: ({ map, boat, boatDone, quests }) =>
+    JSON.stringify([map, boat, boatDone, quests, BOAT_PARTS.map(({ item }) => carried(item))]),
   render(self) {
     const destination = self.map === 'island' ? MAPS.mainland : MAPS.island;
     const action = self.boatDone
