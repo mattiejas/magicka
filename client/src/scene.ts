@@ -43,7 +43,7 @@ export class Scene {
   }
   private detail(m: GameMap, rnd: () => number) {
     const blades = [0, 1, 2, 3, 4].map(i => { const a = i * 1.26; return part(taper([[Math.cos(a) * 0.03, 0, Math.sin(a) * 0.03], [Math.cos(a) * 0.05, 0.12, Math.sin(a) * 0.05], [Math.cos(a) * 0.13, 0.2 + (i % 2) * 0.06, Math.sin(a) * 0.13]], 0.016, 0.002, 4, 3), shade('#8fae66', 0.9 + (i % 3) * 0.08)); });
-    const kinds: [THREE.BufferGeometry, number, number][] = [[merge(blades), m.size * 22, T.GRASS], [merge([...blades.slice(0, 2), part(taper([[0, 0, 0], [0.02, 0.26, 0]], 0.012, 0.01, 3, 4), '#7d9660'), ...[0, 1, 2, 3, 4].map(i => part(blob(0.03, 1, 0, 0), '#f0e6c8', [0.02 + Math.cos(i * 1.26) * 0.045, 0.27, Math.sin(i * 1.26) * 0.045])), part(blob(0.028, 1, 0, 0), '#dcb45e', [0.02, 0.28, 0])]), m.size * 3, T.GRASS], [merge([part(blob(0.07, 2, 0.25, 1, true), '#a39d92', [0, 0.02, 0]), part(blob(0.04, 1, 0.2, 2, true), '#938d84', [0.09, 0.01, 0.04])]), m.size * 3, -1]];
+    const kinds: [THREE.BufferGeometry, number, number][] = [[merge(blades.slice(0, 3)), m.size * 10, T.GRASS], [merge([...blades.slice(0, 2), part(taper([[0, 0, 0], [0.02, 0.26, 0]], 0.012, 0.01, 3, 4), '#7d9660'), ...[0, 1, 2, 3, 4].map(i => part(blob(0.03, 1, 0, 0), '#f0e6c8', [0.02 + Math.cos(i * 1.26) * 0.045, 0.27, Math.sin(i * 1.26) * 0.045])), part(blob(0.028, 1, 0, 0), '#dcb45e', [0.02, 0.28, 0])]), m.size * 1.5, T.GRASS], [merge([part(blob(0.07, 2, 0.25, 1, true), '#a39d92', [0, 0.02, 0]), part(blob(0.04, 1, 0.2, 2, true), '#938d84', [0.09, 0.01, 0.04])]), m.size * 3, -1]];
     for (const [g, n, tile] of kinds) {
       const list: THREE.Matrix4[] = [];
       for (let i = 0; i < n; i++) { const x = rnd() * m.size, y = rnd() * m.size, ti = (y | 0) * m.size + (x | 0), t = m.tiles[ti]; if (m.blocked[ti] || t === T.WATER || t === T.WOOD || (tile >= 0 ? t !== tile : t === T.GRASS)) continue; const k = 0.75 + rnd() * 0.6; list.push(new THREE.Matrix4().compose(new THREE.Vector3(x, 0, y), new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 1, 0), rnd() * 6.28), new THREE.Vector3(k, k, k))); }
@@ -183,20 +183,20 @@ const CHIP = new THREE.IcosahedronGeometry(0.055, 0);
 const ZERO = new THREE.Matrix4().makeScale(0, 0, 0);
 const bx = (x: number, y: number, s: number, h: number) => new THREE.Box3(new THREE.Vector3(x + 0.08, 0, y + 0.08), new THREE.Vector3(x + s - 0.08, h, y + s - 0.08));
 function square(c: string, o: number) { const s = new THREE.Shape(); s.moveTo(-0.48, -0.48); s.lineTo(0.48, -0.48); s.lineTo(0.48, 0.48); s.lineTo(-0.48, 0.48); const h = new THREE.Path(); h.moveTo(-0.41, -0.41); h.lineTo(-0.41, 0.41); h.lineTo(0.41, 0.41); h.lineTo(0.41, -0.41); s.holes.push(h); return new THREE.Mesh(new THREE.ShapeGeometry(s).rotateX(-Math.PI / 2), new THREE.MeshBasicMaterial({ color: c, transparent: true, opacity: o, depthWrite: false })); }
-const SUB = 4;
-/** Subdivided ground: land stays flat for tile play, colours and the shoreline are blended and softened. */
+const SUB = 2;
+/** Coarse ground mesh: land stays flat for tile play, colours vary per face and the shoreline is angular. */
 function terrain(m: GameMap) {
   const N = m.size, V = N * SUB + 1, pos = new Float32Array(V * V * 3), col = new Float32Array(V * V * 3), idx: number[] = [], cs = COLORS.map(c => new THREE.Color(c));
   const at = (x: number, y: number) => { const t = x < 0 || y < 0 || x >= N || y >= N ? T.WATER : m.tiles[y * N + x]; return t === T.WOOD ? T.WATER : t; };
   const wet = new THREE.Color('#b3a67f'), deep = new THREE.Color('#4a7680');
   for (let j = 0; j < V; j++) for (let i = 0; i < V; i++) {
-    const wx = i / SUB, wy = j / SUB, ox = noise(wx * 1.9, wy * 1.9, 3) * 0.3, oy = noise(wx * 1.9, wy * 1.9, 9) * 0.3;
+    const wx = i / SUB, wy = j / SUB, ox = noise(wx * 1.9, wy * 1.9, 3) * 0.2, oy = noise(wx * 1.9, wy * 1.9, 9) * 0.2;
     const px = wx - 0.5, py = wy - 0.5, x0 = Math.floor(px), y0 = Math.floor(py), fx = px - x0, fy = py - y0;
     const land = (q: number, r: number) => (at(q, r) === T.WATER ? 0 : 1);
     const mask = (land(x0, y0) * (1 - fx) + land(x0 + 1, y0) * fx) * (1 - fy) + (land(x0, y0 + 1) * (1 - fx) + land(x0 + 1, y0 + 1) * fx) * fy;
     const h = mask >= 1 ? 0 : mask > 0.5 ? -0.16 * (1 - (mask - 0.5) * 2) ** 2 : -0.16 - (0.5 - mask) * 1.6;
     const k = (j * V + i) * 3; pos[k] = wx; pos[k + 1] = h; pos[k + 2] = wy;
-    const cx = px + ox, cy = py + oy, a0 = Math.floor(cx), b0 = Math.floor(cy), sx = THREE.MathUtils.smoothstep(cx - a0, 0.25, 0.75), sy = THREE.MathUtils.smoothstep(cy - b0, 0.25, 0.75);
+    const cx = px + ox, cy = py + oy, a0 = Math.floor(cx), b0 = Math.floor(cy), sx = THREE.MathUtils.smoothstep(cx - a0, 0.42, 0.58), sy = THREE.MathUtils.smoothstep(cy - b0, 0.42, 0.58);
     let r = 0, g = 0, b = 0, sum = 0;
     for (const [q, p, w] of [[a0, b0, (1 - sx) * (1 - sy)], [a0 + 1, b0, sx * (1 - sy)], [a0, b0 + 1, (1 - sx) * sy], [a0 + 1, b0 + 1, sx * sy]]) { const t = at(q, p); if (t === T.WATER || !w) continue; r += cs[t].r * w; g += cs[t].g * w; b += cs[t].b * w; sum += w; }
     const c = sum ? new THREE.Color(r / sum, g / sum, b / sum) : wet.clone();
@@ -205,7 +205,10 @@ function terrain(m: GameMap) {
     col[k] = c.r; col[k + 1] = c.g; col[k + 2] = c.b;
   }
   for (let j = 0; j < V - 1; j++) for (let i = 0; i < V - 1; i++) { const a = j * V + i; idx.push(a, a + V, a + 1, a + 1, a + V, a + V + 1); }
-  const g = new THREE.BufferGeometry(); g.setAttribute('position', new THREE.BufferAttribute(pos, 3)); g.setAttribute('color', new THREE.BufferAttribute(col, 3)); g.setIndex(idx); g.computeVertexNormals();
+  const src = new THREE.BufferGeometry(); src.setAttribute('position', new THREE.BufferAttribute(pos, 3)); src.setAttribute('color', new THREE.BufferAttribute(col, 3)); src.setIndex(idx);
+  const g = src.toNonIndexed(), gc = g.attributes.color, gp = g.attributes.position; g.computeVertexNormals();
+  // Pull each face almost to its own average so the ground reads as facets, like everything on it.
+  for (let i = 0; i < gc.count; i += 3) { const k = 1 + noise(gp.getX(i) * 7.3, gp.getZ(i) * 5.9, (i / 3) % 2) * 0.045, av = [0, 1, 2].map(q => (gc.getComponent(i, q) + gc.getComponent(i + 1, q) + gc.getComponent(i + 2, q)) / 3); for (let j = 0; j < 3; j++) for (let q = 0; q < 3; q++) gc.setComponent(i + j, q, (gc.getComponent(i + j, q) * 0.1 + av[q] * 0.9) * k); }
   const grp = new THREE.Group(), gm = new THREE.Mesh(g, new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 1 })); gm.receiveShadow = true; grp.add(gm);
   // Faint tile lines keep distances readable.
   const line: number[] = []; for (let y = 0; y < N; y++) for (let x = 0; x < N; x++) if (at(x, y) !== T.WATER) line.push(x, 0.012, y, x + 1, 0.012, y, x, 0.012, y, x, 0.012, y + 1);
