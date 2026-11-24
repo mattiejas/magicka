@@ -1,4 +1,6 @@
-import { encode, type ClientMsg, type Ent, type SelfState, type ServerMsg } from '@magicka/shared';
+import { decode, encode, idOf, mergeEntity } from './wire';
+import type { Entity } from './pb/driftwake/v1/game_pb';
+import { type ClientMsg, type Ent, type SelfState, type ServerMsg } from '@magicka/shared';
 export interface Track { e: Ent; from: [number, number]; path: [number, number][]; at: number; seen: number }
 export const state = { me: '', self: null as SelfState | null, ents: new Map<string, Track>(), tick: 0, tickAt: 0, boss: { alive: false, next: 0, contrib: 0, online: 0, at: 0 }, connected: false };
 type Handler = (m: ServerMsg) => void;
@@ -10,8 +12,9 @@ export const hasToken = () => !!token;
 export function connect(first: ClientMsg) {
   ws?.close(); stopped = false;
   const s = (ws = new WebSocket(`${location.protocol === 'https:' ? 'wss' : 'ws'}://${location.host}/ws`));
+  s.binaryType = 'arraybuffer';
   s.onopen = () => s.send(encode(first));
-  s.onmessage = ev => { if (s === ws) receive(JSON.parse(ev.data)); };
+  s.onmessage = ev => { if (s !== ws) return; const m = decode(ev.data); if (m) receive(m); };
   s.onclose = () => {
     if (s !== ws) return; state.connected = false;
     if (stopped || !token || !state.me) { state.me = ''; closed(''); return; }
@@ -34,8 +37,9 @@ function receive(m: ServerMsg) {
     const now = performance.now(); state.tick = m.tick; state.tickAt = now;
     if (m.reset) state.ents.clear();
     for (const id of m.gone) state.ents.delete(id);
-    for (const e of m.ents) {
-      const o = state.ents.get(e.id);
+    for (const raw of m.raw as Entity[]) {
+      const o = state.ents.get(idOf(raw.id)); if (!o && !raw.full) continue;
+      const e = mergeEntity(o?.e, raw);
       const moved = o && (o.e.x !== e.x || o.e.y !== e.y), far = o && Math.max(Math.abs(o.e.x - e.x), Math.abs(o.e.y - e.y)) > 3;
       if (!o) state.ents.set(e.id, { e, from: [e.x, e.y], path: [], at: now, seen: now });
       else { if (moved) { o.from = far ? [e.x, e.y] : [o.e.x, o.e.y]; o.path = far ? [] : e.via ?? [[e.x, e.y]]; o.at = now; } o.e = e; }
