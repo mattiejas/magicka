@@ -9,7 +9,7 @@ import { fpsCounter } from './fpsCounter';
 import { updateHint } from './hints';
 import { isLoginShown, loginError, showLogin, showLoginError, takeJustRegistered } from './login';
 import { drawMinimap, minimapPanel } from './minimap';
-import { closePanel, closePanelWhenFar, openPanel, showTrade, updatePanel } from './panels';
+import { closePanel, closePanelWhenFar, isPanelId, openPanel, showTrade, updatePanel } from './panels';
 import { warmPortraits } from './portrait';
 import { sidebar, updateSidebar } from './sidebar';
 import { updateVitals } from './vitals';
@@ -73,7 +73,8 @@ function handleMessage(msg: ServerMsg) {
       updateHint();
       updateBosses();
       if (state.trade) showTrade();
-      return closePanelWhenFar();
+      closePanelWhenFar();
+      return updatePanel();
     case 'chat':
       return showChat(msg.from, msg.text);
     case 'info':
@@ -87,7 +88,7 @@ function handleMessage(msg: ServerMsg) {
     case 'fees':
       return updatePanel();
     case 'open':
-      if (msg.station !== 'mine') openPanel(msg.station);
+      if (isPanelId(msg.station)) openPanel(msg.station);
       return;
   }
 }

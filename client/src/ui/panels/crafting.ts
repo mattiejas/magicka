@@ -1,9 +1,10 @@
-import { ITEMS, RECIPES, type Recipe, type Station } from '@driftwake/shared';
+import { ITEMS, RECIPES, type Recipe, SKILLS, type Station } from '@driftwake/shared';
 import { send } from '../../net/connection';
 import { button, h } from '../dom';
 import { icon } from '../icons';
 import { carried, describe, level } from '../items';
 import type { Panel } from '.';
+import { atStation } from './place';
 
 const TIERS = [1, 2, 3, 4, 5];
 const QUANTITIES: [label: string, qty: number][] = [
@@ -42,6 +43,8 @@ function recipeRow(recipe: Recipe): HTMLElement {
 
 export const craftingPanel = (station: Station, title: string): Panel => ({
   title,
+  place: atStation(station),
+  key: ({ inv }) => JSON.stringify([selectedTier, inv, SKILLS.map(level)]),
   render(_self, refresh) {
     const select = (tier: number) => {
       selectedTier = tier;

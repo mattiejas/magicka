@@ -6,6 +6,7 @@ import { button, h } from '../dom';
 import { icon } from '../icons';
 import { coins, describe } from '../items';
 import type { Panel } from '.';
+import { atStation } from './place';
 
 const FREE = 0;
 
@@ -55,6 +56,7 @@ const PAID_FROM = 'Fees are paid with the coins you carry, bank or lost.';
 
 export const gravePanel: Panel = {
   title: 'Your grave',
+  place: () => state.entities.get('grave')?.entity,
   key: ({ reaper, inv, bank }) => JSON.stringify([reaper, inv, bank]),
   render(self) {
     const { graveFeePercent } = ECONOMY;
@@ -85,6 +87,7 @@ function reaperTotal(): HTMLElement {
 
 export const reaperPanel: Panel = {
   title: 'Reaper',
+  place: atStation('reaper'),
   key: ({ reaper, kept, inv, bank }) => JSON.stringify([reaper, kept, inv, bank, asked && state.feesTaken]),
   onOpen() {
     asked = false;

@@ -29,6 +29,7 @@ function colorButton({ look }: SelfState, color: number) {
 
 export const hairPanel: Panel = {
   title: 'Hair',
+  place: 'anywhere',
   key: ({ name, look, equip }) => `${name},${look.cut},${look.color},${!!equip.head}`,
   render(self) {
     return [
