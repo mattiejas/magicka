@@ -104,23 +104,14 @@ func (w *World) addHerd() {
 		}
 		at := content.Placed{Type: kind, X: stampedeFrom + 6 - i, Y: stampedeRow + i%2}
 		w.addMonster(m, at)
-		w.hide(w.monsters[len(w.monsters)-1])
 	}
-}
-
-// hide takes a monster out of the world until something brings it back.
-func (w *World) hide(m *Monster) {
-	m.Dead, m.target, m.respawnAt = true, 0, math.MaxInt
-	w.vacate(m)
 }
 
 func (w *World) startStampede() {
 	w.stampedeEnds = w.Tick + stampedeTime
 	for _, m := range w.monsters {
 		if m.Def.Herd && m.Dead {
-			m.home = m.start
-			m.damage.clear()
-			w.respawn(m)
+			w.enter(m)
 		}
 	}
 }
@@ -128,7 +119,7 @@ func (w *World) startStampede() {
 // herdOn moves a stampeding animal along. It is gone when it arrives, or has taken too long.
 func (w *World) herdOn(m *Monster) {
 	if m.X >= stampedeTo || w.Tick >= w.stampedeEnds {
-		w.hide(m)
+		w.leave(m, math.MaxInt)
 		return
 	}
 	w.stepTowards(m, Point{X: stampedeTo, Y: m.Y})

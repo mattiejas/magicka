@@ -1,8 +1,6 @@
 package game
 
 import (
-	"math"
-
 	"driftwake/content"
 	"driftwake/server/internal/pb"
 )
@@ -28,24 +26,13 @@ func (w *World) spawnWorldBoss() {
 	if !m.Dead {
 		return
 	}
-	resetBoss(m)
-	m.Dead = false
-	w.occupy(m)
+	w.enter(m)
 	w.broadcast(infoMsg(m.Def.Name+" rises in the Rooted arena on the mainland.", pb.InfoKind_INFO_KIND_BOSS))
 }
 
 func (w *World) worldBossDied(m *Monster) {
 	w.nextBoss = max(w.nextBoss, w.Tick+1)
-	m.respawnAt = math.MaxInt
 	w.broadcast(infoMsg(m.Def.Name+" has fallen.", pb.InfoKind_INFO_KIND_BOSS))
-}
-
-func resetBoss(m *Monster) {
-	m.MaxHP = m.Def.Boss.BaseHP
-	m.HP = m.MaxHP
-	m.damage.clear()
-	m.active.clear()
-	m.boss = &bossState{st: choose}
 }
 
 // --- who takes part

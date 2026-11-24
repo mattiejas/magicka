@@ -110,19 +110,15 @@ func (w *World) addMonster(m *content.Map, at content.Placed) {
 		Map:       m,
 		X:         at.X,
 		Y:         at.Y,
-		home:      Point{X: at.X, Y: at.Y},
 		start:     Point{X: at.X, Y: at.Y},
-		HP:        def.HP,
-		MaxHP:     def.HP,
-		Dead:      monsterIsWorldBoss(def), // world bosses rise on a schedule
+		home:      Point{X: at.X, Y: at.Y},
+		Dead:      true,
 		respawnAt: math.MaxInt,
 	}
-	if def.Boss != nil {
-		resetBoss(monster)
-	}
+	monster.restore()
 	w.monsters = append(w.monsters, monster)
-	if !monster.Dead {
-		w.occupy(monster)
+	if !comesWhenCalled(monster) {
+		w.enter(monster)
 	}
 }
 

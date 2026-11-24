@@ -60,22 +60,13 @@ func (w *World) actMonster(m *Monster) {
 	switch {
 	case m.Dead:
 		if w.Tick >= m.respawnAt {
-			w.respawn(m)
+			w.enter(m)
 		}
 	case m.Def.Boss != nil:
 		w.bossAI(m)
 	default:
 		w.monsterAI(m)
 	}
-}
-
-func (w *World) respawn(m *Monster) {
-	m.Dead, m.HP, m.target, m.via = false, m.MaxHP, 0, nil
-	m.X, m.Y = m.home.X, m.home.Y
-	if m.Def.Boss != nil {
-		resetBoss(m)
-	}
-	w.occupy(m)
 }
 
 func (w *World) regenerate() {
