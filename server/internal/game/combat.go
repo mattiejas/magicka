@@ -70,24 +70,6 @@ func (w *World) damageMonster(p *Player, m *Monster, damage int, style string) {
 	}
 }
 
-func (w *World) kill(m *Monster) {
-	m.Dead, m.HP, m.target = true, 0, 0
-	m.respawnAt = w.Tick + Ticks(m.Def.Respawn)
-	if m.Def.Herd {
-		m.respawnAt = math.MaxInt
-	}
-	w.emitDeath(m.Map, m.X, m.Y, m.ID)
-	w.vacate(m)
-	if monsterIsWorldBoss(m.Def) {
-		w.worldBossDied(m)
-	}
-	for _, id := range m.winners() {
-		w.dropLoot(m, id)
-	}
-	m.damage.clear()
-	m.active.clear()
-}
-
 // winners get loot: everyone who contributed to a boss, or whoever did most to anything else.
 func (m *Monster) winners() []uint32 {
 	if m.Def.Boss != nil {
