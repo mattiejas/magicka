@@ -62,21 +62,24 @@ interface Scatter {
   growsOn: (tile: number) => boolean;
 }
 
-export function groundDetail(map: GameMap, random: () => number): THREE.InstancedMesh[] {
+/** `density` is 0 to 1 from the graphics quality setting. */
+export function groundDetail(map: GameMap, random: () => number, density = 1): THREE.InstancedMesh[] {
+  if (density <= 0) return [];
   const onGrass = (tile: number) => tile === T.GRASS;
   const onBareGround = (tile: number) => tile !== T.GRASS;
   const scatters: Scatter[] = [
-    { geometry: merge(grassBlades().slice(0, 3)), count: map.size * 10, growsOn: onGrass },
-    { geometry: flower(), count: map.size * 1.5, growsOn: onGrass },
-    { geometry: pebbles(), count: map.size * 3, growsOn: onBareGround },
+    { geometry: merge(grassBlades().slice(0, 3)), count: map.size * 10 * density, growsOn: onGrass },
+    { geometry: flower(), count: map.size * 1.5 * density, growsOn: onGrass },
+    { geometry: pebbles(), count: map.size * 3 * density, growsOn: onBareGround },
   ];
-  return scatters.map(scatter => {
+  return scatters.flatMap(scatter => {
     const placements = scatterPlacements(map, random, scatter);
+    if (!placements.length) return [];
     const mesh = new THREE.InstancedMesh(scatter.geometry, MAT, placements.length);
     for (const [i, matrix] of placements.entries()) mesh.setMatrixAt(i, matrix);
     mesh.receiveShadow = true;
     mesh.frustumCulled = false;
-    return mesh;
+    return [mesh];
   });
 }
 

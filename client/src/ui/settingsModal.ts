@@ -1,5 +1,6 @@
 // The settings window. A native dialog, which keeps the focus inside and closes on Escape.
 import { state } from '../net/state';
+import { QUALITIES, QUALITY_LABEL, type Quality } from '../quality';
 import { changeSetting, type Settings, settings } from '../settings';
 import { button, byId, h, uiRoot } from './dom';
 import { setBlocked } from './players';
@@ -22,6 +23,46 @@ function toggleRow({ setting, label, description }: (typeof TOGGLES)[number]): H
     onchange: () => changeSetting(setting, checkbox.checked),
   }) as HTMLInputElement;
   return h('label', { class: 'setting' }, h('span', {}, label, h('small', {}, description)), checkbox);
+}
+
+function qualityRow(): HTMLElement {
+  const choices = h('div', { class: 'choices', role: 'group', 'aria-label': 'Graphics quality' });
+  const setPressed = (level: Quality) => {
+    for (const child of choices.querySelectorAll('button')) {
+      const on = child.dataset.quality === level;
+      child.classList.toggle('on', on);
+      child.setAttribute('aria-pressed', String(on));
+    }
+  };
+  for (const level of QUALITIES) {
+    choices.append(
+      h(
+        'button',
+        {
+          type: 'button',
+          class: settings().quality === level ? 'on' : '',
+          'aria-pressed': String(settings().quality === level),
+          'data-quality': level,
+          onclick: () => {
+            changeSetting('quality', level);
+            setPressed(level);
+          },
+        },
+        QUALITY_LABEL[level],
+      ),
+    );
+  }
+  return h(
+    'div',
+    { class: 'setting' },
+    h(
+      'span',
+      {},
+      'Graphics quality',
+      h('small', {}, 'Lower draws fewer pixels, turns soft shadows off, and scatters less clutter.'),
+    ),
+    choices,
+  );
 }
 
 function blockedPlayers(): HTMLElement[] {
@@ -63,7 +104,7 @@ export function openSettings() {
         h('h2', {}, 'Settings'),
         button('Close', () => dialog.close()),
       ),
-      h('div', { class: 'body' }, ...TOGGLES.map(toggleRow), ...blockedPlayers()),
+      h('div', { class: 'body' }, qualityRow(), ...TOGGLES.map(toggleRow), ...blockedPlayers()),
     ),
   );
   uiRoot().append(dialog);

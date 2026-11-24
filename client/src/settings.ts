@@ -1,10 +1,13 @@
 // The player's preferences, kept in this browser.
+import { isQuality, type Quality } from './quality';
+
 export interface Settings {
   showFps: boolean;
+  quality: Quality;
 }
 
 const STORAGE_KEY = 'settings';
-const DEFAULTS: Settings = { showFps: false };
+const DEFAULTS: Settings = { showFps: false, quality: 'high' };
 
 const current = load();
 const listeners: ((settings: Settings) => void)[] = [];
@@ -30,7 +33,10 @@ export function onSettings(listener: (settings: Settings) => void) {
 function load(): Settings {
   try {
     const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) ?? '{}');
-    return { showFps: typeof saved?.showFps === 'boolean' ? saved.showFps : DEFAULTS.showFps };
+    return {
+      showFps: typeof saved?.showFps === 'boolean' ? saved.showFps : DEFAULTS.showFps,
+      quality: isQuality(saved?.quality) ? saved.quality : DEFAULTS.quality,
+    };
   } catch {
     return { ...DEFAULTS };
   }

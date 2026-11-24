@@ -60,14 +60,23 @@ export class WorldView {
   private boat: THREE.Mesh | null = null;
   private boatKey = '';
 
-  constructor(readonly map: GameMap) {
+  constructor(
+    readonly map: GameMap,
+    /** 0 to 1: how much grass and pebbles to scatter. */
+    groundDetailDensity = 1,
+  ) {
     const random = mulberry(3);
     this.water = water(map);
     this.water.visible = !map.cave;
     this.group.add(terrain(map), this.water);
     this.addNodes(random);
     for (const station of map.stations) this.addStation(station);
-    this.group.add(...groundDetail(map, random), this.glows.group, this.veins.group, this.fallingTrees.group);
+    this.group.add(
+      ...groundDetail(map, random, groundDetailDensity),
+      this.glows.group,
+      this.veins.group,
+      this.fallingTrees.group,
+    );
   }
 
   dispose() {
