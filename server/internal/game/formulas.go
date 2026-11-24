@@ -7,10 +7,14 @@ const (
 	MaxLevel = 50
 )
 
-func Ticks(seconds float64) int       { return int(math.Ceil(seconds * 1000 / TickMS)) }
-func XPForLevel(n int) int            { return int(math.Floor(25 * math.Pow(float64(n-1), 2.2))) }
-func MaxHP(vitality int) int          { return 20 + 3*vitality }
-func round(v float64) int             { return int(math.Floor(v + 0.5)) }
+func Ticks(seconds float64) int { return int(math.Ceil(seconds * 1000 / TickMS)) }
+
+func XPForLevel(n int) int { return int(math.Floor(25 * math.Pow(float64(n-1), 2.2))) }
+
+func MaxHP(vitality int) int { return 20 + 3*vitality }
+
+func round(v float64) int { return int(math.Floor(v + 0.5)) }
+
 func clamp(v, lo, hi float64) float64 { return math.Max(lo, math.Min(hi, v)) }
 
 var xpTable = func() (t [MaxLevel + 1]int) {
@@ -40,16 +44,20 @@ func StyleModifier(attacker, defender string) float64 {
 	}
 	return 0.8
 }
+
 func HitChance(level int, accuracy, defence, armour, mod float64) float64 {
 	a, d := 10+float64(level)*1.5+accuracy, 6+defence+armour
 	return clamp(a/(a+d)*1.25*mod, 0.1, 0.95)
 }
+
 func MaxHit(level int, power float64) int {
 	return int(math.Floor(2 + float64(level)*0.22 + power*0.35))
 }
+
 func BossMaxHP(base float64, players int) float64 {
 	return float64(round(base * (1 + 0.8*float64(max(1, players)-1))))
 }
+
 func GatherChance(level, req, toolTier int) float64 {
 	return math.Min(0.95, 0.3+float64(level-req)*0.015+float64(toolTier)*0.08)
 }

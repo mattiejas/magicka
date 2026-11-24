@@ -1,0 +1,123 @@
+package game
+
+import (
+	"driftwake/server/internal/pb"
+)
+
+// goal is where an action takes place, and how close the player has to come.
+type goal struct {
+	at    Rect
+	reach int
+}
+
+// goal of the player's action. ok is false when its target is gone.
+func (w *World) goal(p *Player) (g goal, ok bool) {
+	a, m := p.act, w.mapOf(p)
+	switch a.typ {
+	case actGather:
+		if n := lookup(w.nodes, kindNode, a.id); n != nil && n.Map == m {
+			return goal{tile(n.X, n.Y), 1}, true
+		}
+	case actStation:
+		if s := w.station(a.id); s != nil && s.m == m {
+			return goal{tile(s.s.X, s.s.Y), 1}, true
+		}
+	case actAttack:
+		if o := lookup(w.monsters, kindMonster, a.id); o != nil && !o.Dead && o.Map == m {
+			return goal{o.rect(), p.stats().reach}, true
+		}
+	case actPickup:
+		if d := w.findDrop(a.id); d != nil && d.Map == m && d.visibleTo(p, w.Tick) {
+			return goal{tile(d.X, d.Y), 0}, true
+		}
+	case actGrave:
+		if g := p.C.Grave; g != nil && g.Map == p.C.Map {
+			return goal{tile(g.X, g.Y), 1}, true
+		}
+	}
+	return
+}
+
+func (d *Drop) visibleTo(p *Player, tick int) bool { return d.Owner == p.ID || d.publicAt <= tick }
+
+// actPlayer continues a player's action for one tick.
+func (w *World) actPlayer(p *Player) {
+	p.via, p.tool = nil, ""
+	if !p.isEating(w.Tick) {
+		p.doing = ""
+	}
+	switch p.act.typ {
+	case actNone:
+	case actCraft:
+		w.craft(p)
+	case actMove:
+		if !p.isRooted(w.Tick) {
+			w.walk(p)
+			if len(p.path) == 0 {
+				w.stop(p)
+			}
+		}
+	default:
+		if w.reachGoal(p) {
+			w.performAction(p)
+		}
+	}
+}
+
+func (p *Player) isRooted(tick int) bool { return p.rooted > tick }
+
+// reachGoal brings a player to their goal and reports whether they are there.
+func (w *World) reachGoal(p *Player) bool {
+	g, ok := w.goal(p)
+	if !ok {
+		w.stop(p)
+		return false
+	}
+	there := func() bool { return inReach(p.C.X, p.C.Y, g.at, g.reach) }
+	if !there() {
+		if p.isRooted(w.Tick) {
+			return false
+		}
+		// Monsters move, so the way to one is found anew every tick.
+		if len(p.path) == 0 || p.act.typ == actAttack {
+			p.path = w.finder.find(w.mapOf(p), p.C.X, p.C.Y, g.at, g.reach)
+		}
+		if len(p.path) == 0 {
+			w.refuse(p, "You cannot reach that.")
+			return false
+		}
+		w.walk(p)
+		if !there() {
+			return false
+		}
+	}
+	p.path = nil
+	return true
+}
+
+func (w *World) performAction(p *Player) {
+	id := p.act.id
+	switch p.act.typ {
+	case actGather:
+		w.gather(p, lookup(w.nodes, kindNode, id))
+	case actAttack:
+		w.playerAttack(p, lookup(w.monsters, kindMonster, id))
+	case actStation:
+		w.stop(p)
+		w.send(p, &pb.ServerMessage{Msg: &pb.ServerMessage_OpenStation{OpenStation: w.station(id).s.Type}})
+	case actGrave:
+		w.stop(p)
+		w.claimGrave(p)
+	case actPickup:
+		w.pickup(p, w.findDrop(id))
+	}
+}
+
+func (w *World) walk(p *Player) {
+	n := min(walkSpeed, len(p.path))
+	for _, step := range p.path[:n] {
+		p.C.X, p.C.Y = step.X, step.Y
+		p.via = append(p.via, step)
+	}
+	p.path = p.path[n:]
+}

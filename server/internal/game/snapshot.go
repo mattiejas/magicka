@@ -22,6 +22,8 @@ type fields struct {
 	bossSt                      pb.BossState
 	bossStart                   int
 }
+
+// view is an entity as clients see it on this tick.
 type view struct {
 	id    uint32
 	m     *content.Map
@@ -33,22 +35,34 @@ type view struct {
 	full  []byte
 }
 
-func u32(v int) *uint32 { n := uint32(max(0, v)); return &n }
+func u32(v int) *uint32 {
+	n := uint32(max(0, v))
+	return &n
+}
 
 func (v *view) bossView() *pb.BossView {
-	b := &pb.BossView{State: v.boss.st, Tiles: flat(v.boss.tiles), Start: uint32(v.boss.start), End: uint32(v.boss.end), Target: v.boss.tgt}
+	b := &pb.BossView{
+		State:  v.boss.st,
+		Tiles:  flat(v.boss.tiles),
+		Start:  uint32(v.boss.start),
+		End:    uint32(v.boss.end),
+		Target: v.boss.tgt,
+	}
 	if v.boss.atk != nil {
 		b.Attack = v.boss.atk.ID
 	}
 	return b
 }
+
 func (f *fields) pbGear() *pb.Gear {
 	return &pb.Gear{Weapon: f.gear[0], Head: f.gear[1], Body: f.gear[2], Legs: f.gear[3]}
 }
+
 func (f *fields) pbLook() *pb.Look {
 	return &pb.Look{Cut: uint32(f.look.Cut), Color: uint32(f.look.Color)}
 }
 
+// fullBytes encodes everything about an entity, for clients that do not know it.
 func (v *view) fullBytes() []byte {
 	if v.full == nil {
 		f := &v.f
@@ -128,42 +142,19 @@ func (v *view) diff(o *fields) {
 	v.delta, _ = proto.Marshal(e)
 }
 
-func (p *Player) look() Look {
-	if p.C.Look != nil {
-		return *p.C.Look
-	}
-	h := nameHash(p.Name)
-	return Look{Cut: h >> 5 % content.Haircuts, Color: h >> 2 % 5}
-}
-
-func (w *World) views() []*view {
-	var out []*view
-	add := func(v *view) { out = append(out, v) }
+// views describes everything clients can see.
+func (w *World) views() (out []*view) {
 	for _, p := range w.order {
-		v := &view{id: p.ID, m: w.mapOf(p), via: p.via, f: fields{x: p.C.X, y: p.C.Y, name: p.Name, hp: p.C.HP, maxHP: MaxHP(p.level("vitality")), act: p.doing, tool: p.tool, rooted: p.rooted > w.Tick, look: p.look(), level: max(p.level("melee"), p.level("ranged"), p.level("magic"))}}
-		if p.act.typ >= actGather && p.act.typ <= actPickup {
-			v.f.target = p.act.id
-		}
-		for i, s := range slotOrder[:4] {
-			if e := p.C.Equip[s]; e != nil {
-				v.f.gear[i] = e.ID
-			}
-		}
-		add(v)
+		out = append(out, w.playerView(p))
 	}
 	for _, m := range w.monsters {
-		if m.Dead {
-			continue
+		if !m.Dead {
+			out = append(out, monsterView(m))
 		}
-		v := &view{id: m.ID, m: m.Map, via: m.via, boss: m.boss, f: fields{x: m.X, y: m.Y, typ: m.Def.ID, hp: int(math.Ceil(m.HP)), maxHP: int(m.MaxHP), target: m.target}}
-		if m.boss != nil {
-			v.f.boss, v.f.bossSt, v.f.bossStart = true, m.boss.st, m.boss.start
-		}
-		add(v)
 	}
 	for _, n := range w.nodes {
 		if n.depletedUntil > w.Tick {
-			add(&view{id: n.ID, m: n.Map, f: fields{x: n.X, y: n.Y}})
+			out = append(out, &view{id: n.ID, m: n.Map, f: fields{x: n.X, y: n.Y}})
 		}
 	}
 	for _, d := range w.drops {
@@ -171,60 +162,61 @@ func (w *World) views() []*view {
 		if d.publicAt > w.Tick {
 			v.owner = d.Owner
 		}
-		add(v)
-	}
-	return out
-}
-
-func pbMap(id string) pb.MapId {
-	if id == "mainland" {
-		return pb.MapId_MAP_ID_MAINLAND
-	}
-	return pb.MapId_MAP_ID_ISLAND
-}
-func pbStacks(list []*Stack) (out []*pb.Stack) {
-	for _, s := range list {
-		out = append(out, &pb.Stack{Item: s.ID, Qty: uint32(s.Qty)})
+		out = append(out, v)
 	}
 	return
 }
-func (w *World) self(p *Player) *pb.Self {
-	c, l := p.C, p.look()
-	s := &pb.Self{Id: p.ID, Name: p.Name, Map: pbMap(c.Map), Xp: map[string]uint32{}, Boat: map[string]uint32{}, BoatDone: c.BoatDone, Bank: pbStacks(c.Bank), Look: &pb.Look{Cut: uint32(l.Cut), Color: uint32(l.Color)}}
-	for k, v := range c.XP {
-		s.Xp[k] = uint32(v)
+
+func (w *World) playerView(p *Player) *view {
+	f := fields{
+		x:      p.C.X,
+		y:      p.C.Y,
+		name:   p.Name,
+		hp:     p.C.HP,
+		maxHP:  MaxHP(p.level("vitality")),
+		act:    p.doing,
+		tool:   p.tool,
+		rooted: p.isRooted(w.Tick),
+		look:   p.look(),
+		level:  max(p.level(melee), p.level(ranged), p.level(magic)),
 	}
-	for k, v := range c.Boat {
-		s.Boat[k] = uint32(v)
+	if p.act.hasTarget() {
+		f.target = p.act.id
 	}
-	for i, v := range c.Inv {
-		if v != nil {
-			s.Inventory = append(s.Inventory, &pb.InvSlot{Index: uint32(i), Stack: &pb.Stack{Item: v.ID, Qty: uint32(v.Qty)}})
+	for i, slot := range armourSlots[:4] {
+		if e := p.C.Equip[slot]; e != nil {
+			f.gear[i] = e.ID
 		}
 	}
-	for i := pb.Slot_SLOT_WEAPON; i <= pb.Slot_SLOT_AMMO; i++ {
-		if e := c.Equip[slotName(i)]; e != nil {
-			s.Equipment = append(s.Equipment, &pb.EquipSlot{Slot: i, Stack: &pb.Stack{Item: e.ID, Qty: uint32(e.Qty)}})
-		}
-	}
-	if c.Grave != nil {
-		s.Reaper = pbStacks(c.Grave.Items)
-	}
-	return s
+	return &view{id: p.ID, m: w.mapOf(p), via: p.via, f: f}
 }
 
-func (w *World) snapshot() {
-	views := w.views()
-	now := make(map[uint32]fields, len(views))
-	byMap := map[*content.Map][]*view{}
-	for _, v := range views {
-		if o, ok := w.prev[v.id]; ok {
-			v.diff(&o)
-		}
-		now[v.id] = v.f
-		byMap[v.m] = append(byMap[v.m], v)
+func (a action) hasTarget() bool {
+	switch a.typ {
+	case actGather, actStation, actAttack, actPickup:
+		return true
 	}
-	w.prev = now
+	return false
+}
+
+func monsterView(m *Monster) *view {
+	f := fields{
+		x:      m.X,
+		y:      m.Y,
+		typ:    m.Def.ID,
+		hp:     int(math.Ceil(m.HP)),
+		maxHP:  int(m.MaxHP),
+		target: m.target,
+	}
+	if m.boss != nil {
+		f.boss, f.bossSt, f.bossStart = true, m.boss.st, m.boss.start
+	}
+	return &view{id: m.ID, m: m.Map, via: m.via, boss: m.boss, f: f}
+}
+
+// sendSnapshots tells every client what changed around its player.
+func (w *World) sendSnapshots() {
+	visible := w.changedViews()
 	events := make([][]byte, len(w.events))
 	for i, e := range w.events {
 		events[i], _ = proto.Marshal(e.ev)
@@ -237,52 +229,107 @@ func (w *World) snapshot() {
 			p.dirty = false
 			w.send(p, &pb.ServerMessage{Msg: &pb.ServerMessage_Self{Self: w.self(p)}})
 		}
-		m := w.mapOf(p)
-		b := make([]byte, 0, 1024)
-		b = protowire.AppendVarint(protowire.AppendTag(b, 1, protowire.VarintType), uint64(w.Tick))
-		b = protowire.AppendVarint(protowire.AppendTag(b, 2, protowire.VarintType), uint64(pbMap(p.C.Map)))
-		if p.knownMap != p.C.Map {
-			clear(p.known)
-			p.knownMap = p.C.Map
-			b = protowire.AppendVarint(protowire.AppendTag(b, 3, protowire.VarintType), 1)
-		}
-		ent := func(e []byte) { b = protowire.AppendBytes(protowire.AppendTag(b, 4, protowire.BytesType), e) }
-		for _, v := range byMap[m] {
-			if abs(v.f.x-p.C.X) > viewDist || abs(v.f.y-p.C.Y) > viewDist || (v.owner != 0 && v.owner != p.ID) {
-				continue
-			}
-			// Someone seen on the previous tick only needs what changed since then.
-			if at, ok := p.known[v.id]; !ok || at != w.Tick-1 {
-				ent(v.fullBytes())
-			} else if v.delta != nil {
-				ent(v.delta)
-			}
-			p.known[v.id] = w.Tick
-		}
-		if g := p.C.Grave; g != nil && g.Map == p.C.Map {
-			at := Point{X: g.X, Y: g.Y}
-			if _, ok := p.known[graveID]; !ok || p.graveAt != at {
-				e, _ := proto.Marshal(&pb.Entity{Id: graveID, Full: true, X: u32(g.X), Y: u32(g.Y)})
-				ent(e)
-				p.graveAt = at
-			}
-			p.known[graveID] = w.Tick
-		}
-		for id, at := range p.known {
-			if at != w.Tick {
-				b = protowire.AppendVarint(protowire.AppendTag(b, 5, protowire.VarintType), uint64(id))
-				delete(p.known, id)
-			}
-		}
-		for i, e := range w.events {
-			if e.mp == m && RectDist(e.x, e.y, tile(p.C.X, p.C.Y)) <= viewDist {
-				b = protowire.AppendBytes(protowire.AppendTag(b, 6, protowire.BytesType), events[i])
-			}
-		}
-		p.conn.SendRaw(protowire.AppendBytes(protowire.AppendTag(nil, 5, protowire.BytesType), b))
-		if w.Tick%5 == 0 {
-			w.bossInfo(p)
+		p.conn.SendRaw(w.snapshotFor(p, visible[w.mapOf(p)], events))
+		if w.Tick%bossBarInterval == 0 {
+			w.sendBossStatus(p)
 		}
 	}
 	w.events = nil
+}
+
+// changedViews encodes what changed since the last tick, once for all clients, and groups it by map.
+func (w *World) changedViews() map[*content.Map][]*view {
+	views := w.views()
+	now := make(map[uint32]fields, len(views))
+	byMap := map[*content.Map][]*view{}
+	for _, v := range views {
+		if before, ok := w.before[v.id]; ok {
+			v.diff(&before)
+		}
+		now[v.id] = v.f
+		byMap[v.m] = append(byMap[v.m], v)
+	}
+	w.before = now
+	return byMap
+}
+
+// snapshotFor builds a ServerMessage by hand, so that entities encoded once can be shared between clients.
+func (w *World) snapshotFor(p *Player, views []*view, events [][]byte) []byte {
+	var s snapshotWriter
+	s.number(fieldTick, uint64(w.Tick))
+	s.number(fieldMap, uint64(pbMap(p.C.Map)))
+	if p.knownMap != p.C.Map {
+		clear(p.known)
+		p.knownMap = p.C.Map
+		s.number(fieldReset, 1)
+	}
+	for _, v := range views {
+		if v.visibleTo(p) {
+			w.writeView(&s, p, v)
+		}
+	}
+	w.writeGrave(&s, p)
+	for id, heard := range p.known {
+		if heard != w.Tick {
+			s.number(fieldGone, uint64(id))
+			delete(p.known, id)
+		}
+	}
+	for i, e := range w.events {
+		if e.mp == w.mapOf(p) && RectDist(e.x, e.y, tile(p.C.X, p.C.Y)) <= viewDistance {
+			s.message(fieldEvents, events[i])
+		}
+	}
+	return protowire.AppendBytes(protowire.AppendTag(nil, fieldSnapshot, protowire.BytesType), s.b)
+}
+
+func (v *view) visibleTo(p *Player) bool {
+	near := abs(v.f.x-p.C.X) <= viewDistance && abs(v.f.y-p.C.Y) <= viewDistance
+	return near && (v.owner == 0 || v.owner == p.ID)
+}
+
+// writeView sends what changed about an entity the client saw on the last tick, or everything about a new one.
+func (w *World) writeView(s *snapshotWriter, p *Player, v *view) {
+	if heard, ok := p.known[v.id]; !ok || heard != w.Tick-1 {
+		s.message(fieldEntities, v.fullBytes())
+	} else if v.delta != nil {
+		s.message(fieldEntities, v.delta)
+	}
+	p.known[v.id] = w.Tick
+}
+
+// writeGrave shows a player their own grave, wherever it is on the map.
+func (w *World) writeGrave(s *snapshotWriter, p *Player) {
+	g := p.C.Grave
+	if g == nil || g.Map != p.C.Map {
+		return
+	}
+	at := Point{X: g.X, Y: g.Y}
+	if _, ok := p.known[graveID]; !ok || p.graveAt != at {
+		grave, _ := proto.Marshal(&pb.Entity{Id: graveID, Full: true, X: u32(g.X), Y: u32(g.Y)})
+		s.message(fieldEntities, grave)
+		p.graveAt = at
+	}
+	p.known[graveID] = w.Tick
+}
+
+// Field numbers of Snapshot, and of the snapshot in ServerMessage. A test keeps them in step with game.proto.
+const (
+	fieldTick     protowire.Number = 1
+	fieldMap      protowire.Number = 2
+	fieldReset    protowire.Number = 3
+	fieldEntities protowire.Number = 4
+	fieldGone     protowire.Number = 5
+	fieldEvents   protowire.Number = 6
+	fieldSnapshot protowire.Number = 5
+)
+
+type snapshotWriter struct{ b []byte }
+
+func (s *snapshotWriter) number(field protowire.Number, v uint64) {
+	s.b = protowire.AppendVarint(protowire.AppendTag(s.b, field, protowire.VarintType), v)
+}
+
+func (s *snapshotWriter) message(field protowire.Number, encoded []byte) {
+	s.b = protowire.AppendBytes(protowire.AppendTag(s.b, field, protowire.BytesType), encoded)
 }

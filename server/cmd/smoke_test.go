@@ -26,7 +26,8 @@ func boot(t *testing.T, db string) func() {
 		t.Skip("run npm run build first")
 	}
 	c := exec.Command(bin)
-	c.Env = append(os.Environ(), "MAGICKA_DEV=", "NODE_ENV=production", "PORT=3998", "DB_PATH="+db, "CLIENT_DIR=../../client/dist")
+	c.Env = append(os.Environ(),
+		"MAGICKA_DEV=", "NODE_ENV=production", "PORT=3998", "DB_PATH="+db, "CLIENT_DIR=../../client/dist")
 	if err := c.Start(); err != nil {
 		t.Fatal(err)
 	}
@@ -39,10 +40,13 @@ func boot(t *testing.T, db string) func() {
 	}
 	return func() { c.Process.Signal(syscall.SIGTERM); c.Wait() }
 }
+
 func dial(origin string) (*websocket.Conn, error) {
-	c, _, err := websocket.Dial(context.Background(), "ws://"+base+"/ws", &websocket.DialOptions{HTTPHeader: http.Header{"Origin": {origin}}})
+	options := &websocket.DialOptions{HTTPHeader: http.Header{"Origin": {origin}}}
+	c, _, err := websocket.Dial(context.Background(), "ws://"+base+"/ws", options)
 	return c, err
 }
+
 func say(c *websocket.Conn, m *pb.ClientMessage) {
 	b, _ := proto.Marshal(m)
 	c.Write(context.Background(), websocket.MessageBinary, b)
@@ -76,10 +80,12 @@ func watch(c *websocket.Conn, d time.Duration) (token string, x, y uint32, kicke
 		}
 	}
 }
+
 func TestProductionServer(t *testing.T) {
 	db := filepath.Join(t.TempDir(), "s.db")
 	stop := boot(t, db)
-	for path, want := range map[string]int{"/": 200, "/..%2f..%2fpackage.json": 404, "/../../go.mod": 404, "/nope": 404} {
+	pages := map[string]int{"/": 200, "/..%2f..%2fpackage.json": 404, "/../../go.mod": 404, "/nope": 404}
+	for path, want := range pages {
 		r, err := http.Get("http://" + base + path)
 		if err != nil {
 			t.Fatal(err)
@@ -97,12 +103,16 @@ func TestProductionServer(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	say(c, &pb.ClientMessage{Msg: &pb.ClientMessage_Register{Register: &pb.Credentials{Name: "Smoke", Password: "smoke-test-pw"}}})
-	time.AfterFunc(time.Second, func() { say(c, &pb.ClientMessage{Msg: &pb.ClientMessage_Move{Move: &pb.Tile{X: 26, Y: 40}}}) })
+	credentials := &pb.Credentials{Name: "Smoke", Password: "smoke-test-pw"}
+	say(c, &pb.ClientMessage{Msg: &pb.ClientMessage_Register{Register: credentials}})
+	time.AfterFunc(time.Second, func() {
+		say(c, &pb.ClientMessage{Msg: &pb.ClientMessage_Move{Move: &pb.Tile{X: 26, Y: 40}}})
+	})
 	c.Write(context.Background(), websocket.MessageBinary, []byte{0xff, 0xff}) // nonsense is ignored
 	time.AfterFunc(5*time.Second, func() {
 		d, _ := dial("http://" + base)
-		say(d, &pb.ClientMessage{Msg: &pb.ClientMessage_Login{Login: &pb.Credentials{Name: "smoke", Password: "smoke-test-pw"}}})
+		again := &pb.Credentials{Name: "smoke", Password: credentials.Password}
+		say(d, &pb.ClientMessage{Msg: &pb.ClientMessage_Login{Login: again}})
 		watch(d, 2*time.Second)
 	})
 	token, x, y, kicked := watch(c, 8*time.Second)

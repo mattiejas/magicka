@@ -9,6 +9,7 @@ Needs Node 22+, Go 1.27+, and `buf` only when changing the message schema.
     npm install
     npm run dev        # http://localhost:5173, game server on 3000; restart it after editing Go code
     npm test           # browser and Go tests
+    npm run check      # formatting, linting, types and tests; run before committing
     npm run loadtest   # 100 bots for five minutes; `-- -n 500 -s 60` for other sizes
 
 After editing data or messages:
@@ -40,13 +41,15 @@ Click to walk, gather, attack, take and use. Right click for options. Arrow keys
 
 Only with `MAGICKA_DEV=1` (set by `npm run dev`; refused in production): `/give item n`, `/level skill|all n`, `/tp x y`, `/map island|mainland`, `/boss`, `/heal`, `/die`. The world boss also spawns every two minutes instead of ten.
 
+See [CONTRIBUTING.md](CONTRIBUTING.md) before changing code.
+
 ## Layout
 
 - `content/` items, recipes, monsters, loot and maps. Edit `content/src`.
 - `proto/` the message schema.
 - `server/` the Go server: `internal/game` is the simulation, `internal/store` saves, `internal/auth` accounts, `cmd/server` sockets and ticks.
 - `shared/` data loading and formulas for the browser.
-- `client/` Three.js scene and DOM interface; `wire.ts` translates messages.
+- `client/` Three.js scene and DOM interface; `net/` the connection, `scene/` the 3D view, `models/`, `ui/`.
 - `docs/` agreed design and decisions; `GLOSSARY.md` terms.
 
 Model gallery while developing: `http://localhost:5173/gallery.html?set=people|hair|head|turn|swing|monsters|nodes|camp&t=600` (`t` freezes the animation at that millisecond).

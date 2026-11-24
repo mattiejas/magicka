@@ -1,4 +1,5 @@
-// Package content loads the game data that the browser also uses. The JSON is generated from content/src by `npm run content`.
+// Package content loads the game data that the browser also uses.
+// The JSON is generated from content/src by `npm run content`.
 package content
 
 import (
@@ -41,13 +42,18 @@ type Recipe struct {
 	XP                      float64
 	In                      []Amount
 }
+
+// Node is a kind of resource.
 type Node struct {
 	ID, Name, Kind, Skill, Item, Tool string
 	Tier, Level                       int
 	XP, Respawn, Deplete              float64
 }
 
-// Range is an item with a random quantity; Chance an item with a probability.
+// HasGems reports whether gathering sometimes turns up a gem.
+func (n *Node) HasGems() bool { return n.Kind == "rock" && n.ID != "essence_rock" }
+
+// Range is an item with a random quantity.
 type Range struct {
 	Item     string
 	Min, Max int
@@ -55,6 +61,7 @@ type Range struct {
 
 func (r *Range) UnmarshalJSON(b []byte) error { return tuple(b, &r.Item, &r.Min, &r.Max) }
 
+// Rare is an item with a chance to drop.
 type Rare struct {
 	Item   string
 	Qty    int
@@ -63,6 +70,7 @@ type Rare struct {
 
 func (r *Rare) UnmarshalJSON(b []byte) error { return tuple(b, &r.Item, &r.Qty, &r.Chance) }
 
+// Unique is a named item with a chance to drop.
 type Unique struct {
 	Item   string
 	Chance float64
@@ -75,18 +83,21 @@ type Loot struct {
 	Rare           []Rare
 	Unique         []Unique
 }
+
 type Attack struct {
 	ID, Name                     string
 	Weight                       float64
 	Windup, Execute, Root, Count int
 	Damage                       [2]int
 }
+
 type Boss struct {
 	BaseHP  float64
 	Arena   int
 	World   bool
 	Attacks []Attack
 }
+
 type Monster struct {
 	ID, Name, Style                  string
 	Level, Speed, Range, Aggro, Size int
@@ -94,10 +105,12 @@ type Monster struct {
 	Loot                             Loot
 	Boss                             *Boss
 }
+
 type Part struct {
 	ID, Name, Item string
 	Qty            int
 }
+
 type named struct{ ID, Name string }
 
 // Placed is something at a fixed tile.
@@ -105,7 +118,9 @@ type Placed struct {
 	ID, Type string
 	X, Y     int
 }
+
 type Point struct{ X, Y int }
+
 type Map struct {
 	ID, Name                string
 	Size                    int
@@ -147,7 +162,9 @@ var (
 
 const InvSize = 24
 
-var Skills = []string{"mining", "smithing", "woodcutting", "crafting", "melee", "ranged", "magic", "defence", "vitality"}
+var Skills = []string{
+	"mining", "smithing", "woodcutting", "crafting", "melee", "ranged", "magic", "defence", "vitality",
+}
 
 func tuple(b []byte, dst ...any) error {
 	var raw []json.RawMessage

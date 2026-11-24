@@ -25,6 +25,7 @@ type Auth struct {
 	db   *store.Store
 	slot chan struct{} // limits simultaneous password hashing, which is memory heavy
 }
+
 type Session struct {
 	Account     int64
 	Name, Token string
@@ -39,7 +40,9 @@ func (a *Auth) kdf(pw string, salt []byte) ([]byte, error) {
 	defer func() { <-a.slot }()
 	return scrypt.Key([]byte(pw), salt, 16384, 8, 1, 64)
 }
+
 func sha(t string) string { h := sha256.Sum256([]byte(t)); return hex.EncodeToString(h[:]) }
+
 func (a *Auth) issue(id int64, name string) (*Session, error) {
 	b := make([]byte, 32)
 	if _, err := rand.Read(b); err != nil {
@@ -48,6 +51,7 @@ func (a *Auth) issue(id int64, name string) (*Session, error) {
 	s := &Session{id, name, hex.EncodeToString(b)}
 	return s, a.db.AddSession(sha(s.Token), id, time.Now().Add(14*24*time.Hour))
 }
+
 func (a *Auth) Register(name, pw string) (*Session, error) {
 	if old, err := a.db.FindAccount(name); err != nil || old != nil {
 		return nil, errors.Join(err, taken(old))
@@ -69,12 +73,14 @@ func (a *Auth) Register(name, pw string) (*Session, error) {
 	}
 	return a.issue(id, name)
 }
+
 func taken(a *store.Account) error {
 	if a != nil {
 		return ErrTaken
 	}
 	return nil
 }
+
 func (a *Auth) Login(name, pw string) (*Session, error) {
 	acc, err := a.db.FindAccount(name)
 	if err != nil {
@@ -93,6 +99,7 @@ func (a *Auth) Login(name, pw string) (*Session, error) {
 	}
 	return a.issue(acc.ID, acc.Name)
 }
+
 func (a *Auth) Resume(token string) (*Session, error) {
 	id, err := a.db.Session(sha(token))
 	if err != nil {
@@ -110,4 +117,5 @@ func (a *Auth) Resume(token string) (*Session, error) {
 	}
 	return &Session{acc.ID, acc.Name, token}, nil
 }
+
 func (a *Auth) Revoke(token string) error { return a.db.DropSession(sha(token)) }

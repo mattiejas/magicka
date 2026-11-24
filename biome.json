@@ -5,7 +5,7 @@
     "useIgnoreFile": true
   },
   "files": {
-    "includes": ["**", "!content/data", "!client/src/pb", "!server", "!package-lock.json"]
+    "includes": ["**", "!content/data", "!client/src/pb", "!server", "!package-lock.json", "!**/*.md"]
   },
   "formatter": {
     "indentStyle": "space",

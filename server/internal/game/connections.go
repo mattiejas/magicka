@@ -1,0 +1,112 @@
+package game
+
+import (
+	"encoding/json"
+
+	"driftwake/server/internal/pb"
+)
+
+// Join puts a character in the world, or hands over one that is still there.
+// load runs only when needed. It runs under the lock, so a leaving player's last save cannot be missed.
+func (w *World) Join(account int64, name string, load func() (*Char, error), conn Conn) (uint32, error) {
+	w.mu.Lock()
+	defer w.mu.Unlock()
+	id := PlayerID(account)
+	p := w.players[id]
+	fresh := false
+	if p != nil {
+		if p.conn != nil {
+			p.conn.Send(&pb.ServerMessage{Msg: &pb.ServerMessage_Kicked{Kicked: "You logged in somewhere else."}})
+		}
+	} else {
+		c, err := load()
+		if err != nil {
+			return 0, err
+		}
+		if fresh = c == nil; fresh {
+			c = NewChar()
+		}
+		c.fill()
+		p = &Player{ID: id, Account: account, Name: name, C: c, lastCombat: longAgo}
+		w.players[id] = p
+		w.order = append(w.order, p)
+	}
+	p.attach(conn)
+	conn.Send(&pb.ServerMessage{Msg: &pb.ServerMessage_Self{Self: w.self(p)}})
+	if fresh {
+		w.info(p, "Welcome to "+GameName+". Click a copper rock or an ash tree to begin.", plain)
+	}
+	w.sendBossStatus(p)
+	return id, nil
+}
+
+// Leave detaches a connection, if it still owns the player.
+func (w *World) Leave(id uint32, conn Conn) {
+	w.mu.Lock()
+	defer w.mu.Unlock()
+	if p := w.players[id]; p != nil && p.conn == conn {
+		p.conn, p.leftAt = nil, w.Tick
+	}
+}
+
+// Owns reports whether conn is the player's current connection.
+func (w *World) Owns(id uint32, conn Conn) bool {
+	w.mu.Lock()
+	defer w.mu.Unlock()
+	p := w.players[id]
+	return p != nil && p.conn == conn
+}
+
+// Enqueue keeps a message for the next tick.
+func (w *World) Enqueue(id uint32, m *pb.ClientMessage) {
+	w.mu.Lock()
+	w.queue = append(w.queue, intent{id, m})
+	w.mu.Unlock()
+}
+
+// SaveAll saves every player, for shutting down.
+func (w *World) SaveAll() {
+	w.mu.Lock()
+	defer w.mu.Unlock()
+	for _, p := range w.order {
+		w.save(p)
+	}
+}
+
+// Online is the number of players in the world.
+func (w *World) Online() int {
+	w.mu.Lock()
+	defer w.mu.Unlock()
+	return len(w.order)
+}
+
+func (w *World) save(p *Player) {
+	if b, err := json.Marshal(p.C); err == nil {
+		w.store.Save(p.Account, b)
+	}
+}
+
+// attach makes conn the player's connection, which knows nothing of the world yet.
+func (p *Player) attach(conn Conn) {
+	p.conn, p.leftAt = conn, connected
+	p.known, p.knownMap = map[uint32]int{}, ""
+	p.dirty = true
+}
+
+// removeGone lets disconnected players go: at once, or after a while when they were fighting.
+func (w *World) removeGone() {
+	stay := w.order[:0]
+	for _, p := range w.order {
+		if p.leftAt != connected {
+			inCombat := w.Tick-p.lastCombat <= combatTime
+			if !inCombat || w.Tick-p.leftAt >= lingerTime {
+				w.save(p)
+				delete(w.players, p.ID)
+				continue
+			}
+		}
+		stay = append(stay, p)
+	}
+	clear(w.order[len(stay):])
+	w.order = stay
+}

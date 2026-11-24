@@ -4,6 +4,7 @@ import {
   gatherChance,
   hitChance,
   ITEMS,
+  type LootTable,
   levelForXp,
   MAPS,
   MONSTERS,
@@ -30,6 +31,9 @@ describe('formulas', () => {
     expect(gatherChance(50, 1, 5)).toBeLessThan(1);
   });
 });
+const lootItems = ({ always = [], common = [], rare = [], unique = [] }: LootTable): string[] =>
+  [...always, ...common, ...rare, ...unique].map(([item]) => item);
+
 describe('content graph', () => {
   it('only references real items', () => {
     for (const r of RECIPES)
@@ -45,23 +49,13 @@ describe('content graph', () => {
     for (const n of Object.values(NODES)) expect(ITEMS[n.item]).toBeTruthy();
   });
   it('every item is obtainable from nodes, monsters and recipes', () => {
-    const have = new Set(['worn_pickaxe', 'worn_axe', 'worn_sword']);
-    for (const m of Object.values(MAPS)) {
-      for (const n of m.nodes) have.add(NODES[n.type].item);
-      for (const s of m.spawns) {
-        const l = MONSTERS[s.type].loot;
-        for (const e of [...(l.always ?? []), ...(l.common ?? []), ...(l.rare ?? []), ...(l.unique ?? [])])
-          have.add(e[0]);
-      }
-    }
-    for (let changed = true; changed; ) {
-      changed = false;
-      for (const r of RECIPES)
-        if (!have.has(r.out) && r.in.every(([i]) => have.has(i))) {
-          have.add(r.out);
-          changed = true;
-        }
-    }
+    const maps = Object.values(MAPS);
+    const gathered = maps.flatMap(map => map.nodes.map(node => NODES[node.type].item));
+    const looted = maps.flatMap(map => map.spawns.flatMap(spawn => lootItems(MONSTERS[spawn.type].loot)));
+    const have = new Set(['worn_pickaxe', 'worn_axe', 'worn_sword', ...gathered, ...looted]);
+    const craftable = () => RECIPES.filter(r => !have.has(r.out) && r.in.every(([item]) => have.has(item)));
+    for (let next = craftable(); next.length; next = craftable())
+      for (const recipe of next) have.add(recipe.out);
     expect(Object.keys(ITEMS).filter(i => !have.has(i))).toEqual([]);
   });
   it('the boat can be built from the island alone', () => {
@@ -73,17 +67,20 @@ describe('content graph', () => {
   });
 });
 describe('maps', () => {
-  for (const m of Object.values(MAPS))
-    it(`${m.id}: resources match the tiers it should have`, () => {
-      const counts: Record<string, number> = {};
-      for (const o of [...m.nodes, ...m.spawns]) counts[o.type] = (counts[o.type] ?? 0) + 1;
-      if (m.id === 'island') {
-        expect(counts.rock_2).toBeLessThanOrEqual(2);
-        expect(counts.tree_2).toBeLessThanOrEqual(2);
-        expect(m.nodes.every(n => NODES[n.type].tier <= 2)).toBe(true);
-      } else
-        for (let t = 1; t <= 5; t++)
-          for (const k of ['rock', 'tree', 'plant'])
-            expect(counts[`${k}_${t}`], `${k}_${t}`).toBeGreaterThan(2);
-    });
+  const countTypes = ({ nodes, spawns }: (typeof MAPS)['island']) => {
+    const counts: Record<string, number> = {};
+    for (const { type } of [...nodes, ...spawns]) counts[type] = (counts[type] ?? 0) + 1;
+    return counts;
+  };
+  it('the island has tier 1 resources and a taste of tier 2', () => {
+    const counts = countTypes(MAPS.island);
+    expect(counts.rock_2).toBeLessThanOrEqual(2);
+    expect(counts.tree_2).toBeLessThanOrEqual(2);
+    expect(MAPS.island.nodes.every(node => NODES[node.type].tier <= 2)).toBe(true);
+  });
+  it('the mainland has resources of every tier', () => {
+    const counts = countTypes(MAPS.mainland);
+    const wanted = ['rock', 'tree', 'plant'].flatMap(kind => [1, 2, 3, 4, 5].map(tier => `${kind}_${tier}`));
+    for (const type of wanted) expect(counts[type], type).toBeGreaterThan(2);
+  });
 });

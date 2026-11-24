@@ -1,0 +1,179 @@
+package main
+
+import (
+	"context"
+	"errors"
+	"log"
+	"net"
+	"net/http"
+	"net/url"
+	"slices"
+	"sync/atomic"
+	"time"
+
+	"driftwake/server/internal/auth"
+	"driftwake/server/internal/game"
+	"driftwake/server/internal/pb"
+
+	"github.com/coder/websocket"
+	"google.golang.org/protobuf/encoding/protojson"
+)
+
+const (
+	maxMessageBytes = 4096
+	// A connection that has not signed in by then is closed.
+	signInTimeout = 5 * time.Minute
+)
+
+// originOK keeps other websites from connecting with a visitor's browser.
+func (s *server) originOK(r *http.Request) bool {
+	origin := r.Header.Get("Origin")
+	if s.config.origins != nil {
+		return slices.Contains(s.config.origins, origin)
+	}
+	if !s.config.prod {
+		return true
+	}
+	u, err := url.Parse(origin)
+	return err == nil && u.Host != "" && u.Host == r.Host
+}
+
+// handleSocket serves one browser until it disconnects.
+func (s *server) handleSocket(w http.ResponseWriter, r *http.Request) {
+	if !s.originOK(r) {
+		http.Error(w, "origin not allowed", http.StatusForbidden)
+		return
+	}
+	ws, err := websocket.Accept(w, r, &websocket.AcceptOptions{
+		InsecureSkipVerify: true, // originOK has checked
+		CompressionMode:    websocket.CompressionDisabled,
+	})
+	if err != nil {
+		return
+	}
+	defer ws.CloseNow()
+	ws.SetReadLimit(maxMessageBytes)
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+	c := newConn(ws, cancel, s.config.logMessages)
+	go c.write(ctx)
+
+	address, _, _ := net.SplitHostPort(r.RemoteAddr)
+	sess := &session{server: s, conn: c, address: address}
+	defer sess.end()
+	timeout := time.AfterFunc(signInTimeout, func() {
+		if !sess.signedIn.Load() {
+			cancel()
+		}
+	})
+	defer timeout.Stop()
+	sess.read(ctx)
+}
+
+// session is one connection's conversation with the server.
+type session struct {
+	server   *server
+	conn     *conn
+	address  string
+	signedIn atomic.Bool
+	player   uint32
+	token    string
+}
+
+func (s *session) end() {
+	if s.player != 0 {
+		s.server.world.Leave(s.player, s.conn)
+	}
+}
+
+func (s *session) read(ctx context.Context) {
+	budget := newBudget()
+	for {
+		kind, data, err := s.conn.ws.Read(ctx)
+		if err != nil {
+			return
+		}
+		if !budget.spend() || kind != websocket.MessageBinary {
+			continue
+		}
+		msg, ok := game.Decode(data)
+		if !ok {
+			continue
+		}
+		if done := s.receive(msg); done {
+			return
+		}
+	}
+}
+
+// receive handles one message and reports whether the conversation is over.
+func (s *session) receive(msg *pb.ClientMessage) (done bool) {
+	switch m := msg.Msg.(type) {
+	case *pb.ClientMessage_Register:
+		s.signIn(func(a *auth.Auth) (*auth.Session, error) {
+			return a.Register(m.Register.Name, m.Register.Password)
+		})
+	case *pb.ClientMessage_Login:
+		s.signIn(func(a *auth.Auth) (*auth.Session, error) {
+			return a.Login(m.Login.Name, m.Login.Password)
+		})
+	case *pb.ClientMessage_ResumeToken:
+		s.signIn(func(a *auth.Auth) (*auth.Session, error) { return a.Resume(m.ResumeToken) })
+	case *pb.ClientMessage_Logout:
+		if !s.inCharge() {
+			return false
+		}
+		if err := s.server.auth.Revoke(s.token); err != nil {
+			log.Print(err)
+		}
+		return true
+	default:
+		if s.server.config.logMessages {
+			log.Print("<- ", protojson.Format(msg))
+		}
+		if s.inCharge() {
+			s.server.world.Enqueue(s.player, msg)
+		}
+	}
+	return false
+}
+
+// inCharge is false once the player has signed in somewhere else.
+func (s *session) inCharge() bool { return s.player != 0 && s.server.world.Owns(s.player, s.conn) }
+
+func (s *session) signIn(attempt func(*auth.Auth) (*auth.Session, error)) {
+	if s.player != 0 {
+		return
+	}
+	if !s.server.logins.allow(s.address) {
+		s.conn.fail("Too many attempts. Wait a minute.")
+		return
+	}
+	account, err := attempt(s.server.auth)
+	if err != nil {
+		s.conn.fail(signInError(err))
+		return
+	}
+	welcome := &pb.Welcome{Token: account.Token, Id: game.PlayerID(account.Account)}
+	s.conn.Send(&pb.ServerMessage{Msg: &pb.ServerMessage_Welcome{Welcome: welcome}})
+	load := func() (*game.Char, error) { return s.server.store.Load(account.Account) }
+	player, err := s.server.world.Join(account.Account, account.Name, load, s.conn)
+	if err != nil {
+		log.Print(err)
+		s.conn.fail("Your character could not be loaded.")
+		return
+	}
+	s.player, s.token = player, account.Token
+	s.signedIn.Store(true)
+}
+
+// signInError is what the player is told. Anything unexpected is logged instead.
+func signInError(err error) string {
+	for _, expected := range []error{auth.ErrTaken, auth.ErrWrong, auth.ErrExpired} {
+		if errors.Is(err, expected) {
+			return expected.Error()
+		}
+	}
+	log.Print(err)
+	return "Something went wrong."
+}

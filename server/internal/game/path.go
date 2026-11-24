@@ -6,12 +6,19 @@ type Point = content.Point
 type Rect struct{ X, Y, W, H int }
 
 func tile(x, y int) Rect { return Rect{x, y, 1, 1} }
+
+// RectDist is the distance in tiles from a tile to a rectangle, diagonals counting as one.
 func RectDist(x, y int, r Rect) int {
 	return max(r.X-x, 0, x-(r.X+r.W-1), r.Y-y, y-(r.Y+r.H-1))
 }
+
 func inReach(x, y int, r Rect, reach int) bool { return RectDist(x, y, r) <= reach }
 
-var dirs = [8]Point{{X: 0, Y: -1}, {X: 1, Y: 0}, {X: 0, Y: 1}, {X: -1, Y: 0}, {X: 1, Y: -1}, {X: 1, Y: 1}, {X: -1, Y: 1}, {X: -1, Y: -1}}
+// Straight steps come first, so they win ties.
+var dirs = [...]Point{
+	{X: 0, Y: -1}, {X: 1, Y: 0}, {X: 0, Y: 1}, {X: -1, Y: 0},
+	{X: 1, Y: -1}, {X: 1, Y: 1}, {X: -1, Y: 1}, {X: -1, Y: -1},
+}
 
 // canStep refuses diagonal moves that would cut a corner.
 func canStep(m *content.Map, x, y, dx, dy int) bool {
@@ -48,6 +55,7 @@ func (p *pathfinder) push(f float64, c int) {
 	}
 	p.heap = h
 }
+
 func (p *pathfinder) pop() int {
 	h := p.heap
 	top, last := h[0], h[len(h)-1]
@@ -77,7 +85,8 @@ func (p *pathfinder) pop() int {
 func (p *pathfinder) find(m *content.Map, sx, sy int, target Rect, reach int) []Point {
 	N := m.Size
 	if len(p.g) < N*N {
-		p.g, p.from, p.state, p.closed, p.n = make([]float32, N*N), make([]int, N*N), make([]uint32, N*N), make([]uint32, N*N), 0
+		p.g, p.from = make([]float32, N*N), make([]int, N*N)
+		p.state, p.closed, p.n = make([]uint32, N*N), make([]uint32, N*N), 0
 	}
 	p.n++
 	p.heap = p.heap[:0]

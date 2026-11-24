@@ -18,10 +18,28 @@ import (
 
 // The first migration matches databases made by the earlier TypeScript server.
 var migrations = []string{
-	`CREATE TABLE accounts(id INTEGER PRIMARY KEY, name TEXT NOT NULL, key TEXT NOT NULL UNIQUE, salt BLOB NOT NULL, hash BLOB NOT NULL, created INTEGER NOT NULL);
-   CREATE TABLE sessions(token_hash TEXT PRIMARY KEY, account INTEGER NOT NULL REFERENCES accounts(id), expires INTEGER NOT NULL);
-   CREATE TABLE characters(account INTEGER PRIMARY KEY REFERENCES accounts(id), data TEXT NOT NULL, saved INTEGER NOT NULL);`,
+	`CREATE TABLE accounts(
+		id INTEGER PRIMARY KEY,
+		name TEXT NOT NULL,
+		key TEXT NOT NULL UNIQUE,
+		salt BLOB NOT NULL,
+		hash BLOB NOT NULL,
+		created INTEGER NOT NULL
+	);
+	CREATE TABLE sessions(
+		token_hash TEXT PRIMARY KEY,
+		account INTEGER NOT NULL REFERENCES accounts(id),
+		expires INTEGER NOT NULL
+	);
+	CREATE TABLE characters(
+		account INTEGER PRIMARY KEY REFERENCES accounts(id),
+		data TEXT NOT NULL,
+		saved INTEGER NOT NULL
+	);`,
 }
+
+const options = "?_pragma=journal_mode(WAL)&_pragma=foreign_keys(1)" +
+	"&_pragma=busy_timeout(5000)&_pragma=synchronous(FULL)"
 
 type Account struct {
 	ID         int64
@@ -41,7 +59,7 @@ type Store struct {
 }
 
 func Open(path string) (*Store, error) {
-	db, err := sql.Open("sqlite", "file:"+path+"?_pragma=journal_mode(WAL)&_pragma=foreign_keys(1)&_pragma=busy_timeout(5000)&_pragma=synchronous(FULL)")
+	db, err := sql.Open("sqlite", "file:"+path+options)
 	if err != nil {
 		return nil, err
 	}
@@ -64,7 +82,13 @@ func Open(path string) (*Store, error) {
 	if _, err := db.Exec("DELETE FROM sessions WHERE expires < ?", time.Now().UnixMilli()); err != nil {
 		return nil, err
 	}
-	s := &Store{db: db, pending: map[int64][]byte{}, wake: make(chan struct{}, 1), stop: make(chan struct{}), done: make(chan struct{})}
+	s := &Store{
+		db:      db,
+		pending: map[int64][]byte{},
+		wake:    make(chan struct{}, 1),
+		stop:    make(chan struct{}),
+		done:    make(chan struct{}),
+	}
 	go s.run()
 	return s, nil
 }
@@ -73,9 +97,11 @@ func Open(path string) (*Store, error) {
 func (s *Store) FindAccount(name string) (*Account, error) {
 	return s.account("SELECT id, name, salt, hash FROM accounts WHERE key = ?", strings.ToLower(name))
 }
+
 func (s *Store) Account(id int64) (*Account, error) {
 	return s.account("SELECT id, name, salt, hash FROM accounts WHERE id = ?", id)
 }
+
 func (s *Store) account(q string, arg any) (*Account, error) {
 	var a Account
 	err := s.db.QueryRow(q, arg).Scan(&a.ID, &a.Name, &a.Salt, &a.Hash)
@@ -87,7 +113,8 @@ func (s *Store) account(q string, arg any) (*Account, error) {
 
 // CreateAccount returns 0 when the name is taken.
 func (s *Store) CreateAccount(name string, salt, hash []byte) (int64, error) {
-	r, err := s.db.Exec("INSERT OR IGNORE INTO accounts(name,key,salt,hash,created) VALUES(?,?,?,?,?)", name, strings.ToLower(name), salt, hash, time.Now().UnixMilli())
+	const insert = "INSERT OR IGNORE INTO accounts(name,key,salt,hash,created) VALUES(?,?,?,?,?)"
+	r, err := s.db.Exec(insert, name, strings.ToLower(name), salt, hash, time.Now().UnixMilli())
 	if err != nil {
 		return 0, err
 	}
@@ -96,6 +123,7 @@ func (s *Store) CreateAccount(name string, salt, hash []byte) (int64, error) {
 	}
 	return r.LastInsertId()
 }
+
 func (s *Store) AddSession(tokenHash string, account int64, expires time.Time) error {
 	_, err := s.db.Exec("INSERT INTO sessions VALUES(?,?,?)", tokenHash, account, expires.UnixMilli())
 	return err
@@ -104,12 +132,14 @@ func (s *Store) AddSession(tokenHash string, account int64, expires time.Time) e
 // Session returns 0 when the token is unknown or expired.
 func (s *Store) Session(tokenHash string) (int64, error) {
 	var id int64
-	err := s.db.QueryRow("SELECT account FROM sessions WHERE token_hash=? AND expires>?", tokenHash, time.Now().UnixMilli()).Scan(&id)
+	const query = "SELECT account FROM sessions WHERE token_hash=? AND expires>?"
+	err := s.db.QueryRow(query, tokenHash, time.Now().UnixMilli()).Scan(&id)
 	if errors.Is(err, sql.ErrNoRows) {
 		return 0, nil
 	}
 	return id, err
 }
+
 func (s *Store) DropSession(tokenHash string) error {
 	_, err := s.db.Exec("DELETE FROM sessions WHERE token_hash=?", tokenHash)
 	return err
@@ -139,6 +169,7 @@ func (s *Store) Load(account int64) (*game.Char, error) {
 	return &c, nil
 }
 
+// Save keeps a character to be written soon.
 func (s *Store) Save(account int64, data []byte) {
 	s.mu.Lock()
 	s.pending[account] = data
@@ -148,6 +179,8 @@ func (s *Store) Save(account int64, data []byte) {
 	default:
 	}
 }
+
+// run writes what is waiting whenever something was saved.
 func (s *Store) run() {
 	defer close(s.done)
 	for {
@@ -160,6 +193,7 @@ func (s *Store) run() {
 		}
 	}
 }
+
 func (s *Store) flush() {
 	s.mu.Lock()
 	s.writing, s.pending = s.pending, map[int64][]byte{}
@@ -185,6 +219,10 @@ func (s *Store) flush() {
 	s.writing = nil
 	s.mu.Unlock()
 }
+
+const upsert = `INSERT INTO characters VALUES(?,?,?)
+	ON CONFLICT(account) DO UPDATE SET data=excluded.data, saved=excluded.saved`
+
 func (s *Store) write(batch map[int64][]byte) error {
 	if len(batch) == 0 {
 		return nil
@@ -195,7 +233,7 @@ func (s *Store) write(batch map[int64][]byte) error {
 	}
 	defer tx.Rollback()
 	for id, data := range batch {
-		if _, err := tx.Exec("INSERT INTO characters VALUES(?,?,?) ON CONFLICT(account) DO UPDATE SET data=excluded.data, saved=excluded.saved", id, string(data), time.Now().UnixMilli()); err != nil {
+		if _, err := tx.Exec(upsert, id, string(data), time.Now().UnixMilli()); err != nil {
 			return err
 		}
 	}
