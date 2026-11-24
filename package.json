@@ -18,6 +18,7 @@
     "dev:server": "go build -o bin/server ./server/cmd/server && cd server && PORT=3000 MAGICKA_DEV=1 exec ../bin/server"
   },
   "devDependencies": {
+    "@biomejs/biome": "^2.6.8",
     "@bufbuild/protoc-gen-es": "^2.17.0",
     "@types/node": "^26.6.6",
     "@types/three": "^0.187.0",

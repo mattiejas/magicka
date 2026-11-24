@@ -21,12 +21,12 @@ Production, one binary and one port:
     npm run build
     npm start
 
-| Variable | Default | Purpose |
-|---|---|---|
-| `PORT` | 3000 | HTTP and WebSocket port |
-| `DB_PATH` | `magicka.db` | SQLite file (`npm run dev` uses `server/magicka.db`) |
-| `CLIENT_DIR` | `client/dist` | Built client |
-| `ALLOWED_ORIGINS` | same host only | Comma-separated origins |
+| Variable          | Default        | Purpose                                              |
+| ----------------- | -------------- | ---------------------------------------------------- |
+| `PORT`            | 3000           | HTTP and WebSocket port                              |
+| `DB_PATH`         | `magicka.db`   | SQLite file (`npm run dev` uses `server/magicka.db`) |
+| `CLIENT_DIR`      | `client/dist`  | Built client                                         |
+| `ALLOWED_ORIGINS` | same host only | Comma-separated origins                              |
 
 Messages are binary. To read them in development, open `http://localhost:5173/?messages`, or start the server with `LOG_MESSAGES=1`.
 

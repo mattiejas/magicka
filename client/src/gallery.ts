@@ -1,22 +1,191 @@
 // Dev-only page at /gallery.html. Query: ?set=people|monsters|nodes|camp&t=milliseconds (freeze the animation).
-import * as THREE from 'three';
+
 import { MONSTERS, NODES } from '@magicka/shared';
-import { boatGeo, mesh, monsterModel, nodeGeo, playerModel, poseMonster, posePlayer, stationGeo } from './models';
-const q = new URLSearchParams(location.search), set = q.get('set') ?? 'people', t = Number(q.get('t') ?? 0);
-const r = new THREE.WebGLRenderer({ canvas: document.getElementById('c') as HTMLCanvasElement, antialias: true, preserveDrawingBuffer: true }), s = new THREE.Scene(), cam = new THREE.PerspectiveCamera(30, 1, 0.1, 100);
-r.shadowMap.enabled = true; r.toneMapping = THREE.NeutralToneMapping; s.background = new THREE.Color('#f6f3ef');
-const sun = new THREE.DirectionalLight('#fff0d6', 2.5); sun.position.set(5, 9, 7); sun.castShadow = true; const sc = sun.shadow.camera; sc.left = sc.bottom = -12; sc.right = sc.top = 12; sun.shadow.mapSize.set(2048, 2048);
-const floor = new THREE.Mesh(new THREE.PlaneGeometry(60, 60).rotateX(-Math.PI / 2), new THREE.MeshStandardMaterial({ color: '#f4f2f0' })); floor.receiveShadow = true; s.add(sun, new THREE.HemisphereLight('#fff6ee', '#d8c2b4', 2.4), floor);
-const cols = set === 'hair' ? 4 : set === 'swing' ? 5 : set === 'turn' ? 3 : set === 'people' ? 6 : set === 'monsters' ? 5 : 6, gap = set === 'hair' ? 0.5 : set === 'swing' ? 1.3 : set === 'turn' ? 1 : set === 'head' ? 0.6 : set === 'people' ? 1.9 : set === 'monsters' ? 3 : 2.2; let n = 0;
-const put = (o: THREE.Object3D, ry = 0.5) => { o.position.x = ((n % cols) - (cols - 1) / 2) * gap; o.position.z = -Math.floor(n / cols) * gap * 1.2; o.rotation.y = ry; s.add(o); n++; };
-if (set === 'hair') for (let c = 0; c < 4; c++) { const m = playerModel(q.get('name') ?? 'Matts', [null, null, null, null], { cut: c, color: Number(q.get('color') ?? 0) }); posePlayer(m, { moving: false, walk: 0, hit: 0, t }); put(m.root, Number(q.get('ry') ?? 0.4)); }
-else if (set === 'swing') for (const [act, hit, g] of [['melee', 0, 'iron_sword'], ['melee', 0.9, 'iron_sword'], ['melee', 0.65, 'iron_sword'], ['melee', 0.4, 'iron_sword'], ['ranged', 0.5, 'oak_bow'], ['magic', 0.8, 'oak_staff'], ['mine', 0, null], ['pick', 0, null], ['', 0, null]] as [string, number, string | null][]) { const m = playerModel('Matts', [g, null, null, null]); posePlayer(m, { act, moving: act === '', walk: 1.4, hit, t, tool: 'iron_pickaxe' }); put(m.root, n < 5 ? 0.7 : 1.1); }
-else if (set === 'head') for (const [ry, g] of [[0, null], [0.6, null], [Math.PI / 2, null], [2.6, null], [0.4, 'iron_helm'], [0.4, 'leather_cowl_3']] as [number, string | null][]) { const m = playerModel(q.get('name') ?? 'Matt', [null, g, null, null]); posePlayer(m, { moving: false, walk: 0, hit: 0, t }); put(m.root, ry); }
-else if (set === 'turn') for (const ry of [0.35, Math.PI / 2, Math.PI]) { const m = playerModel(q.get('name') ?? 'Matt', [null, null, null, null]); posePlayer(m, { moving: false, walk: 0, hit: 0, t }); put(m.root, ry); }
-else if (set === 'people') for (const [act, g, hit, ry] of [['', [null, null, null, null], 0, 0.4], ['mine', [null, null, null, null], 0, 1.3], ['chop', [null, null, null, null], 0, 1.3], ['craft', [null, null, null, null], 0, 1.3], ['pick', [null, null, null, null], 0, 1.1], ['walk', ['iron_sword', null, null, null], 0, 1], ['melee', ['cobalt_sword', 'cobalt_helm', 'cobalt_plate', 'cobalt_greaves'], 0.7, 0.8], ['ranged', ['oak_bow', 'leather_cowl_3', 'leather_jerkin_3', 'leather_chaps_3'], 0, 0.6], ['magic', ['maple_staff', 'cloth_hood_4', 'cloth_robe_4', 'cloth_skirt_4'], 0.4, 0.6], ['', ['rootcleaver', null, 'adamantite_plate', null], 0, 0.5], ['', ['briarstring', 'leather_cowl_5', 'leather_jerkin_5', null], 0, 0.5], ['eat', [null, null, null, null], 0, 0.5]] as [string, (string | null)[], number, number][]) { const m = playerModel('Name' + n, g); posePlayer(m, { act: act === 'walk' ? undefined : act, moving: act === 'walk', walk: 1, hit, t, tool: act === 'chop' ? 'iron_axe' : 'copper_pickaxe' }); put(m.root, ry); }
-else if (set === 'monsters') for (const k of Object.keys(MONSTERS)) { const m = monsterModel(k); if (!MONSTERS[k].boss) poseMonster(m, { moving: false, walk: 0, hit: 0, t: t + 300, x: 0 }); put(m.root); }
+import * as THREE from 'three';
+import {
+  boatGeo,
+  mesh,
+  monsterModel,
+  nodeGeo,
+  playerModel,
+  poseMonster,
+  posePlayer,
+  stationGeo,
+} from './models';
+
+const q = new URLSearchParams(location.search),
+  set = q.get('set') ?? 'people',
+  t = Number(q.get('t') ?? 0);
+const r = new THREE.WebGLRenderer({
+    canvas: document.getElementById('c') as HTMLCanvasElement,
+    antialias: true,
+    preserveDrawingBuffer: true,
+  }),
+  s = new THREE.Scene(),
+  cam = new THREE.PerspectiveCamera(30, 1, 0.1, 100);
+r.shadowMap.enabled = true;
+r.toneMapping = THREE.NeutralToneMapping;
+s.background = new THREE.Color('#f6f3ef');
+const sun = new THREE.DirectionalLight('#fff0d6', 2.5);
+sun.position.set(5, 9, 7);
+sun.castShadow = true;
+const sc = sun.shadow.camera;
+sc.left = sc.bottom = -12;
+sc.right = sc.top = 12;
+sun.shadow.mapSize.set(2048, 2048);
+const floor = new THREE.Mesh(
+  new THREE.PlaneGeometry(60, 60).rotateX(-Math.PI / 2),
+  new THREE.MeshStandardMaterial({ color: '#f4f2f0' }),
+);
+floor.receiveShadow = true;
+s.add(sun, new THREE.HemisphereLight('#fff6ee', '#d8c2b4', 2.4), floor);
+const cols =
+    set === 'hair'
+      ? 4
+      : set === 'swing'
+        ? 5
+        : set === 'turn'
+          ? 3
+          : set === 'people'
+            ? 6
+            : set === 'monsters'
+              ? 5
+              : 6,
+  gap =
+    set === 'hair'
+      ? 0.5
+      : set === 'swing'
+        ? 1.3
+        : set === 'turn'
+          ? 1
+          : set === 'head'
+            ? 0.6
+            : set === 'people'
+              ? 1.9
+              : set === 'monsters'
+                ? 3
+                : 2.2;
+let n = 0;
+const put = (o: THREE.Object3D, ry = 0.5) => {
+  o.position.x = ((n % cols) - (cols - 1) / 2) * gap;
+  o.position.z = -Math.floor(n / cols) * gap * 1.2;
+  o.rotation.y = ry;
+  s.add(o);
+  n++;
+};
+if (set === 'hair')
+  for (let c = 0; c < 4; c++) {
+    const m = playerModel(q.get('name') ?? 'Matts', [null, null, null, null], {
+      cut: c,
+      color: Number(q.get('color') ?? 0),
+    });
+    posePlayer(m, { moving: false, walk: 0, hit: 0, t });
+    put(m.root, Number(q.get('ry') ?? 0.4));
+  }
+else if (set === 'swing')
+  for (const [act, hit, g] of [
+    ['melee', 0, 'iron_sword'],
+    ['melee', 0.9, 'iron_sword'],
+    ['melee', 0.65, 'iron_sword'],
+    ['melee', 0.4, 'iron_sword'],
+    ['ranged', 0.5, 'oak_bow'],
+    ['magic', 0.8, 'oak_staff'],
+    ['mine', 0, null],
+    ['pick', 0, null],
+    ['', 0, null],
+  ] as [string, number, string | null][]) {
+    const m = playerModel('Matts', [g, null, null, null]);
+    posePlayer(m, { act, moving: act === '', walk: 1.4, hit, t, tool: 'iron_pickaxe' });
+    put(m.root, n < 5 ? 0.7 : 1.1);
+  }
+else if (set === 'head')
+  for (const [ry, g] of [
+    [0, null],
+    [0.6, null],
+    [Math.PI / 2, null],
+    [2.6, null],
+    [0.4, 'iron_helm'],
+    [0.4, 'leather_cowl_3'],
+  ] as [number, string | null][]) {
+    const m = playerModel(q.get('name') ?? 'Matt', [null, g, null, null]);
+    posePlayer(m, { moving: false, walk: 0, hit: 0, t });
+    put(m.root, ry);
+  }
+else if (set === 'turn')
+  for (const ry of [0.35, Math.PI / 2, Math.PI]) {
+    const m = playerModel(q.get('name') ?? 'Matt', [null, null, null, null]);
+    posePlayer(m, { moving: false, walk: 0, hit: 0, t });
+    put(m.root, ry);
+  }
+else if (set === 'people')
+  for (const [act, g, hit, ry] of [
+    ['', [null, null, null, null], 0, 0.4],
+    ['mine', [null, null, null, null], 0, 1.3],
+    ['chop', [null, null, null, null], 0, 1.3],
+    ['craft', [null, null, null, null], 0, 1.3],
+    ['pick', [null, null, null, null], 0, 1.1],
+    ['walk', ['iron_sword', null, null, null], 0, 1],
+    ['melee', ['cobalt_sword', 'cobalt_helm', 'cobalt_plate', 'cobalt_greaves'], 0.7, 0.8],
+    ['ranged', ['oak_bow', 'leather_cowl_3', 'leather_jerkin_3', 'leather_chaps_3'], 0, 0.6],
+    ['magic', ['maple_staff', 'cloth_hood_4', 'cloth_robe_4', 'cloth_skirt_4'], 0.4, 0.6],
+    ['', ['rootcleaver', null, 'adamantite_plate', null], 0, 0.5],
+    ['', ['briarstring', 'leather_cowl_5', 'leather_jerkin_5', null], 0, 0.5],
+    ['eat', [null, null, null, null], 0, 0.5],
+  ] as [string, (string | null)[], number, number][]) {
+    const m = playerModel('Name' + n, g);
+    posePlayer(m, {
+      act: act === 'walk' ? undefined : act,
+      moving: act === 'walk',
+      walk: 1,
+      hit,
+      t,
+      tool: act === 'chop' ? 'iron_axe' : 'copper_pickaxe',
+    });
+    put(m.root, ry);
+  }
+else if (set === 'monsters')
+  for (const k of Object.keys(MONSTERS)) {
+    const m = monsterModel(k);
+    if (!MONSTERS[k].boss) poseMonster(m, { moving: false, walk: 0, hit: 0, t: t + 300, x: 0 });
+    put(m.root);
+  }
 else if (set === 'nodes') for (const k of Object.keys(NODES)) put(mesh(nodeGeo(k).full));
-else { for (const k of ['bank', 'furnace', 'anvil', 'workbench', 'reaper', 'dock']) put(mesh(stationGeo(k)), 0.3); for (const k of [0.3, 1]) { put(mesh(boatGeo(() => k)), 0.9); n++; } }
-const rows = Math.ceil(n / cols), w = cols * gap;
-function draw() { r.setSize(innerWidth, innerHeight); cam.aspect = innerWidth / innerHeight; cam.updateProjectionMatrix(); const d = Math.max(w / cam.aspect, rows * gap * 1.1) / 2 / Math.tan(0.262) + 2; if (set === 'hair') { cam.position.set(0, 1.78, 2.1); cam.lookAt(0, 1.66, 0); r.render(s, cam); return; } if (set === 'head') { cam.position.set(0, 1.62, 3.3); cam.lookAt(0, 1.52, 0); r.render(s, cam); return; } if (set === 'turn') { cam.position.set(0, 1.3, 4.6); cam.lookAt(0, 0.88, 0); r.render(s, cam); return; } cam.position.set(0, d * 0.42 + 0.6, d * 0.9 - ((rows - 1) * gap * 1.2) / 2); cam.lookAt(0, 0.7, -((rows - 1) * gap * 1.2) / 2); r.render(s, cam); }
-draw(); addEventListener('resize', draw); Object.assign(window, { tris: r.info.render.triangles });
+else {
+  for (const k of ['bank', 'furnace', 'anvil', 'workbench', 'reaper', 'dock']) put(mesh(stationGeo(k)), 0.3);
+  for (const k of [0.3, 1]) {
+    put(mesh(boatGeo(() => k)), 0.9);
+    n++;
+  }
+}
+const rows = Math.ceil(n / cols),
+  w = cols * gap;
+function draw() {
+  r.setSize(innerWidth, innerHeight);
+  cam.aspect = innerWidth / innerHeight;
+  cam.updateProjectionMatrix();
+  const d = Math.max(w / cam.aspect, rows * gap * 1.1) / 2 / Math.tan(0.262) + 2;
+  if (set === 'hair') {
+    cam.position.set(0, 1.78, 2.1);
+    cam.lookAt(0, 1.66, 0);
+    r.render(s, cam);
+    return;
+  }
+  if (set === 'head') {
+    cam.position.set(0, 1.62, 3.3);
+    cam.lookAt(0, 1.52, 0);
+    r.render(s, cam);
+    return;
+  }
+  if (set === 'turn') {
+    cam.position.set(0, 1.3, 4.6);
+    cam.lookAt(0, 0.88, 0);
+    r.render(s, cam);
+    return;
+  }
+  cam.position.set(0, d * 0.42 + 0.6, d * 0.9 - ((rows - 1) * gap * 1.2) / 2);
+  cam.lookAt(0, 0.7, -((rows - 1) * gap * 1.2) / 2);
+  r.render(s, cam);
+}
+draw();
+addEventListener('resize', draw);
+Object.assign(window, { tris: r.info.render.triangles });
