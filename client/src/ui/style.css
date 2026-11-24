@@ -330,6 +330,10 @@ h2 {
   color: #ff8d7a;
   opacity: 1;
 }
+.drop-label .take {
+  pointer-events: auto;
+  cursor: pointer;
+}
 #side .log {
   max-height: 46vh;
   overflow-y: auto;
@@ -706,6 +710,19 @@ h2 {
 .setting .choices button {
   padding: 4px 10px;
   font-size: 13px;
+}
+.setting input.threshold {
+  appearance: auto;
+  width: 5.5em;
+  height: auto;
+  padding: 4px 8px;
+  background: var(--bg2);
+  border: 1px solid var(--line);
+  color: inherit;
+  font: inherit;
+}
+.setting input.threshold::after {
+  content: none;
 }
 #fps {
   position: fixed;
