@@ -14,6 +14,7 @@ import { send } from '../net/connection';
 import { state } from '../net/state';
 import { collectionLog } from './collection';
 import { bar, button, h, renderIfChanged } from './dom';
+import { healthBar } from './health';
 import { skillIcon } from './icons/skills';
 import { clickAction, type ItemAction, menuActions, quickDropAction } from './itemActions';
 import { itemSlot, level } from './items';
@@ -30,6 +31,7 @@ export function sidebar(): HTMLElement {
     { id: 'side', class: 'panel' },
     h('div', { class: 'tabs' }, ...tabs),
     h('div', { class: 'body' }),
+    healthBar(),
   );
 }
 

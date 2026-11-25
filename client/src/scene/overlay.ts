@@ -1,6 +1,7 @@
 // Text drawn over the world: names, health bars, damage numbers and chat.
 import { type Entity, MONSTERS, type TilePos } from '@driftwake/shared';
 import { centreOf, state } from '../net/state';
+import { uiScale } from '../ui/scale';
 import { ChatLabels } from './chatLabels';
 import { DropLabels } from './dropLabels';
 import { XpLabels } from './xpLabels';
@@ -27,16 +28,18 @@ export class Overlay {
   private texts: FloatingText[] = [];
   private dropLabels: DropLabels;
   private xpLabels: XpLabels;
+  private project: Project;
   private chatLabels: ChatLabels;
 
   constructor(
     private root: HTMLElement,
-    private project: Project,
+    project: Project,
     private heightOf: (id: string) => number,
   ) {
-    this.dropLabels = new DropLabels(root, project);
-    this.xpLabels = new XpLabels(root, project, heightOf);
-    this.chatLabels = new ChatLabels(root, project, heightOf, () => this.xpLabels.height);
+    this.project = inScaledPixels(project);
+    this.dropLabels = new DropLabels(root, this.project);
+    this.xpLabels = new XpLabels(root, this.project, heightOf);
+    this.chatLabels = new ChatLabels(root, this.project, heightOf, () => this.xpLabels.height);
   }
 
   /** Shows a chat line above its speaker's head. */
@@ -104,6 +107,18 @@ export class Overlay {
     return true;
   }
 }
+
+/**
+ * The overlay is scaled with the interface (see `#overlay` in style.css), so everything in it is placed in
+ * its own pixels: window pixels divided by the scale. Text added here is scaled by that alone.
+ */
+const inScaledPixels =
+  (project: Project): Project =>
+  (x, z, height) => {
+    const screen = project(x, z, height);
+    const scale = uiScale();
+    return { ...screen, x: screen.x / scale, y: screen.y / scale };
+  };
 
 const isHurt = (entity: Entity) => entity.hp! < entity.maxHp!;
 const hasTag = (entity: Entity) =>
