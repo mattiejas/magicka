@@ -29,7 +29,7 @@ const bank = () =>
       new THREE.CylinderGeometry(0.32, 0.32, 0.95, 6, 1, false, 0, Math.PI),
       shade(WOOD, 1.12),
       [0, 0.52, 0],
-      [0, Math.PI / 2, Math.PI / 2],
+      [0, 0, Math.PI / 2],
     ),
     ...[-0.36, 0, 0.36].flatMap(x => [
       part(torus(0.325, 0.025, Math.PI), '#b99a5a', [x, 0.52, 0], [0, Math.PI / 2, 0]),
