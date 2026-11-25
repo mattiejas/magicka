@@ -12,6 +12,7 @@ import {
   nodeGeo,
   npcModel,
   playerModel,
+  poseBoss,
   poseMonster,
   posePlayer,
   stationGeo,
@@ -152,6 +153,28 @@ const SETS: Record<string, GallerySet> = {
         if (!boss) poseMonster(model, { ...STILL, time: time + 300, phase: 0 });
         return { object: model.root };
       }),
+  },
+  // Each row is an attack of Gnashclaw's: idle, early and late in the wind-up, as it lands, and shut.
+  claws: {
+    columns: 5,
+    gap: 4.2,
+    exhibits: () =>
+      ['snap', 'double_snap', 'jet'].flatMap(attack =>
+        (
+          [
+            ['choose', 0],
+            ['windup', 0.25],
+            ['windup', 1],
+            ['execute', 0],
+            ['execute', 0.2],
+          ] as const
+        ).map(([state, progress]) => {
+          const model = monsterModel('gnashclaw');
+          const [start, end] = state === 'execute' ? [4, 6] : [1, 4];
+          poseBoss(model, { state, attack, tiles: [], centres: [], start, end }, progress);
+          return { object: model.root, turn: 0.2 };
+        }),
+      ),
   },
   capes: {
     columns: 5,

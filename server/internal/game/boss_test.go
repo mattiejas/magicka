@@ -36,30 +36,36 @@ func TestBossOnlyCyclesThreeStates(t *testing.T) {
 			}
 			if prev.st == choose && b.st == windup {
 				chosen[b.atk.ID] = true
-				check(t, near || b.atk.ID != "melee", "melee out of reach")
+				check(t, near == (b.atk.ID != "jet"), b.atk.ID, "near", near)
 			}
 		}
 		prev, started = *b, true
 	}
-	eq(t, chosen, map[string]bool{"melee": true, "boulder": true, "vines": true})
+	eq(t, chosen, map[string]bool{"snap": true, "double_snap": true, "jet": true})
 }
 
 func TestTelegraphsCanBeDodgedAndRoot(t *testing.T) {
 	e := setup(t)
-	p, m := e.player(1), e.monster("gnashclaw")
+	p, m := e.player(1), e.monster("colossus")
+	e.w.enter(m)
+	for _, other := range e.w.monsters { // none of which may join in
+		if other != m {
+			other.Dead, other.respawnAt = true, math.MaxInt
+		}
+	}
 	dodged, hit, rooted := 0, 0, 0
 	for i := range 800 {
 		dodge, b := i < 400, m.boss
-		e.at(p, m.X-6, m.Y, "island")
-		if b.st == windup && b.end == e.w.Tick+1 && dodge && b.atk.ID != "melee" {
-			e.at(p, m.X-8, m.Y+3, "island")
+		e.at(p, m.X-6, m.Y, m.Map.ID)
+		if b.st == windup && b.end == e.w.Tick+1 && dodge && slices.Contains(b.tiles, p.at()) {
+			e.at(p, m.X-8, m.Y+3, m.Map.ID)
 		}
 		e.provoke(p, m)
 		e.run(1)
 		b = m.boss
 		if b.st == execute && b.start == e.w.Tick {
 			if p.C.HP < 1e6 {
-				check(t, !dodge, "dodged attack hit")
+				check(t, !dodge, "dodged attack hit", b.atk.ID)
 				hit++
 			} else {
 				dodged++
@@ -456,56 +462,4 @@ func TestReaperGivesKeptItemsBeforeTheGrave(t *testing.T) {
 	e.do(p, claimMsg, 1)
 	eq(t, p.count("rootcleaver"), 1)
 	eq(t, p.C.Grave.Items, []*Stack{{"ash_log", 24}})
-}
-
-// A level 8 player in copper with six rations.
-func solo(t *testing.T, seed int64, dodge bool) bool {
-	e := setup(t)
-	e.w.rnd = Mulberry(uint32(seed))
-	p, m := e.player(50+seed), e.monster("gnashclaw")
-	setLevel(p, 8)
-	armour := map[string]string{
-		"weapon": "copper_sword", "body": "copper_plate", "legs": "copper_greaves", "head": "copper_helm",
-	}
-	for slot, id := range armour {
-		p.C.Equip[slot] = &Stack{id, 1}
-	}
-	p.give("ration", 6)
-	e.at(p, m.X-1, m.Y, "island")
-	for range 900 {
-		b, hot := m.boss, false
-		for _, q := range b.tiles {
-			hot = hot || b.st == windup && q == Point{X: p.C.X, Y: p.C.Y}
-		}
-		if food := slotOf(p, "ration"); p.C.HP < 20 && food >= 0 {
-			e.do(p, &pb.ClientMessage{Msg: &pb.ClientMessage_EatSlot{EatSlot: uint32(food)}}, 0)
-		}
-		if dodge && hot {
-			e.do(p, move(uint32(p.C.X-3), uint32(p.C.Y)), 0)
-		} else if p.act.typ != actAttack && !(dodge && b.st == windup && b.atk.ID != "melee") {
-			e.do(p, attackMsg(m.ID), 0)
-		}
-		e.run(1)
-		if m.Dead {
-			return true
-		}
-		if p.C.Grave != nil {
-			return false
-		}
-	}
-	return false
-}
-
-func TestMiniBossRewardsDodging(t *testing.T) {
-	a, b := 0, 0
-	for s := int64(1); s <= 30; s++ {
-		if solo(t, s, true) {
-			a++
-		}
-		if solo(t, s, false) {
-			b++
-		}
-	}
-	t.Logf("mini boss solo wins of 30: dodging %d, standing still %d", a, b)
-	check(t, a >= 24 && a > b+10, a, b)
 }

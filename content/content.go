@@ -97,7 +97,7 @@ type Loot struct {
 }
 
 // Shapes are the ways in which an attack can mark ground. Melee has none: it has a target.
-var Shapes = []string{"square", "cross", "rings"}
+var Shapes = []string{"square", "cross", "rings", "side", "sides", "line"}
 
 type Attack struct {
 	ID, Name, Shape              string

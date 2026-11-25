@@ -4,8 +4,10 @@ import { ball, blob, lathe, merge, part, shade, taper } from '../../geo';
 import { type Geometry, pivot, ring, SIDES } from '../model';
 import type { MonsterShape } from './shape';
 
-// The legs span 2.72 tiles at scale 1; Gnashclaw's 3 by 3 is filled to about 2.9 by this, and only the claws reach out.
-const SCALE = 1.06;
+// At this scale the legs stay within Gnashclaw's 3 by 3 whichever way he turns, and only the claws reach out.
+const SCALE = 1.01;
+/** Where the left claw joins the body; the right one is mirrored. */
+export const CLAW_JOINT = { x: 0.68, y: 0.6, z: 0.45 };
 
 export function crab({ color: c }: MonsterDef): MonsterShape {
   const light = shade(c, 1.2);
@@ -152,29 +154,43 @@ export function crab({ color: c }: MonsterDef): MonsterShape {
           ),
           light,
         ),
-        part(
-          taper(
-            [
-              [s * -0.08, 0.02, 0.92],
-              [s * -0.18, 0.04, 1.15],
-              [s * 0.02, 0.02, 1.36],
-            ],
-            0.11,
-            0.012,
-          ),
-          light,
-        ),
         ...[0, 1, 2, 3].map(i => part(ball(0.035), '#f0e2cc', [s * (0.19 - i * 0.015), 0.1, 1 + i * 0.09])),
       ]),
-      s * 0.68,
-      0.6,
-      0.45,
+      s * CLAW_JOINT.x,
+      CLAW_JOINT.y,
+      CLAW_JOINT.z,
     );
+    const finger = pivot(
+      part(
+        taper(
+          [
+            [s * 0.02, 0, -0.06],
+            [s * -0.12, 0.02, 0.22],
+            [s * 0.1, 0, 0.5],
+          ],
+          0.13,
+          0.012,
+        ),
+        light,
+      ),
+      s * -0.1,
+      0.02,
+      0.9,
+    );
+    joint.add(finger);
     joint.scale.setScalar(1.1);
-    return joint;
+    return { joint, finger };
   };
+  const left = claw(1);
+  const right = claw(-1);
   return {
-    parts: { body: pivot(merge(shell), 0, 0.6), la: claw(1), ra: claw(-1) },
+    parts: {
+      body: pivot(merge(shell), 0, 0.6),
+      la: left.joint,
+      ra: right.joint,
+      leftFinger: left.finger,
+      rightFinger: right.finger,
+    },
     height: 1.75 * SCALE,
     scale: SCALE,
   };

@@ -38,7 +38,7 @@ func (e *env) strikesFor(m *Monster, a *content.Attack, at Point, draw float64) 
 	p := e.player(1)
 	e.at(p, at.X, at.Y, m.Map.ID)
 	e.w.rnd = func() float64 { return draw }
-	return shapes[a.Shape](e.w, m, a, []*Player{p})
+	return shapes[a.Shape].mark(e.w, m, a, []*Player{p})
 }
 
 func TestEveryShapeIsKnown(t *testing.T) {
@@ -256,5 +256,5 @@ func TestARootEndsWellBeforeTheNextBoulderOrQuake(t *testing.T) {
 		t.Log(id, "margin", measured[id], "escape", escape[id])
 		check(t, measured[id] > escape[id], id, "margin", measured[id], "escape", escape[id])
 	}
-	eq(t, measured, map[string]int{"gnashclaw": 5, "colossus": 3})
+	eq(t, measured, map[string]int{"colossus": 3})
 }

@@ -4347,42 +4347,40 @@
     "world": false,
     "attacks": [
      {
-      "id": "melee",
-      "name": "Claw",
-      "weight": 4,
+      "id": "snap",
+      "shape": "side",
+      "name": "Snap",
+      "weight": 5,
       "windup": 3,
-      "execute": 1,
+      "execute": 2,
       "damage": [
-       3,
-       6
+       8,
+       12
       ]
      },
      {
-      "id": "boulder",
-      "shape": "square",
-      "name": "Hurled stone",
-      "weight": 3,
+      "id": "double_snap",
+      "shape": "sides",
+      "name": "Double snap",
+      "weight": 2,
       "windup": 5,
+      "execute": 2,
+      "damage": [
+       12,
+       16
+      ]
+     },
+     {
+      "id": "jet",
+      "shape": "line",
+      "name": "Water jet",
+      "weight": 3,
+      "windup": 4,
       "execute": 2,
       "damage": [
        9,
        14
-      ],
-      "count": 1
-     },
-     {
-      "id": "vines",
-      "shape": "cross",
-      "name": "Grasping kelp",
-      "weight": 2,
-      "windup": 6,
-      "execute": 2,
-      "damage": [
-       4,
-       7
-      ],
-      "root": 4,
-      "count": 1
+      ]
      }
     ]
    }
@@ -4885,7 +4883,7 @@
      }
     },
     {
-     "text": "Defeat Old Gnashclaw on the eastern sand. He swallowed the ship's wheel. Step off marked ground.",
+     "text": "Defeat Old Gnashclaw on the eastern sand. He swallowed the ship's wheel. When he opens a claw, step off the marked ground.",
      "need": {
       "own": [
        "ships_wheel"

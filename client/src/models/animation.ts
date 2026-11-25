@@ -3,6 +3,7 @@ import { type BossView, ITEMS } from '@driftwake/shared';
 import type * as THREE from 'three';
 import { heldGeo } from './held';
 import { type Model, mesh, TAU } from './model';
+import { CLAW_JOINT } from './monsters/crab';
 import { HIP } from './player/plan';
 
 export interface Pose {
@@ -391,16 +392,16 @@ const BOTH_ARMS: [number, number] = [1, 1];
 
 /** `progress` runs from 0 to 1 through the wind-up, then again through the execution. */
 export function poseBoss({ parts, kind }: Model, boss: BossView, progress: number) {
-  const isCrab = kind === 'crab';
+  if (kind === 'crab') return poseCrab(parts, boss, progress);
   let left = 0;
   let right = 0;
   let tilt = Math.sin(performance.now() / 900) * 0.02;
   if (boss.state === 'windup') {
     const [leftLift, rightLift] = BOSS_ARMS[boss.attack!] ?? BOTH_ARMS;
-    left = -leftLift * progress * (isCrab ? 0.9 : 2.6);
-    right = -rightLift * progress * (isCrab ? 1.1 : 2.6);
+    left = -leftLift * progress * 2.6;
+    right = -rightLift * progress * 2.6;
     tilt -= progress * 0.12;
-    if (boss.attack === 'vines' && !isCrab) left = right = 0.5 * progress; // reaches into the ground
+    if (boss.attack === 'vines') left = right = 0.5 * progress; // reaches into the ground
   } else if (boss.state === 'execute') {
     const recoil = Math.max(0, 1 - progress * 2);
     left = boss.attack === 'melee' ? 0 : -recoil;
@@ -410,4 +411,52 @@ export function poseBoss({ parts, kind }: Model, boss: BossView, progress: numbe
   parts.la.rotation.x = left;
   parts.ra.rotation.x = right;
   parts.body.rotation.x = tilt;
+}
+
+/** How far a claw opens, as angles of its finger and of the claw away from it. */
+const FINGER_OPEN = 1.25;
+const CLAW_TWIST = 0.55;
+/** How far a claw turns from straight ahead: to the middle for a snap, and outwards for a double snap. */
+const SNAP_AIM = -0.42;
+const DOUBLE_SNAP_AIM = 0.65;
+
+/** The sides of the claws that snap in an attack. A single snap takes turns, by the tick at which it lands. */
+function snappingSides({ attack, state, start, end }: BossView): number[] {
+  if (attack === 'double_snap') return [1, -1];
+  if (attack !== 'snap') return [];
+  return [(state === 'windup' ? end : start) % 2 ? 1 : -1];
+}
+
+/** Claws open in the wind-up, and shut at once when the attack lands. */
+function poseCrab(parts: Model['parts'], boss: BossView, progress: number) {
+  const sway = Math.sin(performance.now() / 900) * 0.02;
+  const snapping = boss.state === 'choose' ? [] : snappingSides(boss);
+  const landed = boss.state === 'execute';
+  const drawn = Math.min(1, progress * 2); // early, so that the side can be seen
+  const shut = landed ? Math.min(1, progress * 8) : 0;
+  const recovered = landed ? Math.max(0, progress * 2 - 1) : 0;
+  for (const [side, arm, finger] of [
+    [1, parts.la, parts.leftFinger],
+    [-1, parts.ra, parts.rightFinger],
+  ] as const) {
+    let open = 0.1 + sway;
+    let aim = 0;
+    let lift = sway;
+    let reach = 0;
+    if (snapping.includes(side)) {
+      const towards = side * (boss.attack === 'snap' ? SNAP_AIM : DOUBLE_SNAP_AIM);
+      aim = towards * (landed ? 1 - recovered : drawn);
+      open = landed ? 1 - shut : 0.1 + drawn * 0.9;
+      lift = landed ? 0 : -0.25 * drawn;
+      reach = landed ? 0.4 * shut * (1 - recovered) - 0.2 * (1 - shut) : -0.2 * drawn;
+    } else if (boss.attack === 'jet' && boss.state !== 'choose')
+      aim = side * 0.3 * (landed ? 1 - progress : drawn);
+    arm.rotation.set(lift, aim + side * CLAW_TWIST * open, 0);
+    arm.position.x = side * CLAW_JOINT.x + Math.sin(aim) * reach;
+    arm.position.z = CLAW_JOINT.z + Math.cos(aim) * reach;
+    finger.rotation.y = -side * FINGER_OPEN * open;
+  }
+  const spits = boss.attack === 'jet' && boss.state !== 'choose';
+  // He leans back before he spits.
+  parts.body.rotation.x = sway + (spits ? (landed ? 0.06 * (1 - progress) : -0.1 * drawn) : 0);
 }
