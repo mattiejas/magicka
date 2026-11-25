@@ -179,6 +179,7 @@ class Builder {
         y = Math.round(cy + (rnd() * 2 - 1) * r),
         i = y * this.m.size + x;
       if (!this.m.tiles[i] || this.used.has(i) || !this.standable(x, y, 1)) continue;
+      if (this.own) this.used.add(i); // monsters of one group do not share a tile
       this.m.spawns.push({ type, x, y });
       k++;
     }
@@ -313,7 +314,7 @@ const smooth = (t: number) => {
 const turn = (from: number, to: number) => Math.abs(((from - to + 540) % 360) - 180);
 
 /** The crater of the copper mine: a floor, a steep wall, a rim, and gaps in the rim that can be walked. */
-const CRATER = { x: 45, y: 21, floor: 5.3, wall: 2, rim: 12, saddle: 3, crest: 1 };
+const CRATER = { x: 45, y: 20, floor: 5.3, wall: 2, rim: 12, saddle: 3, crest: 1 };
 /** Where the rim is low: towards camp, and to the north west, towards the essence rocks. */
 const GATES = [
   { angle: 135, width: 5 },
@@ -371,7 +372,7 @@ function island() {
     if (b.shoreDistance(x, y, 2) === 1 && high > MAX_STEP) return T.STONE;
     return high >= 10 ? T.STONE : tile === T.SAND && high > 0 ? T.GRASS : undefined;
   });
-  b.disc(45, 21, 5, T.STONE);
+  b.disc(CRATER.x, CRATER.y, 5, T.STONE);
   b.disc(51, 40, 5, T.SAND);
   b.settle();
   b.station('bank', 29, 32);
@@ -383,9 +384,9 @@ function island() {
   b.station('shop', 29, 39);
   b.keep(32, 34, 6);
   b.keep(51, 40, 6);
-  b.scatter('rock_1', 7, 45, 21, 4);
-  b.scatter('rock_2', 2, 45, 21, 4);
-  b.keep(45, 21, 6); // nothing roams on the floor of the mine
+  b.scatter('rock_1', 7, CRATER.x, CRATER.y, 4);
+  b.scatter('rock_2', 2, CRATER.x, CRATER.y, 4);
+  b.keep(CRATER.x, CRATER.y, 6); // nothing roams on the floor of the mine
   b.scatter('essence_rock', 3, 36, 17, 4);
   b.scatter('tree_1', 16, 17, 26, 8);
   b.scatter('tree_2', 2, 13, 22, 4);
@@ -393,12 +394,12 @@ function island() {
   b.scatter('berry_bush', 5, 22, 40, 6);
   b.mobs('boar', 6, 22, 44, 6);
   b.mobs('spitter', 4, 33, 18, 5);
-  b.mobs('wisp', 4, 40, 14, 4);
+  b.mobs('wisp', 4, 39, 15, 4);
   m.spawns.push({ type: 'gnashclaw', x: 50, y: 39 });
   b.mobs('chicken', 5, 39, 43, 3);
   m.labels.push(
     { name: 'Camp', x: 32, y: 34 },
-    { name: 'Copper crater', x: 45, y: 22 },
+    { name: 'Copper crater', x: CRATER.x, y: CRATER.y + 1 },
     { name: 'Ash grove', x: 17, y: 26 },
     { name: 'Dock', x: 32, y: 57 },
     { name: 'Gnashclaw', x: 51, y: 40 },
