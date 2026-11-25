@@ -1,5 +1,5 @@
 // Grass, flowers and pebbles scattered over a map. Decoration only.
-import { type GameMap, T } from '@driftwake/shared';
+import { type GameMap, groundHeight, T } from '@driftwake/shared';
 import * as THREE from 'three';
 import { blob, MAT, merge, part, shade, taper } from '../geo';
 
@@ -66,7 +66,7 @@ interface Scatter {
 export function groundDetail(map: GameMap, random: () => number, density = 1): THREE.InstancedMesh[] {
   if (density <= 0) return [];
   const onGrass = (tile: number) => tile === T.GRASS;
-  const onBareGround = (tile: number) => tile !== T.GRASS;
+  const onBareGround = (tile: number) => tile !== T.GRASS && tile !== T.PATH;
   const scatters: Scatter[] = [
     { geometry: merge(grassBlades().slice(0, 3)), count: map.size * 10 * density, growsOn: onGrass },
     { geometry: flower(), count: map.size * 1.5 * density, growsOn: onGrass },
@@ -96,7 +96,11 @@ function scatterPlacements(map: GameMap, random: () => number, { count, growsOn 
     const scale = 0.75 + random() * 0.6;
     const turn = new THREE.Quaternion().setFromAxisAngle(UP, random() * 6.28);
     out.push(
-      new THREE.Matrix4().compose(new THREE.Vector3(x, 0, y), turn, new THREE.Vector3(scale, scale, scale)),
+      new THREE.Matrix4().compose(
+        new THREE.Vector3(x, groundHeight(map, x, y), y),
+        turn,
+        new THREE.Vector3(scale, scale, scale),
+      ),
     );
   }
   return out;

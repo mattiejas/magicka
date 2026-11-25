@@ -18,11 +18,16 @@ export function checkAttacks(monsters: c.MonsterDef[]) {
 export function build(): Record<string, string> {
   checkAttacks(Object.values(c.MONSTERS));
   const line = (o: unknown) => `${JSON.stringify(o, null, 1)}\n`;
-  const maps = Object.values(MAPS).map(({ tiles, blocked: _b, ...m }) => ({
+  // One character per tile. Heights and walls are left out of a map that has none.
+  const rowsOf = (cells: Uint8Array, size: number, digit: (n: number) => string = String) =>
+    Array.from({ length: size }, (_, y) =>
+      Array.from(cells.subarray(y * size, (y + 1) * size), digit).join(''),
+    );
+  const maps = Object.values(MAPS).map(({ tiles, heights, walls, blocked: _b, ...m }) => ({
     ...m,
-    rows: Array.from({ length: m.size }, (_, y) =>
-      Array.from(tiles.subarray(y * m.size, (y + 1) * m.size)).join(''),
-    ),
+    rows: rowsOf(tiles, m.size),
+    ...(heights.some(Boolean) && { heights: rowsOf(heights, m.size, n => n.toString(36)) }),
+    ...(walls.some(Boolean) && { walls: rowsOf(walls, m.size) }),
   }));
   const styles = ['melee', 'ranged', 'magic'] as const;
   const vectors = {

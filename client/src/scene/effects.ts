@@ -36,7 +36,11 @@ export class Effects {
   /** Number of the last strike seen, per worker. */
   private strikes = new Map<string, number>();
 
-  constructor(private scene: THREE.Scene) {}
+  constructor(
+    private scene: THREE.Scene,
+    /** The height of the ground at a point. */
+    private groundAt: (x: number, z: number) => number,
+  ) {}
 
   update(now: number) {
     this.active = this.active.filter(effect => {
@@ -54,10 +58,11 @@ export class Effects {
   projectile(from: TilePos, to: TilePos, style: string) {
     const isMagic = style === 'magic';
     const material = new THREE.MeshBasicMaterial({ color: isMagic ? '#a9d0ea' : '#e5d9bd' });
+    const [fromGround, toGround] = [this.groundAt(...from), this.groundAt(...to)];
     this.play(new THREE.Mesh(isMagic ? BOLT : ARROW, material), PROJECTILE_MS, (mesh, t) => {
-      const arc = 1 + Math.sin(t * 3.14) * 0.3;
+      const arc = 1 + Math.sin(t * 3.14) * 0.3 + fromGround + (toGround - fromGround) * t;
       mesh.position.set(from[0] + (to[0] - from[0]) * t, arc, from[1] + (to[1] - from[1]) * t);
-      mesh.lookAt(to[0], 1, to[1]);
+      mesh.lookAt(to[0], toGround + 1, to[1]);
     });
   }
 
@@ -67,10 +72,11 @@ export class Effects {
       if ((x + y) % 2) continue; // half the tiles is plenty
       const angle = Math.random() * 6;
       const mesh = new THREE.Mesh(CHIP, new THREE.MeshStandardMaterial({ color }));
+      const ground = this.groundAt(x + 0.5, y + 0.5);
       this.play(mesh, 500, (m, t) => {
         m.position.set(
           x + 0.5 + Math.cos(angle) * t,
-          Math.sin(t * 3.14) * 1.1,
+          ground + Math.sin(t * 3.14) * 1.1,
           y + 0.5 + Math.sin(angle) * t,
         );
         m.scale.setScalar(1 - t);
@@ -89,16 +95,17 @@ export class Effects {
     if (!landed || (!worker.target && worker.action !== 'craft')) return;
     const x = worker.x + 0.5 + Math.sin(facing) * REACH;
     const z = worker.y + 0.5 + Math.cos(facing) * REACH;
-    for (let i = 0; i < CHIPS_PER_STRIKE; i++) this.chip(x, z, debris);
+    const ground = this.groundAt(x, z);
+    for (let i = 0; i < CHIPS_PER_STRIKE; i++) this.chip(x, z, ground, debris);
   }
 
-  private chip(x: number, z: number, { color, glow, height, scale }: Debris) {
+  private chip(x: number, z: number, ground: number, { color, glow, height, scale }: Debris) {
     const angle = Math.random() * 6.28;
     const speed = 0.25 + Math.random() * 0.4;
     const lift = 0.4 + Math.random() * 0.5;
     const material = new THREE.MeshStandardMaterial({ color, roughness: 1, emissive: glow });
     this.play(new THREE.Mesh(CHIP, material), 450 + Math.random() * 200, (mesh, t) => {
-      const y = Math.max(0.03, height + lift * t * 1.6 - 2 * t * t);
+      const y = ground + Math.max(0.03, height + lift * t * 1.6 - 2 * t * t);
       mesh.position.set(x + Math.cos(angle) * speed * t, y, z + Math.sin(angle) * speed * t);
       mesh.rotation.set(t * 9, t * 7, 0);
       mesh.scale.setScalar((1 - t * 0.6) * scale);

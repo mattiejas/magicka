@@ -4839,7 +4839,7 @@
    "thanks": "She floats! Take this for the crossing.",
    "steps": [
     {
-     "text": "Mine copper ore on the rise north-east of camp.",
+     "text": "Mine copper ore in the crater north-east of camp.",
      "need": {
       "xp": "mining"
      }

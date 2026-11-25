@@ -1,7 +1,12 @@
 // Authoring source for the maps. Run `npm run content` after editing.
 import { NODES } from './items';
 export type MapId = 'island' | 'mainland' | 'mine';
-export const T = { WATER: 0, SAND: 1, GRASS: 2, DIRT: 3, STONE: 4, WOOD: 5 } as const;
+export const T = { WATER: 0, SAND: 1, GRASS: 2, DIRT: 3, STONE: 4, WOOD: 5, PATH: 6 } as const;
+/** The tallest height there is, and the steepest step between two neighbouring tiles that can be walked. */
+export const MAX_HEIGHT = 35;
+export const MAX_STEP = 3;
+/** Things stand where the ground is nearly level: its heights around differ by no more than this. */
+const LEVEL = 1;
 export type StationType = 'bank' | 'furnace' | 'anvil' | 'workbench' | 'reaper' | 'dock' | 'shop' | 'mine';
 export interface MapNode {
   id: string;
@@ -25,6 +30,10 @@ export interface GameMap {
   name: string;
   size: number;
   tiles: Uint8Array;
+  /** Ground height of each tile in `HEIGHT_UNIT`s (shared/src/map.ts), from 0 to 35. Only drawn. */
+  heights: Uint8Array;
+  /** Tiles that are too steep, or otherwise cannot be walked on, apart from water and what stands on them. */
+  walls: Uint8Array;
   blocked: Uint8Array;
   nodes: MapNode[];
   stations: MapStation[];
@@ -56,7 +65,21 @@ class Builder {
   m: GameMap;
   rnd: () => number;
   used = new Set<number>();
-  constructor(id: MapId, name: string, size: number, seed: number, rx: number, ry: number) {
+  /** Tiles that can be walked to from the spawn; known after `settle`. */
+  reach: Uint8Array | null = null;
+  /**
+   * With `own`, each scatter and each mob group draws from a stream of its own, started by one number of the
+   * shared one, so that a group which finds the ground in its way does not move all the groups after it.
+   */
+  constructor(
+    id: MapId,
+    name: string,
+    size: number,
+    seed: number,
+    rx: number,
+    ry: number,
+    private own = false,
+  ) {
     this.rnd = mulberry(seed);
     const c = size / 2,
       a = this.rnd() * 6,
@@ -66,6 +89,8 @@ class Builder {
       name,
       size,
       tiles: new Uint8Array(size * size),
+      heights: new Uint8Array(size * size),
+      walls: new Uint8Array(size * size),
       blocked: new Uint8Array(size * size),
       nodes: [],
       stations: [],
@@ -98,7 +123,8 @@ class Builder {
         this.m.tiles[(y + j) * this.m.size + x + i] = t;
       }
   }
-  road(x: number, y: number, x2: number, y2: number) {
+  road(x: number, y: number, x2: number, y2: number, paving: number = T.DIRT) {
+    const wearable: number[] = paving === T.PATH ? [T.GRASS, T.SAND, T.DIRT] : [T.GRASS, T.SAND];
     const put = () => {
       for (const [i, j] of [
         [0, 0],
@@ -106,7 +132,7 @@ class Builder {
         [0, 1],
       ]) {
         const k = (y + j) * this.m.size + x + i;
-        if (this.m.tiles[k] === T.GRASS || this.m.tiles[k] === T.SAND) this.m.tiles[k] = T.DIRT;
+        if (wearable.includes(this.m.tiles[k])) this.m.tiles[k] = paving;
         this.used.add(k);
       }
     };
@@ -118,18 +144,25 @@ class Builder {
     }
   }
   station(type: StationType, x: number, y: number) {
+    if (!this.level(x, y, 1)) throw new Error(`${type} does not stand level at ${x},${y}`);
     this.m.stations.push({ id: `${this.m.id}:${type}`, type, x, y });
     for (let j = -1; j <= 1; j++) for (let i = -1; i <= 1; i++) this.used.add((y + j) * this.m.size + x + i);
   }
+  /** The random numbers of one group of things: the shared sequence, or a stream of its own. */
+  private stream(): () => number {
+    return this.own ? mulberry(Math.floor(this.rnd() * 4294967296)) : this.rnd;
+  }
   scatter(type: string, n: number, cx: number, cy: number, r: number) {
+    const rnd = this.stream();
     for (let k = 0, tries = 0; k < n && tries < 600; tries++) {
-      const a = this.rnd() * 6.283,
-        d = Math.sqrt(this.rnd()) * r,
+      const a = rnd() * 6.283,
+        d = Math.sqrt(rnd()) * r,
         x = Math.round(cx + Math.cos(a) * d),
         y = Math.round(cy + Math.sin(a) * d),
         i = y * this.m.size + x;
       const t = this.m.tiles[i];
-      if (!t || t === T.WOOD || t === T.DIRT || this.used.has(i)) continue;
+      if (!t || t === T.WOOD || t === T.DIRT || t === T.PATH || this.used.has(i)) continue;
+      if (!this.standable(x, y, 1)) continue;
       // keep a walkable gap around every node
       let clear = true;
       for (const o of this.m.nodes) if (Math.max(Math.abs(o.x - x), Math.abs(o.y - y)) < 2) clear = false;
@@ -140,11 +173,13 @@ class Builder {
     }
   }
   mobs(type: string, n: number, cx: number, cy: number, r: number) {
+    const rnd = this.stream();
     for (let k = 0, g = 0; k < n && g < 500; g++) {
-      const x = Math.round(cx + (this.rnd() * 2 - 1) * r),
-        y = Math.round(cy + (this.rnd() * 2 - 1) * r),
+      const x = Math.round(cx + (rnd() * 2 - 1) * r),
+        y = Math.round(cy + (rnd() * 2 - 1) * r),
         i = y * this.m.size + x;
-      if (!this.m.tiles[i] || this.used.has(i)) continue;
+      if (!this.m.tiles[i] || this.used.has(i) || !this.standable(x, y, 1)) continue;
+      if (this.own) this.used.add(i); // monsters of one group do not share a tile
       this.m.spawns.push({ type, x, y });
       k++;
     }
@@ -157,14 +192,110 @@ class Builder {
         if (!this.m.tiles[k] || this.used.has(k)) throw new Error(`${type} does not fit at ${x},${y}`);
         this.used.add(k);
       }
+    if (!this.level(x, y, size)) throw new Error(`${type} does not stand level at ${x},${y}`);
     this.m.nodes.push({ id: `${this.m.id}:n${this.m.nodes.length}`, type, x, y });
   }
   keep(x: number, y: number, r: number) {
     for (let j = -r; j <= r; j++) for (let i = -r; i <= r; i++) this.used.add((y + j) * this.m.size + x + i);
   }
+  private land(i: number) {
+    return this.m.tiles[i] !== T.WATER;
+  }
+  private height(x: number, y: number) {
+    return this.m.heights[y * this.m.size + x];
+  }
+  /** Whether the ground under a square of tiles, and the tiles around it, is nearly level. */
+  level(x: number, y: number, size: number) {
+    const { size: side, heights } = this.m;
+    let low = MAX_HEIGHT,
+      high = 0;
+    for (let j = y - 1; j <= y + size; j++)
+      for (let i = x - 1; i <= x + size; i++) {
+        if (i < 0 || j < 0 || i >= side || j >= side || !this.land(j * side + i)) continue;
+        low = Math.min(low, heights[j * side + i]);
+        high = Math.max(high, heights[j * side + i]);
+      }
+    return high - low <= LEVEL;
+  }
+  /** Whether a tile is level ground that can be walked to from the spawn. */
+  private standable(x: number, y: number, size: number) {
+    return this.level(x, y, size) && (!this.reach || !!this.reach[y * this.m.size + x]);
+  }
+  /** Raises the ground to at least `to(x, y)` units, where that is above 0, on all land. */
+  raise(to: (x: number, y: number) => number) {
+    const { size, heights } = this.m;
+    for (let y = 0; y < size; y++)
+      for (let x = 0; x < size; x++) {
+        const i = y * size + x;
+        if (this.land(i) && this.m.tiles[i] !== T.WOOD)
+          heights[i] = Math.min(MAX_HEIGHT, Math.max(heights[i], Math.round(to(x, y))));
+      }
+  }
+  /** Changes the type of every tile for which `to` returns one. */
+  paint(to: (x: number, y: number, current: number) => number | undefined) {
+    const { size, tiles } = this.m;
+    for (let y = 0; y < size; y++)
+      for (let x = 0; x < size; x++) {
+        const i = y * size + x;
+        const type = tiles[i] === T.WATER || tiles[i] === T.WOOD ? undefined : to(x, y, tiles[i]);
+        if (type !== undefined) tiles[i] = type;
+      }
+  }
+  /** How many tiles a land tile is from the nearest water, up to `limit`. */
+  shoreDistance(x: number, y: number, limit: number) {
+    const { size, tiles } = this.m;
+    let nearest = limit;
+    for (let j = y - limit; j <= y + limit; j++)
+      for (let i = x - limit; i <= x + limit; i++)
+        if (i >= 0 && j >= 0 && i < size && j < size && tiles[j * size + i] === T.WATER)
+          nearest = Math.min(nearest, Math.max(Math.abs(i - x), Math.abs(j - y)));
+    return nearest;
+  }
+  /** Walls the tiles that are too steep to walk on, and works out which tiles can be walked to. */
+  settle() {
+    const { size, heights, walls, tiles } = this.m;
+    const flat = (i: number) => tiles[i] === T.WATER || tiles[i] === T.WOOD;
+    for (let y = 0; y < size; y++)
+      for (let x = 0; x < size; x++) {
+        const i = y * size + x;
+        if (flat(i)) continue;
+        for (let j = Math.max(0, y - 1); j <= Math.min(size - 1, y + 1); j++)
+          for (let k = Math.max(0, x - 1); k <= Math.min(size - 1, x + 1); k++) {
+            const o = j * size + k;
+            // a diagonal step is longer, and may be a little steeper
+            const allowed = j === y || k === x ? MAX_STEP : MAX_STEP * 1.5;
+            if (!flat(o) && Math.abs(heights[i] - heights[o]) > allowed) walls[i] = 1;
+          }
+      }
+    const open = (x: number, y: number) =>
+      x >= 0 && y >= 0 && x < size && y < size && tiles[y * size + x] !== T.WATER && !walls[y * size + x];
+    const reach = new Uint8Array(size * size);
+    const { x: sx, y: sy } = this.m.spawn;
+    const queue = [[sx, sy]];
+    reach[sy * size + sx] = 1;
+    for (const [x, y] of queue)
+      for (const [dx, dy] of [
+        [0, -1],
+        [1, 0],
+        [0, 1],
+        [-1, 0],
+        [1, -1],
+        [1, 1],
+        [-1, 1],
+        [-1, -1],
+      ]) {
+        const [nx, ny] = [x + dx, y + dy];
+        // diagonal steps do not cut corners, as in the server's paths
+        if (!open(nx, ny) || reach[ny * size + nx] || (dx && dy && !(open(nx, y) && open(x, ny)))) continue;
+        reach[ny * size + nx] = 1;
+        queue.push([nx, ny]);
+      }
+    this.reach = reach;
+  }
   done() {
     const m = this.m;
-    for (let i = 0; i < m.tiles.length; i++) if (m.tiles[i] === T.WATER) m.blocked[i] = 1;
+    this.settle();
+    for (let i = 0; i < m.tiles.length; i++) if (m.tiles[i] === T.WATER || m.walls[i]) m.blocked[i] = 1;
     for (const n of m.nodes) {
       if (!NODES[n.type]) throw new Error(n.type);
       const { size } = NODES[n.type];
@@ -175,18 +306,75 @@ class Builder {
     return m;
   }
 }
+const smooth = (t: number) => {
+  const u = Math.min(1, Math.max(0, t));
+  return u * u * (3 - 2 * u);
+};
+/** The angle from one direction to another, in degrees, whichever way is shorter. */
+const turn = (from: number, to: number) => Math.abs(((from - to + 540) % 360) - 180);
+
+/** The crater of the copper mine: a floor, a steep wall, a rim, and gaps in the rim that can be walked. */
+const CRATER = { x: 45, y: 20, floor: 5.3, wall: 2, rim: 12, saddle: 3, crest: 1 };
+/** Where the rim is low: towards camp, and to the north west, towards the essence rocks. */
+const GATES = [
+  { angle: 135, width: 5 },
+  { angle: 205, width: 4 },
+];
+function crater(x: number, y: number): number {
+  const { x: cx, y: cy, floor, wall, rim, saddle, crest } = CRATER;
+  const d = Math.hypot(x - cx, y - cy);
+  if (d <= floor) return 0;
+  const angle = (Math.atan2(y - cy, x - cx) * 180) / Math.PI;
+  // gates are measured in tiles along the rim, so that they are as wide as they say
+  const along = (gate: { angle: number }) => (turn(angle, gate.angle) * Math.PI * (floor + wall)) / 180;
+  const height = GATES.reduce(
+    (high, gate) => Math.min(high, saddle + (rim - saddle) * smooth((along(gate) - gate.width / 2) / 1.2)),
+    rim + Math.round(1.5 * Math.sin((angle * Math.PI) / 36)),
+  );
+  if (d <= floor + wall) return height * smooth((d - floor) / wall);
+  if (d <= floor + wall + crest) return height;
+  // behind a high rim the ground falls away in a cliff; behind a low one it can be walked down
+  const fall = height > MAX_STEP * 2 ? 1.5 : height / 2;
+  return height * (1 - smooth((d - floor - wall - crest) / fall));
+}
+
+/** A mound that can be walked up, with a flat top. */
+const mound =
+  (cx: number, cy: number, flat: number, slope: number, height: number) => (x: number, y: number) =>
+    height * (1 - smooth((Math.hypot(x - cx, y - cy) - flat) / slope));
+
 function island() {
-  const b = new Builder('island', 'Driftwake Isle', 64, 7, 27, 25),
+  const b = new Builder('island', 'Driftwake Isle', 64, 7, 27, 25, true),
     m = b.m;
   b.disc(32, 34, 5, T.DIRT);
-  b.road(32, 34, 32, 58);
-  b.road(32, 34, 47, 26);
-  b.road(32, 34, 18, 28);
+  b.disc(32, 34, 3, T.PATH);
+  b.road(32, 34, 32, 58, T.PATH);
+  b.road(32, 34, 42, 24, T.PATH);
+  b.road(32, 34, 18, 28, T.PATH);
   b.road(32, 34, 44, 42);
   b.rect(31, 53, 3, 8, T.WOOD);
   m.spawn = { x: 32, y: 35 };
   m.landing = { x: 32, y: 55 };
   m.safe = { x: 32, y: 34, r: 6 };
+  // Ground: a hill in the north, a rise under the ash grove, the crater of the mine and cliffs along the shore.
+  b.raise(mound(23, 15, 1, 7, 12));
+  b.raise(mound(14, 26, 6, 4, 5));
+  b.raise(crater);
+  b.raise((x, y) => {
+    const angle = (Math.atan2(y - 32, x - 32) * 180) / Math.PI;
+    const ends = smooth((turn(angle, -90) < 62 ? 62 - turn(angle, -90) : 0) / 14);
+    const shore = b.shoreDistance(x, y, 4);
+    return shore < 4 ? ends * Math.max(0, 9 + Math.round(2 * Math.sin(angle / 7)) - 3 * (shore - 1)) : 0;
+  });
+  b.paint((x, y, tile) => {
+    const high = m.heights[y * m.size + x];
+    if (tile === T.PATH || tile === T.DIRT) return undefined;
+    if (b.shoreDistance(x, y, 2) === 1 && high > MAX_STEP) return T.STONE;
+    return high >= 10 ? T.STONE : tile === T.SAND && high > 0 ? T.GRASS : undefined;
+  });
+  b.disc(CRATER.x, CRATER.y, 5, T.STONE);
+  b.disc(51, 40, 5, T.SAND);
+  b.settle();
   b.station('bank', 29, 32);
   b.station('furnace', 33, 30);
   b.station('anvil', 36, 31);
@@ -196,23 +384,22 @@ function island() {
   b.station('shop', 29, 39);
   b.keep(32, 34, 6);
   b.keep(51, 40, 6);
-  b.disc(51, 40, 5, T.SAND);
-  b.disc(46, 24, 4, T.STONE);
-  b.scatter('rock_1', 7, 46, 24, 5);
-  b.scatter('rock_2', 2, 49, 21, 4);
-  b.scatter('essence_rock', 3, 42, 19, 4);
+  b.scatter('rock_1', 7, CRATER.x, CRATER.y, 4);
+  b.scatter('rock_2', 2, CRATER.x, CRATER.y, 4);
+  b.keep(CRATER.x, CRATER.y, 6); // nothing roams on the floor of the mine
+  b.scatter('essence_rock', 3, 36, 17, 4);
   b.scatter('tree_1', 16, 17, 26, 8);
   b.scatter('tree_2', 2, 13, 22, 4);
   b.scatter('plant_1', 7, 26, 46, 6);
   b.scatter('berry_bush', 5, 22, 40, 6);
   b.mobs('boar', 6, 22, 44, 6);
   b.mobs('spitter', 4, 33, 18, 5);
-  b.mobs('wisp', 4, 40, 14, 4);
+  b.mobs('wisp', 4, 39, 15, 4);
   m.spawns.push({ type: 'gnashclaw', x: 50, y: 39 });
   b.mobs('chicken', 5, 39, 43, 3);
   m.labels.push(
     { name: 'Camp', x: 32, y: 34 },
-    { name: 'Copper rise', x: 46, y: 24 },
+    { name: 'Copper crater', x: CRATER.x, y: CRATER.y + 1 },
     { name: 'Ash grove', x: 17, y: 26 },
     { name: 'Dock', x: 32, y: 57 },
     { name: 'Gnashclaw', x: 51, y: 40 },

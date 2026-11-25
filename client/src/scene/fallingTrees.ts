@@ -9,6 +9,8 @@ const SINK_DEPTH = 1.6;
 
 interface Tree {
   root: THREE.Group;
+  /** Height of the foot of the tree. */
+  base: number;
   axis: THREE.Vector3;
   startedAt: number;
 }
@@ -29,16 +31,16 @@ export class FallingTrees {
     root.add(mesh);
     this.group.add(root);
     const axis = dx || dy ? new THREE.Vector3(dy, 0, -dx).normalize() : new THREE.Vector3(1, 0, 0);
-    this.trees.push({ root, axis, startedAt: performance.now() });
+    this.trees.push({ root, base: base.y, axis, startedAt: performance.now() });
   }
 
   update(now: number) {
-    this.trees = this.trees.filter(({ root, axis, startedAt }) => {
+    this.trees = this.trees.filter(({ root, base, axis, startedAt }) => {
       const elapsed = now - startedAt;
       const fall = Math.min(1, Math.max(0, elapsed / FALL_MS));
       root.setRotationFromAxisAngle(axis, fall ** 2.4 * 1.45);
       const sink = Math.max(0, (elapsed - FALL_MS - LIE_MS) / SINK_MS);
-      root.position.y = -sink * SINK_DEPTH;
+      root.position.y = base - sink * SINK_DEPTH;
       if (sink < 1) return true;
       this.group.remove(root);
       return false;
