@@ -68,7 +68,7 @@ export class Scene {
     const ray = rayAt(mouseX, mouseY, this.rig.camera);
     const fixed = this.world.picks.filter(pick => !this.world!.isDepleted(pick.id));
     const picks = [...fixed, ...entityPicks(this.world.map, id => this.entities.heightOf(id, 1))];
-    return { hits: picksOnRay(ray, picks), tile: tileOnRay(ray, this.world.map) };
+    return { hits: picksOnRay(ray, picks, this.world.map), tile: tileOnRay(ray, this.world.map) };
   }
 
   showDestination(tile: TilePos) {

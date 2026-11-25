@@ -43,14 +43,20 @@ export function rayAt(mouseX: number, mouseY: number, camera: THREE.Camera): THR
   return caster.ray;
 }
 
-/** The picks a ray passes through, nearest first. */
-export function picksOnRay(ray: THREE.Ray, picks: Pick[]): Pick[] {
+/** How far the foot of a thing may be under a slope and still be clicked. */
+const BURIED = 0.5;
+
+/** The picks a ray passes through before it meets the ground, nearest first. */
+export function picksOnRay(ray: THREE.Ray, picks: Pick[], map: GameMap): Pick[] {
+  const ground = groundOnRay(ray, map) ?? Number.POSITIVE_INFINITY;
   const hit = new THREE.Vector3();
   const found: { distance: number; pick: Pick }[] = [];
   for (const pick of picks) {
     if (!ray.intersectBox(pick.box, hit)) continue;
+    const distance = hit.distanceTo(ray.origin);
+    if (distance > ground + BURIED) continue; // behind a hill
     const priority = pick.kind === 'entity' && pick.entity.kind === 'monster' ? MONSTER_PRIORITY : 0;
-    found.push({ distance: hit.distanceTo(ray.origin) - priority, pick });
+    found.push({ distance: distance - priority, pick });
   }
   return found.sort((a, b) => a.distance - b.distance).map(f => f.pick);
 }
@@ -60,8 +66,8 @@ const SEARCH_RANGE = 90;
 const SEARCH_STEP = 0.25;
 const REFINEMENTS = 8;
 
-/** The tile where a ray first meets the ground, which may be a slope or a hill in the way. Null off the map. */
-export function tileOnRay(ray: THREE.Ray, map: GameMap): TilePos | null {
+/** How far along a ray the ground is first met, which may be a slope or a hill in the way. */
+function groundOnRay(ray: THREE.Ray, map: GameMap): number | null {
   const point = new THREE.Vector3();
   const above = (distance: number) => {
     ray.at(distance, point);
@@ -76,7 +82,14 @@ export function tileOnRay(ray: THREE.Ray, map: GameMap): TilePos | null {
     if (above(middle) > 0) near = middle;
     else far = middle;
   }
-  ray.at(far, point);
+  return far;
+}
+
+/** The tile where a ray first meets the ground. Null off the map. */
+export function tileOnRay(ray: THREE.Ray, map: GameMap): TilePos | null {
+  const distance = groundOnRay(ray, map);
+  if (distance === null) return null;
+  const point = ray.at(distance, new THREE.Vector3());
   if (point.x < 0 || point.z < 0 || point.x >= map.size || point.z >= map.size) return null;
   return [Math.floor(point.x), Math.floor(point.z)];
 }

@@ -1,7 +1,7 @@
 import { type GameMap, groundHeight, T } from '@driftwake/shared';
 import * as THREE from 'three';
 import { describe, expect, it } from 'vitest';
-import { tileOnRay } from './picking';
+import { type Pick, pickBox, picksOnRay, tileOnRay } from './picking';
 
 const SIZE = 30;
 
@@ -46,5 +46,31 @@ describe('tileOnRay', () => {
   it('is null when the ray leaves the map', () => {
     const ray = rayFrom(new THREE.Vector3(5, 10, 20), new THREE.Vector3(5, 0, 40));
     expect(tileOnRay(ray, hillMap())).toBeNull();
+  });
+});
+
+describe('picksOnRay', () => {
+  const map = hillMap();
+  const rockAt = (x: number, y: number): Pick => ({
+    kind: 'node',
+    id: `${x},${y}`,
+    type: 'rock_1',
+    box: pickBox(x, y, 1, 1, groundHeight(map, x + 0.5, y + 0.5)),
+  });
+  const seen = (from: THREE.Vector3, rock: Pick) =>
+    picksOnRay(rayFrom(from, rock.box.getCenter(new THREE.Vector3())), [rock], map).length === 1;
+
+  it('leaves out what a hill hides', () => {
+    expect(seen(new THREE.Vector3(15.5, 3, 29), rockAt(15, 5))).toBe(false);
+  });
+  it('keeps what is in front of the hill, on its slope, or seen over its top', () => {
+    expect(seen(new THREE.Vector3(15.5, 3, 29), rockAt(15, 22))).toBe(true);
+    expect(seen(new THREE.Vector3(15.5, 8, 29), rockAt(15, 17))).toBe(true);
+    expect(seen(new THREE.Vector3(15.5, 25, 29), rockAt(15, 5))).toBe(true);
+  });
+  it('keeps the foot of a thing that stands on a slope', () => {
+    const rock = rockAt(15, 17);
+    const foot = rock.box.getCenter(new THREE.Vector3()).setY(rock.box.min.y + 0.05);
+    expect(picksOnRay(rayFrom(new THREE.Vector3(15.5, 14, 28), foot), [rock], map)).toHaveLength(1);
   });
 });
