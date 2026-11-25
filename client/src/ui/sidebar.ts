@@ -15,7 +15,7 @@ import { state } from '../net/state';
 import { collectionLog } from './collection';
 import { bar, button, h, renderIfChanged } from './dom';
 import { skillIcon } from './icons/skills';
-import { clickAction, type ItemAction, menuActions } from './itemActions';
+import { clickAction, type ItemAction, menuActions, quickDropAction } from './itemActions';
 import { itemSlot, level } from './items';
 import { currentPanel, openPanel } from './panels';
 
@@ -42,9 +42,11 @@ interface TabContent {
   render: (self: SelfState) => Node[];
   /** Everything the tab shows that can change. It is only redrawn when this does. */
   shows: (self: SelfState) => unknown;
+  /** Redraws parts by itself, after `render`. */
+  update?: (self: SelfState, body: HTMLElement) => void;
 }
 const CONTENT: Record<Tab, TabContent> = {
-  inventory: { render: inventory, shows: self => self.inv },
+  inventory: { render: inventory, shows: self => self.inv.length, update: updateInventory },
   equipment: { render: equipment, shows: self => self.equip },
   skills: { render: skills, shows: self => self.xp },
   quests: { render: quests, shows: self => [self.quests, self.boatDone] },
@@ -58,8 +60,9 @@ export function updateSidebar() {
   for (const tab of document.querySelectorAll<HTMLElement>('#side .tabs button'))
     tab.classList.toggle('on', tab.dataset.tab === currentTab);
   body.classList.toggle('log', currentTab === 'log');
-  const { render, shows } = CONTENT[currentTab];
+  const { render, shows, update } = CONTENT[currentTab];
   renderIfChanged(body, JSON.stringify([currentTab, shows(self)]), () => render(self));
+  update?.(self, body);
 }
 
 // --- inventory
@@ -67,14 +70,34 @@ function inventory({ inv }: SelfState): Node[] {
   return [h('div', { class: 'grid' }, ...inv.map(inventorySlot))];
 }
 
+const drawnStacks = new WeakMap<Element, string>();
+const stackKey = (stack: Stack | null) => JSON.stringify(stack);
+
+/** Replaces only the slots that changed, so clicking quickly and dragging go on while others change. */
+function updateInventory({ inv }: SelfState, body: HTMLElement) {
+  const slots = [...body.querySelectorAll<HTMLElement>('.slot')];
+  inv.forEach((stack, slot) => {
+    const old = slots[slot];
+    if (drawnStacks.get(old) === stackKey(stack)) return;
+    const focused = document.activeElement === old;
+    const drawn = inventorySlot(stack, slot);
+    old.replaceWith(drawn);
+    if (focused) drawn.focus();
+  });
+}
+
 function inventorySlot(stack: Stack | null, slot: number): HTMLElement {
   const element = itemSlot(stack, {
-    onClick: () => stack && perform(clickAction(stack, slot, currentPanel())),
+    onClick: ({ shiftKey }) => {
+      const action = shiftKey ? quickDropAction : clickAction;
+      if (stack) perform(action(stack, slot, currentPanel()));
+    },
     menu: () =>
       menuActions(stack!, slot, currentPanel()).map(([label, action]) => [label, () => perform(action)]),
   });
   if (!stack) element.removeAttribute('disabled'); // empty slots still accept a dragged item
   makeDraggable(element, !!stack, slot);
+  drawnStacks.set(element, stackKey(stack));
   return element;
 }
 

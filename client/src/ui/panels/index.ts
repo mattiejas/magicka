@@ -20,6 +20,8 @@ interface ItemUse {
   click: (item: string) => ClientMsg;
   /** Added to the item's right-click menu. */
   menu: (item: string) => [label: string, msg: ClientMsg][];
+  /** Shift and click does not drop items. */
+  blocksQuickDrop?: boolean;
 }
 export interface Panel {
   title: string;

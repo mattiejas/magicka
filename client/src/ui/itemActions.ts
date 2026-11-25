@@ -1,4 +1,4 @@
-// What clicking or right-clicking an item in the inventory does. The open panel comes first.
+// What clicking, Shift-clicking or right-clicking an item in the inventory does. The open panel comes first.
 import { type ClientMsg, ITEMS, type Stack } from '@driftwake/shared';
 import type { Panel, PanelId } from './panels';
 
@@ -16,6 +16,13 @@ export function clickAction({ id }: Stack, slot: number, panel: Panel | null): I
   if (item.slot) return { type: 'equip', slot };
 }
 
+/** What Shift and click does. Nothing for trophies, and nothing where a panel blocks it. */
+export function quickDropAction({ id }: Stack, slot: number, panel: Panel | null): ItemAction | undefined {
+  if (canDrop(id) && !panel?.itemUse?.blocksQuickDrop) return { type: 'drop', slot };
+}
+
+const canDrop = (id: string) => !ITEMS[id].trophy;
+
 export function menuActions(
   { id }: Stack,
   slot: number,
@@ -26,6 +33,6 @@ export function menuActions(
   if (item.heal) entries.push([`Eat ${item.name}`, { type: 'eat', slot }]);
   if (item.slot) entries.push([`Equip ${item.name}`, { type: 'equip', slot }]);
   entries.push(...(panel?.itemUse?.menu(id) ?? []));
-  if (!item.trophy) entries.push([`Drop ${item.name}`, { type: 'drop', slot }]);
+  if (canDrop(id)) entries.push([`Drop ${item.name}`, { type: 'drop', slot }]);
   return entries;
 }

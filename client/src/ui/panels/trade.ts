@@ -47,6 +47,7 @@ export const tradePanel: Panel = {
   itemUse: {
     click: item => offer(item, clickQuantity()),
     menu: item => (isTradable(item) ? [['Offer all', offer(item, ALL_ITEMS)]] : []),
+    blocksQuickDrop: true, // dropping ends the trade
   },
   onOpen: resetQuantity,
   onClose() {
