@@ -47,7 +47,7 @@ const CONTENT: Record<Tab, TabContent> = {
   equipment: { render: equipment, shows: self => self.equip },
   skills: { render: skills, shows: self => self.xp },
   quests: { render: quests, shows: self => [self.quests, self.boatDone] },
-  log: { render: collectionLog, shows: self => self.found },
+  log: { render: collectionLog, shows: self => [self.found, self.kills] },
 };
 
 export function updateSidebar() {

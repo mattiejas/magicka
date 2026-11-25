@@ -17,10 +17,11 @@ import (
 
 // Errors meant for the player.
 var (
-	ErrTaken   = errors.New("That name is taken.")
-	ErrWrong   = errors.New("Wrong name or password.")
-	ErrExpired = errors.New("Session expired.")
-	ErrName    = errors.New("That name is not allowed. Choose another one.")
+	ErrTaken         = errors.New("That name is taken.")
+	ErrWrong         = errors.New("Wrong name or password.")
+	ErrWrongPassword = errors.New("Wrong password.")
+	ErrExpired       = errors.New("Session expired.")
+	ErrName          = errors.New("That name is not allowed. Choose another one.")
 )
 
 type Auth struct {
@@ -124,3 +125,33 @@ func (a *Auth) Resume(token string) (*Session, error) {
 }
 
 func (a *Auth) Revoke(token string) error { return a.db.DropSession(sha(token)) }
+
+// ChangePassword sets a new password when the old one matches, and ends every other session.
+func (a *Auth) ChangePassword(account int64, keepToken, oldPW, newPW string) error {
+	acc, err := a.db.Account(account)
+	if err != nil {
+		return err
+	}
+	if acc == nil {
+		return ErrExpired
+	}
+	hash, err := a.kdf(oldPW, acc.Salt)
+	if err != nil {
+		return err
+	}
+	if subtle.ConstantTimeCompare(hash, acc.Hash) != 1 {
+		return ErrWrongPassword
+	}
+	salt := make([]byte, 16)
+	if _, err := rand.Read(salt); err != nil {
+		return err
+	}
+	newHash, err := a.kdf(newPW, salt)
+	if err != nil {
+		return err
+	}
+	if err := a.db.SetPassword(account, salt, newHash); err != nil {
+		return err
+	}
+	return a.db.DropOtherSessions(account, sha(keepToken))
+}

@@ -22,10 +22,12 @@ message ClientMessage {
     uint32 trade = 25; TradeStep trade_step = 26; Block block = 27; Report report = 28;
     // npc: walks to someone and speaks to them. use_lamp: the skill to train.
     string start_quest = 29; uint32 npc = 30; uint32 sell_to_trader = 31; string use_lamp = 32;
+    ChangePassword change_password = 33;
   }
 }
 message Empty {}
 message Credentials { string name = 1; string password = 2; }
+message ChangePassword { string old_password = 1; string new_password = 2; }
 message Tile { uint32 x = 1; uint32 y = 2; }
 message Craft { string recipe = 1; uint32 qty = 2; }
 message Swap { uint32 a = 1; uint32 b = 2; }
@@ -79,6 +81,8 @@ message Self {
   map<string, uint32> quests = 14;
   // How often the player found each thing in the collection log, by "source/item".
   map<string, uint32> found = 15;
+  // How many times the player earned loot from each boss, by boss id.
+  map<string, uint32> kills = 16;
 }
 // `entities` hold only what changed, except for entities the browser did not know yet.
 message Snapshot { uint32 tick = 1; MapId map = 2; bool reset = 3; repeated Entity entities = 4; repeated uint32 gone = 5; repeated Event events = 6; }
