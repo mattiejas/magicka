@@ -14,6 +14,12 @@ func RectDist(x, y int, r Rect) int {
 
 func inReach(x, y int, r Rect, reach int) bool { return RectDist(x, y, r) <= reach }
 
+// inReachOutside is inReach for those who may not act from inside the rectangle.
+func inReachOutside(x, y int, r Rect, reach int) bool {
+	d := RectDist(x, y, r)
+	return d >= 1 && d <= reach
+}
+
 // Straight steps come first, so they win ties.
 var dirs = [...]Point{
 	{X: 0, Y: -1}, {X: 1, Y: 0}, {X: 0, Y: 1}, {X: -1, Y: 0},
@@ -83,6 +89,15 @@ func (p *pathfinder) pop() int {
 
 // find runs A* to any tile within reach of the target, or to the reachable tile closest to it.
 func (p *pathfinder) find(m *content.Map, sx, sy int, target Rect, reach int) []Point {
+	return p.search(m, sx, sy, target, reach, false)
+}
+
+// findOutside is find for those who may not act from inside the target.
+func (p *pathfinder) findOutside(m *content.Map, sx, sy int, target Rect, reach int) []Point {
+	return p.search(m, sx, sy, target, reach, true)
+}
+
+func (p *pathfinder) search(m *content.Map, sx, sy int, target Rect, reach int, outside bool) []Point {
 	N := m.Size
 	if len(p.g) < N*N {
 		p.g, p.from = make([]float32, N*N), make([]int, N*N)
@@ -91,7 +106,13 @@ func (p *pathfinder) find(m *content.Map, sx, sy int, target Rect, reach int) []
 	p.n++
 	p.heap = p.heap[:0]
 	start := sy*N + sx
-	h := func(x, y int) int { return max(0, RectDist(x, y, target)-reach) }
+	h := func(x, y int) int {
+		d := RectDist(x, y, target)
+		if outside && d == 0 {
+			return 1 // one step out at least
+		}
+		return max(0, d-reach)
+	}
 	p.g[start], p.state[start], p.from[start] = 0, p.n, -1
 	p.push(float64(h(sx, sy)), start)
 	best, bestH := start, h(sx, sy)

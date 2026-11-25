@@ -898,7 +898,7 @@ mon({
   hp: 90,
   aggro: 0,
   respawn: 60,
-  size: 2,
+  size: 3,
   color: '#b5604a',
   shape: 'crab',
   loot: {

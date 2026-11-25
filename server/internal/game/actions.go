@@ -4,6 +4,8 @@ package game
 type goal struct {
 	at    Rect
 	reach int
+	// outside keeps the player from acting while standing inside the target.
+	outside bool
 }
 
 // goal of the player's action. ok is false when its target is gone.
@@ -12,31 +14,31 @@ func (w *World) goal(p *Player) (g goal, ok bool) {
 	switch a.typ {
 	case actGather:
 		if n := lookup(w.nodes, kindNode, a.id); n != nil && n.Map == m {
-			return goal{n.rect(), 1}, true
+			return goal{n.rect(), 1, false}, true
 		}
 	case actStation:
 		if s := w.station(a.id); s != nil && s.m == m {
-			return goal{tile(s.s.X, s.s.Y), 1}, true
+			return goal{tile(s.s.X, s.s.Y), 1, false}, true
 		}
 	case actAttack:
 		if o := lookup(w.monsters, kindMonster, a.id); o != nil && !o.Dead && o.Map == m {
-			return goal{o.rect(), p.stats().reach}, true
+			return goal{o.rect(), p.stats().reach, true}, true
 		}
 	case actPickup:
 		if d := w.findDrop(a.id); d != nil && d.Map == m && d.visibleTo(p.ID, w.Tick) {
-			return goal{tile(d.X, d.Y), 0}, true
+			return goal{tile(d.X, d.Y), 0, false}, true
 		}
 	case actNPC:
 		if n := w.npcByID(a.id); n != nil && n.Map == m && (n.owner == 0 || n.owner == p.ID) {
-			return goal{tile(n.X, n.Y), 1}, true
+			return goal{tile(n.X, n.Y), 1, false}, true
 		}
 	case actTrade:
 		if o := w.players[a.id]; o != nil && o != p && o.C.Map == p.C.Map {
-			return goal{tile(o.C.X, o.C.Y), tradeReach}, true
+			return goal{tile(o.C.X, o.C.Y), tradeReach, false}, true
 		}
 	case actGrave:
 		if g := p.C.Grave; g != nil && g.Map == p.C.Map {
-			return goal{tile(g.X, g.Y), 1}, true
+			return goal{tile(g.X, g.Y), 1, false}, true
 		}
 	}
 	return
@@ -75,14 +77,23 @@ func (w *World) reachGoal(p *Player) bool {
 		w.stop(p)
 		return false
 	}
-	there := func() bool { return inReach(p.C.X, p.C.Y, g.at, g.reach) }
+	there := func() bool {
+		if g.outside {
+			return inReachOutside(p.C.X, p.C.Y, g.at, g.reach)
+		}
+		return inReach(p.C.X, p.C.Y, g.at, g.reach)
+	}
 	if !there() {
 		if p.isRooted(w.Tick) {
 			return false
 		}
 		// Monsters and players move, so the way to one is found anew every tick.
 		if len(p.path) == 0 || p.act.typ == actAttack || p.act.typ == actTrade {
-			p.path = w.finder.find(w.mapOf(p), p.C.X, p.C.Y, g.at, g.reach)
+			find := w.finder.find
+			if g.outside {
+				find = w.finder.findOutside
+			}
+			p.path = find(w.mapOf(p), p.C.X, p.C.Y, g.at, g.reach)
 		}
 		if len(p.path) == 0 {
 			w.refuse(p, "You cannot reach that.")

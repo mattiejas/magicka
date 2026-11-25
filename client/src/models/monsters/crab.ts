@@ -4,6 +4,9 @@ import { ball, blob, lathe, merge, part, shade, taper } from '../../geo';
 import { type Geometry, pivot, ring, SIDES } from '../model';
 import type { MonsterShape } from './shape';
 
+// The legs span 2.72 tiles at scale 1; Gnashclaw's 3 by 3 is filled to about 2.9 by this, and only the claws reach out.
+const SCALE = 1.06;
+
 export function crab({ color: c }: MonsterDef): MonsterShape {
   const light = shade(c, 1.2);
   const shell: Geometry[] = [
@@ -170,5 +173,9 @@ export function crab({ color: c }: MonsterDef): MonsterShape {
     joint.scale.setScalar(1.1);
     return joint;
   };
-  return { parts: { body: pivot(merge(shell), 0, 0.6), la: claw(1), ra: claw(-1) }, height: 1.75 };
+  return {
+    parts: { body: pivot(merge(shell), 0, 0.6), la: claw(1), ra: claw(-1) },
+    height: 1.75 * SCALE,
+    scale: SCALE,
+  };
 }
