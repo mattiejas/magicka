@@ -38,13 +38,13 @@ func newGatherer(t *testing.T, kind, m string, level int, chaseGlow bool) *gathe
 	tool := g.nodes[0].Def.Tool
 	tier := 0
 	for i := 1; i <= 5; i++ {
-		if level >= content.Items[content.Metals[i]+"_"+tool].Req[g.skill()] && level > 2 {
+		if item := content.Items[toolID(tool, i)]; item != nil && level >= item.Req[g.skill()] && level > 2 {
 			tier = i
 		}
 	}
 	clear(g.p.C.Inv)
 	g.p.give(toolID(tool, tier), 1)
-	e.at(g.p, g.nodes[0].X, g.nodes[0].Y-1, m)
+	e.beside(g.p, g.nodes[0])
 	return g
 }
 
@@ -75,6 +75,12 @@ func (g *gatherer) step() {
 	g.run(1)
 	g.ticks++
 }
+
+// gatherKinds are the nodes of each gathering skill, as in rock_1.
+var gatherKinds = []string{"rock", "tree", "spot"}
+
+// relaxedKinds are the nodes that never run out, by the nodes of the intense method.
+var relaxedKinds = map[string]string{"rock": "big_rock", "spot": "shoal"}
 
 // choose is the glowing node, or the nearest one that is not depleted. Nil keeps going.
 func (g *gatherer) choose() *Node {
@@ -135,7 +141,7 @@ func homeOf(level int) string {
 }
 
 func TestPaceOfTheFirstLevels(t *testing.T) {
-	for _, kind := range []string{"rock", "tree"} {
+	for _, kind := range gatherKinds {
 		if h := hours(t, 1, 10, basicMethod(t, kind)); h > 0.5 {
 			t.Errorf("%s: level 10 takes %.2f hours", kind, h)
 		}
@@ -143,7 +149,7 @@ func TestPaceOfTheFirstLevels(t *testing.T) {
 }
 
 func TestPaceOfIntenseMethods(t *testing.T) {
-	for _, kind := range []string{"rock", "tree"} {
+	for _, kind := range gatherKinds {
 		h := hours(t, 1, MaxLevel, func(level int) *gatherer {
 			return newGatherer(t, fmt.Sprintf("%s_%d", kind, tierAt(level)), homeOf(level), level, level >= content.Methods.Level)
 		})
@@ -154,10 +160,10 @@ func TestPaceOfIntenseMethods(t *testing.T) {
 }
 
 func TestPaceOfRelaxedMethods(t *testing.T) {
-	for _, kind := range []string{"rock", "tree"} {
+	for _, kind := range gatherKinds {
 		h := hours(t, 1, MaxLevel, func(level int) *gatherer {
-			if kind == "rock" && level >= content.Methods.Level {
-				return newGatherer(t, fmt.Sprintf("big_rock_%d", tierAt(level)), "mainland", level, false)
+			if relaxed := relaxedKinds[kind]; relaxed != "" && level >= content.Methods.Level {
+				return newGatherer(t, fmt.Sprintf("%s_%d", relaxed, tierAt(level)), "mainland", level, false)
 			}
 			return basicMethod(t, kind)(level)
 		})

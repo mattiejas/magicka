@@ -51,6 +51,9 @@ func TestNothingStandsOnASlope(t *testing.T) {
 	for _, m := range content.Maps {
 		things := map[string]struct{ x, y, size int }{}
 		for _, n := range m.Nodes {
+			if content.Nodes[n.Type].Kind == "spot" {
+				continue // on the water
+			}
 			things[n.ID] = struct{ x, y, size int }{n.X, n.Y, content.Nodes[n.Type].Size}
 		}
 		for _, s := range m.Stations {

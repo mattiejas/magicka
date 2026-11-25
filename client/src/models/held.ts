@@ -62,6 +62,39 @@ const axe = (color: string) =>
     ),
   ]);
 
+/** Long and thin, with a reel above the grip and the line falling from the tip towards the water ahead. */
+const rod = (color: string) =>
+  merge([
+    part(
+      taper(
+        [
+          [0, -0.2, 0],
+          [0, 0.5, 0.01],
+          [0, 1.2, 0.05],
+          [0, 1.6, 0.12],
+        ],
+        0.026,
+        0.007,
+      ),
+      color,
+    ),
+    part(cyl(0.032, 0.032, 0.2), GRIP, [0, -0.05, 0]),
+    part(cyl(0.055, 0.055, 0.035, 10), '#8f948f', [0, 0.13, 0.06], [0, 0, Math.PI / 2]),
+    part(
+      taper(
+        [
+          [0, 1.6, 0.12],
+          [0, 1.45, 0.4],
+          [0, 1.1, 0.62],
+        ],
+        0.004,
+        0.004,
+        4,
+      ),
+      '#e8e4da',
+    ),
+  ]);
+
 const hammer = (color: string) =>
   merge([
     ...haft(0.4),
@@ -178,6 +211,7 @@ const staff = (color: string, unique: boolean) =>
 const SHAPES: Record<string, (color: string, unique: boolean) => Geometry> = {
   pickaxe,
   axe,
+  rod,
   hammer,
   sword,
   bow,

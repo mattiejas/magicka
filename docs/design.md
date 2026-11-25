@@ -21,7 +21,7 @@ Terms are defined in [GLOSSARY.md](../GLOSSARY.md). Numbers are starting points 
 ## Money and death
 
 - Every item has a shop value. Coins come from monsters, bosses and selling.
-- One shop per town. Sells worn pickaxe, axe and sword at 10 coins; buys everything else at half shop value.
+- One shop per town. Sells worn pickaxe, axe, fishing rod and sword at 10 coins; buys everything else at half shop value.
 - Chickens near camp can be killed bare-handed and drop 1 to 4 coins.
 - Equipped gear is kept on death. Carried items, coins included, go to the grave and never expire.
 - Reclaiming costs 5% of an item's shop value at the grave, 10% at the reaper. Paid per item from carried, banked or grave coins. What a player cannot afford waits forever.
@@ -39,6 +39,7 @@ Terms are defined in [GLOSSARY.md](../GLOSSARY.md). Numbers are starting points 
 - To level 50: about 15 hours intense, about 35 relaxed. First ten levels under 30 minutes.
 - Intense: one rock in a group glows for a few seconds and gives bonus XP. Higher tiers add danger.
 - Relaxed: a big rock that never depletes, at about a third of normal speed. Trees fall at random after about 4 (ash), 6, 8, 11 and 15 (ebony) logs; higher tiers chop slower.
+- Fishing catches one raw fish per tier at fishing spots on the water beside the shore, with a fishing rod. Raw fish heals nothing until it is cooked. The island has tiers 1 and 2, the mainland the rest. Intense: a spot moves along the shore after a few catches, and one of a group glows. Relaxed: a shoal that never moves.
 - More methods open from level 15, through skill level, exploring the mainland and quests. Quests can also unlock areas. The island keeps the basic methods.
 - Idle logout after 30 minutes without input.
 
@@ -76,7 +77,8 @@ Existing characters are kept until one restart at the public launch.
 - Trees glow like rocks do, so that woodcutting has an intense method too. A glowing node gives everyone one sure strike at 1.5 times the XP, lasts about seven seconds, and needs a group of at least four.
 - Danger at higher tiers means aggressive monsters beside the mithril, cobalt and adamantite rocks. Big rocks, and a few trees of every tier, stand out of their reach.
 - Combat skills follow the same XP table, at about 14 hours to level 50 with a sword. Characters from before keep their levels.
-- The pace is measured with bots that bank what they gather (`pace_test.go`): 13 to 17 hours intense, 35 to 36 relaxed.
+- The pace is measured with bots that bank what they gather (`pace_test.go`): 13 to 17 hours intense, 34 to 37 relaxed. Fishing: 14.3 intense, 36.6 relaxed, level 10 in about 20 minutes.
+- Fish are perch, trout, pike, salmon and sturgeon, as `raw_<fish>`. Only a worn rod exists; until rods come by tier it catches every fish, and each spot is as easy as with a tool of its tier. Fishing spots move among eight or fewer places of a group, half of which hold a spot at a time, about every five catches. The mainland has spots of tiers 2 to 5 and a shoal of every tier, away from what attacks. New characters carry a worn rod like their other worn tools.
 - Trophies cannot be dropped or sold either, so they cannot be lost. A cape for level 50 is given at once, or kept by the reaper when there is no room. Orrumax's trophy is the Rooted mantle.
 - Dropped items stay visible to their owner for three minutes and are then gone.
 - Any change to an offer takes back both acceptances, and offers can only be accepted two seconds after a change.

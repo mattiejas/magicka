@@ -12,6 +12,7 @@ const (
 	traderPercent = 200 // of shop value, paid by a stranded trader
 	traderLimit   = 50  // items one player can sell them
 	veinYield     = 2   // items per strike at a rich vein
+	spotShare     = 0.5 // of the places of a group of fishing spots, those that hold a spot at a time
 
 	encounterMin, encounterMax = 5 * 60.0, 8 * 60.0 // seconds between encounters
 	stationReach               = 2                  // tiles from a station at which it can be used
@@ -75,4 +76,4 @@ const (
 )
 
 // gatherAction is what a player is seen doing at each kind of node.
-var gatherAction = map[string]string{"rock": "mine", "tree": "chop", "plant": "pick"}
+var gatherAction = map[string]string{"rock": "mine", "tree": "chop", "plant": "pick", "spot": "fish"}

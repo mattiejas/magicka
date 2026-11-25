@@ -212,6 +212,7 @@ type Node struct {
 	depletedUntil int
 	glowingUntil  int
 	richUntil     int
+	places        []*Node // of a spot that moves: the nodes of its group, itself among them
 }
 
 func (n *Node) rect() Rect { return Rect{n.X, n.Y, n.Def.Size, n.Def.Size} }

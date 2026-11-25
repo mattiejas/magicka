@@ -15,14 +15,25 @@ type glowGroup struct {
 	until int
 }
 
-// glowSpacing is how far apart two nodes of a group may be, in tiles.
+// glowSpacing is how far apart two nodes of a group may be, in tiles, for glowing and for fishing spots.
 const glowSpacing = 8
 
-// findGlowGroups joins nodes of a kind that lie close to each other.
+// findGlowGroups finds groups of nodes that glow, large enough to glow.
 func findGlowGroups(nodes []*Node) (groups []*glowGroup) {
+	glows := func(n *Node) bool { return n.Def.Glows && n.Map.Methods }
+	for _, group := range joinNear(nodes, glows) {
+		if len(group) >= content.Methods.GlowGroup {
+			groups = append(groups, &glowGroup{nodes: group})
+		}
+	}
+	return
+}
+
+// joinNear groups nodes of a kind that lie close to each other, of those it accepts.
+func joinNear(nodes []*Node, accept func(*Node) bool) (groups [][]*Node) {
 	taken := map[*Node]bool{}
 	for _, first := range nodes {
-		if taken[first] || !first.Def.Glows || !first.Map.Methods {
+		if taken[first] || !accept(first) {
 			continue
 		}
 		taken[first] = true
@@ -35,9 +46,7 @@ func findGlowGroups(nodes []*Node) (groups []*glowGroup) {
 				}
 			}
 		}
-		if len(group) >= content.Methods.GlowGroup {
-			groups = append(groups, &glowGroup{nodes: group})
-		}
+		groups = append(groups, group)
 	}
 	return
 }
