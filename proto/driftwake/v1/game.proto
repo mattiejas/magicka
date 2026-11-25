@@ -75,6 +75,8 @@ message Self {
   map<string, uint32> quests = 14;
   // How often the player found each thing in the collection log, by "source/item".
   map<string, uint32> found = 15;
+  // How many times the player earned loot from each boss, by boss id.
+  map<string, uint32> kills = 16;
 }
 // `entities` hold only what changed, except for entities the browser did not know yet.
 message Snapshot { uint32 tick = 1; MapId map = 2; bool reset = 3; repeated Entity entities = 4; repeated uint32 gone = 5; repeated Event events = 6; }

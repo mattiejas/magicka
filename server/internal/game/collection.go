@@ -52,19 +52,28 @@ func (c *Char) logOwnedTrophies() {
 	}
 }
 
-// logLoot records what a boss dropped for a winner, whether or not they are here or ever pick it up.
+// logKill counts a kill that earned loot from a boss.
+func (c *Char) logKill(boss string) {
+	if c.Kills == nil {
+		c.Kills = map[string]int{}
+	}
+	c.Kills[boss]++
+}
+
+// logLoot records a boss kill and what it dropped for a winner, whether or not they are here or ever pick it up.
 func (w *World) logLoot(m *content.Monster, winner uint32, loot []rolled) {
+	if m.Boss == nil {
+		return
+	}
 	var found []string
 	for _, l := range loot {
 		if collectible(m, l.item) {
 			found = append(found, l.item)
 		}
 	}
-	if len(found) == 0 {
-		return
-	}
 	var firsts []string
-	p := w.change(winner, "logging finds", func(c *Char) {
+	p := w.change(winner, "logging a kill", func(c *Char) {
+		c.logKill(m.ID)
 		for _, item := range found {
 			if c.logFind(m.ID, item) {
 				firsts = append(firsts, item)

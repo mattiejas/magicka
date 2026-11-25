@@ -41,6 +41,7 @@ func (w *World) self(p *Player) *pb.Self {
 		Blocked:  slices.Clone(c.Blocked), // which is changed in place
 		Quests:   map[string]uint32{},
 		Found:    map[string]uint32{},
+		Kills:    map[string]uint32{},
 		Look:     &pb.Look{Cut: uint32(l.Cut), Color: uint32(l.Color)},
 	}
 	for id, done := range c.Quests {
@@ -48,6 +49,9 @@ func (w *World) self(p *Player) *pb.Self {
 	}
 	for key, n := range c.Found {
 		s.Found[key] = uint32(n)
+	}
+	for boss, n := range c.Kills {
+		s.Kills[boss] = uint32(n)
 	}
 	for skill, xp := range c.XP {
 		s.Xp[skill] = uint32(xp)
@@ -83,7 +87,7 @@ func (p *Player) isCurrent(s *pb.Self) bool {
 	return s.Map == pbMap(c.Map) && s.BoatDone == c.BoatDone &&
 		int(s.Look.Cut) == l.Cut && int(s.Look.Color) == l.Color &&
 		sameCounts(s.Xp, c.XP) && sameCounts(s.Boat, c.Boat) && sameCounts(s.Quests, c.Quests) &&
-		sameCounts(s.Found, c.Found) && slices.Equal(s.Blocked, c.Blocked) &&
+		sameCounts(s.Found, c.Found) && sameCounts(s.Kills, c.Kills) && slices.Equal(s.Blocked, c.Blocked) &&
 		sameInventory(s.Inventory, c.Inv) && sameEquipment(s.Equipment, c.Equip) &&
 		sameStacks(s.Bank, c.Bank) && sameStacks(s.Kept, c.Kept) && sameStacks(s.Reaper, reaper)
 }

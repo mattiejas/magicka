@@ -64,6 +64,7 @@ type Char struct {
 	Look     *Look             `json:"look"`
 	Quests   map[string]int    `json:"quests"`          // steps done
 	Found    map[string]int    `json:"found,omitempty"` // the collection log: how often, by logKey
+	Kills    map[string]int    `json:"kills,omitempty"` // loot-earning kills, by boss id
 	// Ticks of really playing, and how many there were when a genie last came.
 	PlayTicks int      `json:"playTicks"`
 	GenieAt   int      `json:"genieAt"`
