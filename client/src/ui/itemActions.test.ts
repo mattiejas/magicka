@@ -1,7 +1,7 @@
 import { MAPS } from '@driftwake/shared';
 import { beforeEach, describe, expect, test, vi } from 'vitest';
 import { state } from '../net/state';
-import { clickAction, menuActions } from './itemActions';
+import { clickAction, menuActions, quickDropAction } from './itemActions';
 import { ALL_ITEMS } from './items';
 import { currentPanel, isPanelId } from './panels';
 import { bankPanel } from './panels/bank';
@@ -26,6 +26,8 @@ const PANELS_USING_ITEMS = [
 
 const click = (id: string, panel: Parameters<typeof clickAction>[2] = null) =>
   clickAction({ id, qty: 1 }, SLOT, panel);
+const quickDrop = (id: string, panel: Parameters<typeof quickDropAction>[2] = null) =>
+  quickDropAction({ id, qty: 1 }, SLOT, panel);
 const menu = (id: string, panel: Parameters<typeof menuActions>[2] = null) =>
   menuActions({ id, qty: 1 }, SLOT, panel);
 const labels = (id: string, panel: Parameters<typeof menuActions>[2] = null) =>
@@ -51,6 +53,31 @@ describe('clicking an item', () => {
 
   test('is not changed by a panel that does nothing with items', () => {
     expect(click(SWORD, hairPanel)).toEqual(click(SWORD));
+  });
+});
+
+describe('Shift and clicking an item', () => {
+  test('drops it, whatever clicking it does', () => {
+    for (const item of [ORE, SWORD, FOOD, 'genie_lamp', 'coin'])
+      expect(quickDrop(item)).toEqual({ type: 'drop', slot: SLOT });
+  });
+
+  test('drops a whole stack without asking', () => {
+    expect(quickDropAction({ id: ORE, qty: 500 }, SLOT, null)).toEqual({ type: 'drop', slot: SLOT });
+  });
+
+  test('drops it while a panel is open too', () => {
+    for (const panel of [bankPanel, shopPanel, hairPanel])
+      expect(quickDrop(ORE, panel)).toEqual({ type: 'drop', slot: SLOT });
+  });
+
+  test('does nothing during a trade', () => {
+    expect(quickDrop(ORE, tradePanel)).toBeUndefined();
+  });
+
+  test('does nothing with a trophy', () => {
+    for (const panel of [null, bankPanel, shopPanel, tradePanel])
+      expect(quickDrop(CAPE, panel)).toBeUndefined();
   });
 });
 

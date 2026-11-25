@@ -55,7 +55,7 @@ export function describe(itemId: string): string {
 interface SlotOptions {
   /** Shown while the slot is empty. */
   label?: string;
-  onClick?: () => void;
+  onClick?: (event: MouseEvent) => void;
   menu?: () => MenuItem[];
   /** Added to the description. */
   note?: string;
@@ -73,9 +73,9 @@ export function itemSlot(
     html: stack ? slotContent(stack) : label && `<small>${label}</small>`,
     onclick:
       onClick &&
-      (() => {
+      ((event: MouseEvent) => {
         hideTooltip();
-        onClick();
+        onClick(event);
       }),
     oncontextmenu: (event: MouseEvent) => {
       event.preventDefault();

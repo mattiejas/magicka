@@ -37,7 +37,7 @@ Put a TLS proxy in front for public use. Set `TRUSTED_PROXIES` to the proxy's ad
 
 ## Controls
 
-Click to walk, gather, attack, take and use. Right click for options. Arrow keys or middle drag turn the camera; wheel zooms. Enter chats. Drag items to rearrange them.
+Click to walk, gather, attack, take and use. Right click for options. Arrow keys or middle drag turn the camera; wheel zooms. Enter chats. Drag items to rearrange them; Shift and click drops them.
 
 ## Moderating
 
