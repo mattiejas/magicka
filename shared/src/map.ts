@@ -26,6 +26,8 @@ export interface GameMap {
   name: string;
   size: number;
   tiles: Uint8Array;
+  /** Ground height of each tile in `HEIGHT_UNIT`s. Only drawn; it changes nothing in play. */
+  heights: Uint8Array;
   blocked: Uint8Array;
   nodes: MapNode[];
   stations: MapStation[];
@@ -40,6 +42,9 @@ export interface GameMap {
   labels: { name: string; x: number; y: number }[];
 }
 
+/** How high one step of a tile's height is, in tiles. */
+export const HEIGHT_UNIT = 0.25;
+
 export function mulberry(seed: number) {
   return () => {
     seed |= 0;
@@ -49,16 +54,27 @@ export function mulberry(seed: number) {
     return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
   };
 }
+interface HeightRows {
+  heights?: string[];
+  walls?: string[];
+}
 function load(raw: (typeof data)[number]): GameMap {
-  const { rows, ...m } = raw,
+  const { rows, heights: heightRows, walls: wallRows, ...m } = raw as typeof raw & HeightRows,
     size = m.size,
     tiles = Uint8Array.from(rows.join(''), Number),
-    blocked = tiles.map(t => (t === T.WATER ? 1 : 0));
+    heights = Uint8Array.from(heightRows?.join('') ?? '', digit => Number.parseInt(digit, 36)),
+    walls = Uint8Array.from(wallRows?.join('') ?? '', Number),
+    blocked = tiles.map((t, i) => (t === T.WATER || walls[i] ? 1 : 0));
   const block = (x: number, y: number, width: number) => {
     for (let j = 0; j < width; j++) for (let i = 0; i < width; i++) blocked[(y + j) * size + x + i] = 1;
   };
   for (const { x, y, type } of m.nodes) block(x, y, NODES[type].size);
   for (const { x, y } of m.stations) block(x, y, 1);
-  return { ...m, tiles, blocked } as unknown as GameMap;
+  return {
+    ...m,
+    tiles,
+    heights: heights.length ? heights : new Uint8Array(tiles.length),
+    blocked,
+  } as unknown as GameMap;
 }
 export const MAPS = Object.fromEntries(data.map(m => [m.id, load(m)])) as Record<MapId, GameMap>;

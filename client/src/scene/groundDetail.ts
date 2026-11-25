@@ -1,5 +1,5 @@
 // Grass, flowers and pebbles scattered over a map. Decoration only.
-import { type GameMap, T } from '@driftwake/shared';
+import { type GameMap, groundHeight, T } from '@driftwake/shared';
 import * as THREE from 'three';
 import { blob, MAT, merge, part, shade, taper } from '../geo';
 
@@ -96,7 +96,11 @@ function scatterPlacements(map: GameMap, random: () => number, { count, growsOn 
     const scale = 0.75 + random() * 0.6;
     const turn = new THREE.Quaternion().setFromAxisAngle(UP, random() * 6.28);
     out.push(
-      new THREE.Matrix4().compose(new THREE.Vector3(x, 0, y), turn, new THREE.Vector3(scale, scale, scale)),
+      new THREE.Matrix4().compose(
+        new THREE.Vector3(x, groundHeight(map, x, y), y),
+        turn,
+        new THREE.Vector3(scale, scale, scale),
+      ),
     );
   }
   return out;

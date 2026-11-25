@@ -1,5 +1,5 @@
 // The 3D view. Reads the state every frame and draws it.
-import { type Entity, type GameEvent, MAPS, type TilePos } from '@driftwake/shared';
+import { type Entity, type GameEvent, groundHeight, MAPS, type TilePos } from '@driftwake/shared';
 import * as THREE from 'three';
 import { centreOf, isMoving, myTrack, positionOf, state } from '../net/state';
 import { PROFILE, type Quality } from '../quality';
@@ -24,7 +24,7 @@ export class Scene {
   private sun = createSun();
   private sky = new THREE.HemisphereLight('#fff6ee', '#d0b8a4');
   private world: WorldView | null = null;
-  private effects = new Effects(this.scene);
+  private effects = new Effects(this.scene, (x, z) => this.groundAt(x, z));
   private entities = new EntityLayer(this.scene, this.effects);
   private overlay: Overlay;
   private hover = new TileMarker('#f0ead8', 0.55, 0.025);
@@ -67,22 +67,25 @@ export class Scene {
     if (!this.world) return { hits: [], tile: null };
     const ray = rayAt(mouseX, mouseY, this.rig.camera);
     const fixed = this.world.picks.filter(pick => !this.world!.isDepleted(pick.id));
-    const picks = [...fixed, ...entityPicks(id => this.entities.heightOf(id, 1))];
-    return { hits: picksOnRay(ray, picks), tile: tileOnRay(ray, this.world.map.size) };
+    const picks = [...fixed, ...entityPicks(this.world.map, id => this.entities.heightOf(id, 1))];
+    return { hits: picksOnRay(ray, picks), tile: tileOnRay(ray, this.world.map) };
   }
 
   showDestination(tile: TilePos) {
-    this.destination.show(tile);
+    this.destination.show(tile, this.groundAt);
   }
 
   showHover(tile: TilePos | null) {
-    if (tile) this.hover.show(tile);
+    if (tile) this.hover.show(tile, this.groundAt);
     else this.hover.hide();
   }
 
-  /** World position to screen pixels. */
+  /** The height of the ground at a point of the map in view, in world units. */
+  private groundAt = (x: number, z: number) => (this.world ? groundHeight(this.world.map, x, z) : 0);
+
+  /** World position to screen pixels. `height` is above the ground. */
   project = (x: number, z: number, height: number) => {
-    const point = new THREE.Vector3(x, height, z).project(this.rig.camera);
+    const point = new THREE.Vector3(x, height + this.groundAt(x, z), z).project(this.rig.camera);
     return {
       x: ((point.x + 1) / 2) * innerWidth,
       y: ((1 - point.y) / 2) * innerHeight,
@@ -150,13 +153,13 @@ export class Scene {
     if (track) {
       const tile: TilePos = [track.entity.x, track.entity.y];
       const [x, y] = positionOf(track);
-      this.rig.follow(x + 0.5, y + 0.5, dt);
-      this.ownTile.show(tile);
+      this.rig.follow(x + 0.5, y + 0.5, this.groundAt(x + 0.5, y + 0.5), dt);
+      this.ownTile.show(tile, this.groundAt);
       if (this.destination.isAt(tile) && !isMoving(track)) this.destination.hide();
     }
-    this.rig.update();
+    this.rig.update(dt, this.groundAt);
     const { focus } = this.rig;
-    this.sun.position.set(focus.x + 14, 26, focus.z + 10);
+    this.sun.position.set(focus.x + 14, focus.y + 26, focus.z + 10);
     this.sun.target.position.copy(focus);
   }
 

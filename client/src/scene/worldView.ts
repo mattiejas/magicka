@@ -3,6 +3,7 @@ import {
   BOAT_PARTS,
   type Entity,
   type GameMap,
+  groundHeight,
   type MapNode,
   type MapStation,
   mulberry,
@@ -72,6 +73,9 @@ export class WorldView {
     this.group.traverse(object => (object as THREE.Mesh).geometry?.dispose());
   }
 
+  /** The height of the ground at a point, in world units. */
+  heightAt = (x: number, z: number) => groundHeight(this.map, x, z);
+
   /** The middle of a node or station, in world units. */
   centreOf(id: string): TilePos | null {
     const box = this.picks.find(pick => pick.id === id)?.box;
@@ -111,11 +115,12 @@ export class WorldView {
         mesh.frustumCulled = false;
       }
       nodes!.forEach((node, index) => {
-        const placement = nodePlacement(node, random);
+        const placement = nodePlacement(this.map, node, random);
         whole.setMatrixAt(index, placement);
         depleted.setMatrixAt(index, HIDDEN);
         this.nodes.set(node.id, { node, whole, depleted, index, placement, isDepleted: false });
-        const box = pickBox(node.x, node.y, NODES[type].size, shape.height);
+        const base = placement.elements[13];
+        const box = pickBox(node.x, node.y, NODES[type].size, shape.height, base);
         this.picks.push({ kind: 'node', id: node.id, type, box });
       });
       this.group.add(whole, depleted);
@@ -124,12 +129,13 @@ export class WorldView {
 
   private addStation({ id, type, x, y }: MapStation) {
     const mesh = new THREE.Mesh(stationGeo(type), MAT);
-    mesh.position.set(x + 0.5, 0, y + 0.5);
+    const base = groundHeight(this.map, x + 0.5, y + 0.5);
+    mesh.position.set(x + 0.5, base, y + 0.5);
     mesh.castShadow = mesh.receiveShadow = true;
     this.group.add(mesh);
     const keeper = keeperOf(type);
     if (keeper) mesh.add(keeper);
-    this.picks.push({ kind: 'station', id, type, map: this.map.id, box: pickBox(x, y, 1, 1.5) });
+    this.picks.push({ kind: 'station', id, type, map: this.map.id, box: pickBox(x, y, 1, 1.5, base) });
   }
 
   /** Rebuilds the boat when its parts change. */
@@ -148,7 +154,8 @@ export class WorldView {
       boatGeo(id => Math.min(1, (self.boat[id] ?? 0) / required(id))),
       MAT,
     );
-    this.boat.position.set(dock.x + 2.2, -0.05, dock.y + 2.4);
+    const [boatX, boatZ] = [dock.x + 2.2, dock.y + 2.4];
+    this.boat.position.set(boatX, groundHeight(this.map, boatX, boatZ) - 0.05, boatZ);
     this.boat.castShadow = true;
     this.group.add(this.boat);
   }
@@ -165,11 +172,11 @@ function water(map: GameMap): THREE.Mesh {
 }
 
 /** Nodes vary a little in size and direction. */
-function nodePlacement(node: MapNode, random: () => number): THREE.Matrix4 {
+function nodePlacement(map: GameMap, node: MapNode, random: () => number): THREE.Matrix4 {
   const scale = 0.9 + random() * 0.25;
   const half = NODES[node.type].size / 2;
   return new THREE.Matrix4().compose(
-    new THREE.Vector3(node.x + half, 0, node.y + half),
+    new THREE.Vector3(node.x + half, groundHeight(map, node.x + half, node.y + half), node.y + half),
     new THREE.Quaternion().setFromAxisAngle(UP, random() * 6.28),
     new THREE.Vector3(scale, scale, scale),
   );

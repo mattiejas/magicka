@@ -25,6 +25,10 @@ export interface GameMap {
   name: string;
   size: number;
   tiles: Uint8Array;
+  /** Ground height of each tile in `HEIGHT_UNIT`s (shared/src/map.ts), from 0 to 35. Only drawn. */
+  heights: Uint8Array;
+  /** Tiles that are too steep, or otherwise cannot be walked on, apart from water and what stands on them. */
+  walls: Uint8Array;
   blocked: Uint8Array;
   nodes: MapNode[];
   stations: MapStation[];
@@ -66,6 +70,8 @@ class Builder {
       name,
       size,
       tiles: new Uint8Array(size * size),
+      heights: new Uint8Array(size * size),
+      walls: new Uint8Array(size * size),
       blocked: new Uint8Array(size * size),
       nodes: [],
       stations: [],
@@ -164,7 +170,7 @@ class Builder {
   }
   done() {
     const m = this.m;
-    for (let i = 0; i < m.tiles.length; i++) if (m.tiles[i] === T.WATER) m.blocked[i] = 1;
+    for (let i = 0; i < m.tiles.length; i++) if (m.tiles[i] === T.WATER || m.walls[i]) m.blocked[i] = 1;
     for (const n of m.nodes) {
       if (!NODES[n.type]) throw new Error(n.type);
       const { size } = NODES[n.type];

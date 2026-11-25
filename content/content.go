@@ -178,9 +178,13 @@ type Label struct {
 }
 
 type Map struct {
-	ID, Name                string
-	Size                    int
-	Rows                    []string
+	ID, Name string
+	Size     int
+	Rows     []string
+	// Heights is the ground height of each tile, one base 36 digit each. Only the browser draws it.
+	Heights []string
+	// Walls marks the tiles that are too steep to walk on, one digit each.
+	Walls                   []string
 	Nodes, Stations, Spawns []Placed
 	Spawn, Landing          Point
 	Safe                    struct{ X, Y, R int }
@@ -292,7 +296,7 @@ func init() {
 		m.Blocked = make([]bool, m.Size*m.Size)
 		for y, row := range m.Rows {
 			for x := range row {
-				m.Blocked[y*m.Size+x] = row[x] == '0'
+				m.Blocked[y*m.Size+x] = row[x] == '0' || (y < len(m.Walls) && m.Walls[y][x] == '1')
 			}
 		}
 		for _, n := range m.Nodes {

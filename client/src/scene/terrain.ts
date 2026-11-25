@@ -1,5 +1,5 @@
 // The ground of a map: a coarse faceted mesh, faint tile lines and the dock planks.
-import { type GameMap, T } from '@driftwake/shared';
+import { type GameMap, T, groundHeight as tileHeight } from '@driftwake/shared';
 import * as THREE from 'three';
 import { MAT, merge, noise, part, rbox, shade } from '../geo';
 import { TILE_COLORS } from './palette';
@@ -51,11 +51,16 @@ function landShare(map: GameMap, x: number, y: number): number {
   return share;
 }
 
-/** Land stays flat for tile play; only the shore slopes. */
-function groundHeight(land: number): number {
+/** How far the ground dips towards the sea along the shore. */
+function shoreDip(land: number): number {
   if (land >= 1) return 0;
   if (land > 0.5) return -0.16 * (1 - (land - 0.5) * 2) ** 2;
   return -0.16 - (0.5 - land) * 1.6;
+}
+
+/** The height of the map's ground, falling to the sea along the shore, which cuts a cliff short. */
+function shoreHeight(map: GameMap, x: number, z: number, land: number): number {
+  return tileHeight(map, x, z) * THREE.MathUtils.smoothstep(land, 0.5, 1) + shoreDip(land);
 }
 
 /** A cave's floor is flat up to a short, steep wall. */
@@ -101,7 +106,11 @@ function ground(map: GameMap): THREE.Mesh {
       // Tile centres sit half a tile in from the corner.
       const land = landShare(map, worldX - 0.5, worldZ - 0.5);
       const uneven = map.cave && land < 0.4 ? noise(worldX * 1.7, worldZ * 1.7, 6) * 0.22 : 0;
-      positions.push(worldX, (map.cave ? wallHeight(land) : groundHeight(land)) + uneven, worldZ);
+      positions.push(
+        worldX,
+        (map.cave ? wallHeight(land) : shoreHeight(map, worldX, worldZ, land)) + uneven,
+        worldZ,
+      );
       colors.push(...groundColor(map, worldX - 0.5, worldZ - 0.5, land).toArray());
     }
   const index: number[] = [];
@@ -136,13 +145,25 @@ function facetColors(geometry: THREE.BufferGeometry) {
   }
 }
 
-/** Faint lines that keep distances readable. */
+/** Faint lines that keep distances readable. They follow the ground, so an edge is cut in two on a slope. */
 function tileLines(map: GameMap): THREE.LineSegments {
-  const h = TILE_LINE_HEIGHT;
   const points: number[] = [];
+  const edge = (x1: number, z1: number, x2: number, z2: number) => {
+    const middle = [(x1 + x2) / 2, (z1 + z2) / 2] as const;
+    const heights = [[x1, z1], middle, [x2, z2]].map(([x, z]) => lineHeight(map, x, z));
+    if (Math.abs(heights[0] + heights[2] - 2 * heights[1]) < 1e-3) {
+      points.push(x1, heights[0], z1, x2, heights[2], z2);
+      return;
+    }
+    points.push(x1, heights[0], z1, middle[0], heights[1], middle[1]);
+    points.push(middle[0], heights[1], middle[1], x2, heights[2], z2);
+  };
   for (let y = 0; y < map.size; y++)
     for (let x = 0; x < map.size; x++)
-      if (groundAt(map, x, y) !== T.WATER) points.push(x, h, y, x + 1, h, y, x, h, y, x, h, y + 1);
+      if (groundAt(map, x, y) !== T.WATER) {
+        edge(x, y, x + 1, y);
+        edge(x, y, x, y + 1);
+      }
   const geometry = new THREE.BufferGeometry();
   geometry.setAttribute('position', new THREE.Float32BufferAttribute(points, 3));
   const material = new THREE.LineBasicMaterial({
@@ -153,6 +174,8 @@ function tileLines(map: GameMap): THREE.LineSegments {
   });
   return new THREE.LineSegments(geometry, material);
 }
+
+const lineHeight = (map: GameMap, x: number, z: number) => tileHeight(map, x, z) + TILE_LINE_HEIGHT;
 
 function planks(map: GameMap): THREE.Mesh | null {
   const isWood = (x: number, y: number) => map.tiles[y * map.size + x] === T.WOOD;

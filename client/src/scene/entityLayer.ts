@@ -86,7 +86,7 @@ export class EntityLayer {
     const figure = this.figureFor(entity);
     const { root } = figure.model;
     const [x, z] = centreOf(track);
-    root.position.set(x, floatHeight(entity, now), z);
+    root.position.set(x, world.heightAt(x, z) + floatHeight(entity, now), z);
     if (entity.kind !== 'player' && entity.kind !== 'monster') return;
 
     const moving = isMoving(track);
