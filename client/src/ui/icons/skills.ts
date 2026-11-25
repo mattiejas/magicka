@@ -128,12 +128,36 @@ const ranged: DrawSkill = pixels => {
 };
 
 const magic: DrawSkill = pixels => {
-  pixels.diagonal(
-    (a, v) => a >= -20 && a <= 6 && v >= -1 && v <= 1 && across(v === -1 ? -2 : v, ramp('#6b4a8a')),
-  );
-  pixels.ball(16, 7, 5.2, VIOLET);
-  pixels.dotsOf('#ffffff', [14, 5], [15, 4]).dotsOf(VIOLET[4], [14, 6], [13, 7]);
-  pixels.dotsOf(GOLD[4], [21, 2], [21, 1], [21, 3], [20, 2], [22, 2], [3, 5], [3, 4], [3, 6], [2, 5], [4, 5]);
+  // A wizard's hat: a bent cone on a wide brim, with a gold band and a star.
+  pixels
+    .lit(
+      [
+        [10, 16],
+        [11, 9],
+        [15, 3],
+        [19, 2],
+        [17, 6],
+        [18, 11],
+        [20, 16],
+      ],
+      VIOLET,
+    )
+    .paint((x, y) => {
+      const brim = ((x - 12) / 11) ** 2 + ((y - 18) / 3.2) ** 2;
+      return brim <= 1 && VIOLET[brim < 0.35 ? 3 : y < 18 ? 2 : 1];
+    })
+    .poly(
+      [
+        [10, 14],
+        [20, 14],
+        [20, 16],
+        [10, 16],
+      ],
+      GOLD[2],
+    )
+    .line([10, 14], [20, 14], GOLD[4])
+    .dotsOf(GOLD[4], [14, 10], [14, 9], [14, 11], [13, 10], [15, 10])
+    .dotsOf(GOLD[4], [3, 5], [3, 4], [3, 6], [2, 5], [4, 5], [21, 8], [21, 7], [21, 9], [20, 8]);
 };
 
 const defence: DrawSkill = pixels => {
