@@ -6,14 +6,15 @@ import { updateBosses } from './bosses';
 import { chatBox, showChat, showInfo, showTradeRequest } from './chat';
 import { h, uiRoot } from './dom';
 import { fpsCounter } from './fpsCounter';
+import { updateHealth } from './health';
 import { updateHint } from './hints';
 import { isLoginShown, loginError, showLogin, showLoginError, takeJustRegistered } from './login';
 import { drawMinimap, minimapPanel } from './minimap';
 import { closePanel, closePanelWhenFar, isPanelId, openPanel, showTrade, updatePanel } from './panels';
 import { warmPortraits } from './portrait';
+import { initUiScale } from './scale';
 import { passwordChangeReply } from './settingsModal';
 import { sidebar, updateSidebar } from './sidebar';
-import { updateVitals } from './vitals';
 import { showXp } from './xpGains';
 import './style.css';
 
@@ -22,6 +23,7 @@ const REDRAW_MS = 60;
 
 /** Starts the interface. Call the returned function every frame. */
 export function initUi(): (now: number) => void {
+  initUiScale();
   onMessage(handleMessage);
   onClosed(handleClosed);
   showLogin();
@@ -40,7 +42,6 @@ export function initUi(): (now: number) => void {
 function showGame() {
   closePanel();
   uiRoot().replaceChildren(
-    h('div', { id: 'vitals', class: 'panel' }),
     h(
       'div',
       { id: 'top' },
@@ -63,13 +64,14 @@ function handleMessage(msg: ServerMsg) {
       return showLogin(msg.text);
     case 'self':
       updateSidebar();
+      updateHealth();
       updatePanel();
       updateHint();
       if (state.self) warmPortraits(state.self.name);
       if (takeJustRegistered()) openPanel('hair');
       return;
     case 'snapshot':
-      updateVitals();
+      updateHealth();
       updateHint();
       updateBosses();
       if (state.trade) showTrade();

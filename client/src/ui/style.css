@@ -9,6 +9,8 @@
   --warn: #dcab6b;
   --bad: #df8b80;
   --good: #9cc486;
+  /* The interface size the player chose, set by scale.ts. */
+  --ui-scale: 1;
   font:
     14px / 1.4 "Avenir Next",
     "Segoe UI",
@@ -33,16 +35,22 @@ body {
   inset: 0;
   display: block;
 }
+/*
+ * Both layers are drawn larger or smaller with zoom. Inside them, lengths are in scaled pixels and the
+ * viewport units grow with the scale, so a length of the window is written as 100vw / var(--ui-scale).
+ */
 #overlay {
   position: fixed;
   inset: 0;
   pointer-events: none;
   overflow: hidden;
+  zoom: var(--ui-scale);
 }
 #ui {
   position: fixed;
   inset: 0;
   pointer-events: none;
+  zoom: var(--ui-scale);
 }
 /* Low specificity, so single panels can opt out. */
 :where(#ui > *) {
@@ -192,17 +200,6 @@ h2 {
   min-height: 20px;
   color: var(--bad);
 }
-#vitals {
-  left: 16px;
-  top: 16px;
-  width: 232px;
-  padding: 8px 12px 12px;
-}
-#vitals .row {
-  display: flex;
-  justify-content: space-between;
-  margin-bottom: 4px;
-}
 .bar {
   height: 8px;
   background: #1d2429;
@@ -217,32 +214,100 @@ h2 {
 .bar.low > i {
   background: var(--bad);
 }
-#vitals button {
-  padding: 0 8px;
-  font-size: 12px;
-}
+/* Sized so that the minimap and its buttons stay clear of the sidebar in a 720 pixel high window. */
 #map {
   right: 16px;
   top: 16px;
-  width: 210px;
+  width: 194px;
 }
 #map canvas {
   display: block;
-  width: 208px;
-  height: 208px;
+  width: 192px;
+  height: 192px;
   background: #4f7f8a;
   cursor: pointer;
 }
 #map .cap {
-  padding: 8px;
+  padding: 6px 8px;
   display: grid;
-  gap: 4px;
-  font-size: 13px;
+  gap: 2px;
+  font-size: 12px;
   border-top: 1px solid var(--line);
 }
 #map .cap div {
   display: flex;
   justify-content: space-between;
+  gap: 8px;
+  white-space: nowrap;
+}
+#map .cap span:first-child {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+#map .cap span:last-child {
+  flex: none;
+}
+#map .menu-btns {
+  display: flex;
+  justify-content: flex-end;
+  gap: 4px;
+  padding: 4px 8px;
+  border-top: 1px solid var(--line);
+}
+#map .menu-btns button {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+}
+#map .menu-btns img {
+  width: 24px;
+  height: 24px;
+  image-rendering: pixelated;
+}
+/* Beside the sidebar and as tall as it, whichever tab is open. */
+#health {
+  right: calc(100% + 4px);
+  top: -2px;
+  bottom: -1px;
+  width: 36px;
+  padding: 4px 4px 6px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  font-size: 12px;
+  line-height: 1.2;
+}
+#health small {
+  color: var(--mute);
+  font-size: 11px;
+  padding-top: 2px;
+  border-top: 1px solid var(--line);
+}
+#health .fill {
+  position: relative;
+  flex: 1;
+  width: 14px;
+  margin-top: 4px;
+  background: #1d2429;
+  border: 1px solid var(--line);
+}
+#health .fill i {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: var(--good);
+  transition: height 0.2s;
+}
+#health.low .fill i {
+  background: var(--bad);
+}
+#health.low b {
+  color: var(--bad);
 }
 #side {
   right: 16px;
@@ -335,7 +400,7 @@ h2 {
   cursor: pointer;
 }
 #side .log {
-  max-height: 46vh;
+  max-height: calc(46vh / var(--ui-scale));
   overflow-y: auto;
 }
 .log h2 {
@@ -439,7 +504,7 @@ h2 {
 }
 #hint {
   padding: 8px 16px;
-  max-width: min(460px, calc(100vw - 540px));
+  max-width: min(460px, calc(100vw / var(--ui-scale) - 540px));
   border-top-width: 1px;
   border-left: 3px solid var(--accent);
 }
@@ -463,9 +528,9 @@ h2 {
 }
 #station {
   left: 16px;
-  top: 136px;
+  top: 16px;
   width: 420px;
-  max-height: calc(100vh - 330px);
+  max-height: calc(100vh / var(--ui-scale) - 210px);
   display: flex;
   flex-direction: column;
 }
@@ -587,7 +652,7 @@ h2 {
     width: 300px;
   }
   #hint {
-    max-width: 40vw;
+    max-width: calc(40vw / var(--ui-scale));
   }
   #boss {
     width: 260px;
@@ -655,20 +720,9 @@ h2 {
 #side .tabs button {
   text-transform: capitalize;
 }
-
-#vitals h2 {
-  margin-bottom: 4px;
-}
-#vitals .btns {
-  margin-top: 8px;
-}
-#vitals .btns button {
-  flex: 1;
-  padding: 2px 4px;
-}
 #settings {
   position: fixed;
-  width: min(400px, calc(100vw - 32px));
+  width: min(400px, calc(100vw / var(--ui-scale) - 32px));
   margin: auto;
   padding: 0;
   color: var(--text);
@@ -771,6 +825,7 @@ h2 {
 }
 #fps {
   position: fixed;
+  zoom: var(--ui-scale);
   top: 16px;
   right: 240px;
   padding: 4px 8px;

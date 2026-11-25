@@ -4,6 +4,7 @@ import { send } from '../net/connection';
 import { myTrack, positionOf, state } from '../net/state';
 import { CAVE_COLOR, TILE_COLORS } from '../scene/palette';
 import { byId, h } from './dom';
+import { menuButtons } from './menuButtons';
 
 const CANVAS_SIZE = 416;
 /** Tiles shown from the centre to an edge. */
@@ -36,6 +37,7 @@ export const minimapPanel = () =>
     { id: 'map', class: 'panel' },
     h('canvas', { width: CANVAS_SIZE, height: CANVAS_SIZE, id: 'mm', onclick: walkToClick }),
     h('div', { class: 'cap', id: 'mapcap' }),
+    menuButtons(),
   );
 
 function walkToClick(event: MouseEvent) {
