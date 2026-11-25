@@ -291,3 +291,19 @@ func TestMasteringASkillGivesOneCape(t *testing.T) {
 		check(t, content.Items["cape_"+skill].Trophy, skill)
 	}
 }
+
+func TestChatNamesItsSpeakersEntity(t *testing.T) {
+	e := setup(t)
+	a, b := e.player(1), e.player(2)
+	e.at(a, 31, 36, "island")
+	e.at(b, 32, 36, "island")
+	e.do(a, chatMsg("hello"), 1)
+	for _, m := range e.c[2].msgs {
+		if line := m.GetChat(); line != nil {
+			eq(t, line.Player, a.ID)
+			eq(t, line.From, a.Name)
+			return
+		}
+	}
+	t.Fatal("b heard nothing")
+}

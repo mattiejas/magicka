@@ -62,6 +62,15 @@ export class Scene {
     else if (event.type === 'impact') this.effects.impact(event);
   }
 
+  showChat(speaker: string, text: string) {
+    this.overlay.chat(speaker, text);
+  }
+
+  /** Signing in again, as someone else or after the connection dropped, starts with nobody speaking. */
+  forgetChat() {
+    this.overlay.forgetChat();
+  }
+
   /** What is under the mouse: things to click, nearest first, and the tile on the ground. */
   pick(mouseX: number, mouseY: number): { hits: Pick[]; tile: TilePos | null } {
     if (!this.world) return { hits: [], tile: null };
