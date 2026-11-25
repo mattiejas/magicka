@@ -283,6 +283,12 @@
     "y": 36
    },
    {
+    "id": "island:fire",
+    "type": "fire",
+    "x": 35,
+    "y": 34
+   },
+   {
     "id": "island:reaper",
     "type": "reaper",
     "x": 36,
@@ -1443,6 +1449,12 @@
     "type": "workbench",
     "x": 44,
     "y": 79
+   },
+   {
+    "id": "mainland:fire",
+    "type": "fire",
+    "x": 51,
+    "y": 76
    },
    {
     "id": "mainland:reaper",

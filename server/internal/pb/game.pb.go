@@ -458,6 +458,7 @@ type ClientMessage struct {
 	//	*ClientMessage_SellToTrader
 	//	*ClientMessage_UseLamp
 	//	*ClientMessage_ChangePassword
+	//	*ClientMessage_TakeOff
 	Msg           isClientMessage_Msg `protobuf_oneof:"msg"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
@@ -797,6 +798,15 @@ func (x *ClientMessage) GetChangePassword() *ChangePassword {
 	return nil
 }
 
+func (x *ClientMessage) GetTakeOff() *Empty {
+	if x != nil {
+		if x, ok := x.Msg.(*ClientMessage_TakeOff); ok {
+			return x.TakeOff
+		}
+	}
+	return nil
+}
+
 type isClientMessage_Msg interface {
 	isClientMessage_Msg()
 }
@@ -935,6 +945,11 @@ type ClientMessage_ChangePassword struct {
 	ChangePassword *ChangePassword `protobuf:"bytes,33,opt,name=change_password,json=changePassword,proto3,oneof"`
 }
 
+type ClientMessage_TakeOff struct {
+	// Takes food off the fire, with the intense method of cooking.
+	TakeOff *Empty `protobuf:"bytes,34,opt,name=take_off,json=takeOff,proto3,oneof"`
+}
+
 func (*ClientMessage_Register) isClientMessage_Msg() {}
 
 func (*ClientMessage_Login) isClientMessage_Msg() {}
@@ -1000,6 +1015,8 @@ func (*ClientMessage_SellToTrader) isClientMessage_Msg() {}
 func (*ClientMessage_UseLamp) isClientMessage_Msg() {}
 
 func (*ClientMessage_ChangePassword) isClientMessage_Msg() {}
+
+func (*ClientMessage_TakeOff) isClientMessage_Msg() {}
 
 type Empty struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
@@ -1193,10 +1210,12 @@ func (x *Tile) GetY() uint32 {
 	return 0
 }
 
+// intense: cooks one at a time, each to be taken off the fire when it is done.
 type Craft struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Recipe        string                 `protobuf:"bytes,1,opt,name=recipe,proto3" json:"recipe,omitempty"`
 	Qty           uint32                 `protobuf:"varint,2,opt,name=qty,proto3" json:"qty,omitempty"`
+	Intense       bool                   `protobuf:"varint,3,opt,name=intense,proto3" json:"intense,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -1243,6 +1262,13 @@ func (x *Craft) GetQty() uint32 {
 		return x.Qty
 	}
 	return 0
+}
+
+func (x *Craft) GetIntense() bool {
+	if x != nil {
+		return x.Intense
+	}
+	return false
 }
 
 type Swap struct {
@@ -2600,7 +2626,10 @@ type Self struct {
 	// How often the player found each thing in the collection log, by "source/item".
 	Found map[string]uint32 `protobuf:"bytes,15,rep,name=found,proto3" json:"found,omitempty" protobuf_key:"bytes,1,opt,name=key" protobuf_val:"varint,2,opt,name=value"`
 	// How many times the player earned loot from each boss, by boss id.
-	Kills         map[string]uint32 `protobuf:"bytes,16,rep,name=kills,proto3" json:"kills,omitempty" protobuf_key:"bytes,1,opt,name=key" protobuf_val:"varint,2,opt,name=value"`
+	Kills map[string]uint32 `protobuf:"bytes,16,rep,name=kills,proto3" json:"kills,omitempty" protobuf_key:"bytes,1,opt,name=key" protobuf_val:"varint,2,opt,name=value"`
+	// While food is on the fire with the intense method: the tick it is done, and the tick it burns. Zero means none.
+	FireReady     uint32 `protobuf:"varint,17,opt,name=fire_ready,json=fireReady,proto3" json:"fire_ready,omitempty"`
+	FireBurns     uint32 `protobuf:"varint,18,opt,name=fire_burns,json=fireBurns,proto3" json:"fire_burns,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -2745,6 +2774,20 @@ func (x *Self) GetKills() map[string]uint32 {
 		return x.Kills
 	}
 	return nil
+}
+
+func (x *Self) GetFireReady() uint32 {
+	if x != nil {
+		return x.FireReady
+	}
+	return 0
+}
+
+func (x *Self) GetFireBurns() uint32 {
+	if x != nil {
+		return x.FireBurns
+	}
+	return 0
 }
 
 // `entities` hold only what changed, except for entities the browser did not know yet.
@@ -3466,7 +3509,7 @@ var File_driftwake_v1_game_proto protoreflect.FileDescriptor
 
 const file_driftwake_v1_game_proto_rawDesc = "" +
 	"\n" +
-	"\x17driftwake/v1/game.proto\x12\fdriftwake.v1\"\xc4\n" +
+	"\x17driftwake/v1/game.proto\x12\fdriftwake.v1\"\xf6\n" +
 	"\n" +
 	"\rClientMessage\x127\n" +
 	"\bregister\x18\x01 \x01(\v2\x19.driftwake.v1.CredentialsH\x00R\bregister\x121\n" +
@@ -3506,7 +3549,8 @@ const file_driftwake_v1_game_proto_rawDesc = "" +
 	"\x03npc\x18\x1e \x01(\rH\x00R\x03npc\x12&\n" +
 	"\x0esell_to_trader\x18\x1f \x01(\rH\x00R\fsellToTrader\x12\x1b\n" +
 	"\buse_lamp\x18  \x01(\tH\x00R\auseLamp\x12G\n" +
-	"\x0fchange_password\x18! \x01(\v2\x1c.driftwake.v1.ChangePasswordH\x00R\x0echangePasswordB\x05\n" +
+	"\x0fchange_password\x18! \x01(\v2\x1c.driftwake.v1.ChangePasswordH\x00R\x0echangePassword\x120\n" +
+	"\btake_off\x18\" \x01(\v2\x13.driftwake.v1.EmptyH\x00R\atakeOffB\x05\n" +
 	"\x03msg\"\a\n" +
 	"\x05Empty\"=\n" +
 	"\vCredentials\x12\x12\n" +
@@ -3517,10 +3561,11 @@ const file_driftwake_v1_game_proto_rawDesc = "" +
 	"\fnew_password\x18\x02 \x01(\tR\vnewPassword\"\"\n" +
 	"\x04Tile\x12\f\n" +
 	"\x01x\x18\x01 \x01(\rR\x01x\x12\f\n" +
-	"\x01y\x18\x02 \x01(\rR\x01y\"1\n" +
+	"\x01y\x18\x02 \x01(\rR\x01y\"K\n" +
 	"\x05Craft\x12\x16\n" +
 	"\x06recipe\x18\x01 \x01(\tR\x06recipe\x12\x10\n" +
-	"\x03qty\x18\x02 \x01(\rR\x03qty\"\"\n" +
+	"\x03qty\x18\x02 \x01(\rR\x03qty\x12\x18\n" +
+	"\aintense\x18\x03 \x01(\bR\aintense\"\"\n" +
 	"\x04Swap\x12\f\n" +
 	"\x01a\x18\x01 \x01(\rR\x01a\x12\f\n" +
 	"\x01b\x18\x02 \x01(\rR\x01b\"H\n" +
@@ -3607,7 +3652,7 @@ const file_driftwake_v1_game_proto_rawDesc = "" +
 	"\x05stack\x18\x02 \x01(\v2\x13.driftwake.v1.StackR\x05stack\"^\n" +
 	"\tEquipSlot\x12&\n" +
 	"\x04slot\x18\x01 \x01(\x0e2\x12.driftwake.v1.SlotR\x04slot\x12)\n" +
-	"\x05stack\x18\x02 \x01(\v2\x13.driftwake.v1.StackR\x05stack\"\xba\a\n" +
+	"\x05stack\x18\x02 \x01(\v2\x13.driftwake.v1.StackR\x05stack\"\xf8\a\n" +
 	"\x04Self\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\rR\x02id\x12\x12\n" +
 	"\x04name\x18\x02 \x01(\tR\x04name\x12%\n" +
@@ -3625,7 +3670,11 @@ const file_driftwake_v1_game_proto_rawDesc = "" +
 	"\ablocked\x18\r \x03(\tR\ablocked\x126\n" +
 	"\x06quests\x18\x0e \x03(\v2\x1e.driftwake.v1.Self.QuestsEntryR\x06quests\x123\n" +
 	"\x05found\x18\x0f \x03(\v2\x1d.driftwake.v1.Self.FoundEntryR\x05found\x123\n" +
-	"\x05kills\x18\x10 \x03(\v2\x1d.driftwake.v1.Self.KillsEntryR\x05kills\x1a5\n" +
+	"\x05kills\x18\x10 \x03(\v2\x1d.driftwake.v1.Self.KillsEntryR\x05kills\x12\x1d\n" +
+	"\n" +
+	"fire_ready\x18\x11 \x01(\rR\tfireReady\x12\x1d\n" +
+	"\n" +
+	"fire_burns\x18\x12 \x01(\rR\tfireBurns\x1a5\n" +
 	"\aXpEntry\x12\x10\n" +
 	"\x03key\x18\x01 \x01(\tR\x03key\x12\x14\n" +
 	"\x05value\x18\x02 \x01(\rR\x05value:\x028\x01\x1a7\n" +
@@ -3854,49 +3903,50 @@ var file_driftwake_v1_game_proto_depIdxs = []int32{
 	19, // 16: driftwake.v1.ClientMessage.block:type_name -> driftwake.v1.Block
 	20, // 17: driftwake.v1.ClientMessage.report:type_name -> driftwake.v1.Report
 	10, // 18: driftwake.v1.ClientMessage.change_password:type_name -> driftwake.v1.ChangePassword
-	1,  // 19: driftwake.v1.TradeStep.action:type_name -> driftwake.v1.TradeAction
-	2,  // 20: driftwake.v1.Report.reason:type_name -> driftwake.v1.ReportReason
-	23, // 21: driftwake.v1.ServerMessage.welcome:type_name -> driftwake.v1.Welcome
-	33, // 22: driftwake.v1.ServerMessage.self:type_name -> driftwake.v1.Self
-	34, // 23: driftwake.v1.ServerMessage.snapshot:type_name -> driftwake.v1.Snapshot
-	26, // 24: driftwake.v1.ServerMessage.chat:type_name -> driftwake.v1.Chat
-	27, // 25: driftwake.v1.ServerMessage.info:type_name -> driftwake.v1.Info
-	28, // 26: driftwake.v1.ServerMessage.xp:type_name -> driftwake.v1.Xp
-	29, // 27: driftwake.v1.ServerMessage.boss:type_name -> driftwake.v1.BossStatus
-	24, // 28: driftwake.v1.ServerMessage.trade_request:type_name -> driftwake.v1.TradeRequest
-	25, // 29: driftwake.v1.ServerMessage.trade:type_name -> driftwake.v1.TradeView
-	30, // 30: driftwake.v1.TradeView.mine:type_name -> driftwake.v1.Stack
-	30, // 31: driftwake.v1.TradeView.theirs:type_name -> driftwake.v1.Stack
-	6,  // 32: driftwake.v1.Info.kind:type_name -> driftwake.v1.InfoKind
-	30, // 33: driftwake.v1.InvSlot.stack:type_name -> driftwake.v1.Stack
-	0,  // 34: driftwake.v1.EquipSlot.slot:type_name -> driftwake.v1.Slot
-	30, // 35: driftwake.v1.EquipSlot.stack:type_name -> driftwake.v1.Stack
-	3,  // 36: driftwake.v1.Self.map:type_name -> driftwake.v1.MapId
-	41, // 37: driftwake.v1.Self.xp:type_name -> driftwake.v1.Self.XpEntry
-	31, // 38: driftwake.v1.Self.inventory:type_name -> driftwake.v1.InvSlot
-	32, // 39: driftwake.v1.Self.equipment:type_name -> driftwake.v1.EquipSlot
-	30, // 40: driftwake.v1.Self.bank:type_name -> driftwake.v1.Stack
-	42, // 41: driftwake.v1.Self.boat:type_name -> driftwake.v1.Self.BoatEntry
-	21, // 42: driftwake.v1.Self.look:type_name -> driftwake.v1.Look
-	30, // 43: driftwake.v1.Self.reaper:type_name -> driftwake.v1.Stack
-	30, // 44: driftwake.v1.Self.kept:type_name -> driftwake.v1.Stack
-	43, // 45: driftwake.v1.Self.quests:type_name -> driftwake.v1.Self.QuestsEntry
-	44, // 46: driftwake.v1.Self.found:type_name -> driftwake.v1.Self.FoundEntry
-	45, // 47: driftwake.v1.Self.kills:type_name -> driftwake.v1.Self.KillsEntry
-	3,  // 48: driftwake.v1.Snapshot.map:type_name -> driftwake.v1.MapId
-	35, // 49: driftwake.v1.Snapshot.entities:type_name -> driftwake.v1.Entity
-	38, // 50: driftwake.v1.Snapshot.events:type_name -> driftwake.v1.Event
-	36, // 51: driftwake.v1.Entity.gear:type_name -> driftwake.v1.Gear
-	21, // 52: driftwake.v1.Entity.look:type_name -> driftwake.v1.Look
-	37, // 53: driftwake.v1.Entity.boss:type_name -> driftwake.v1.BossView
-	5,  // 54: driftwake.v1.BossView.state:type_name -> driftwake.v1.BossState
-	39, // 55: driftwake.v1.Event.hit:type_name -> driftwake.v1.Hit
-	40, // 56: driftwake.v1.Event.impact:type_name -> driftwake.v1.Impact
-	57, // [57:57] is the sub-list for method output_type
-	57, // [57:57] is the sub-list for method input_type
-	57, // [57:57] is the sub-list for extension type_name
-	57, // [57:57] is the sub-list for extension extendee
-	0,  // [0:57] is the sub-list for field type_name
+	8,  // 19: driftwake.v1.ClientMessage.take_off:type_name -> driftwake.v1.Empty
+	1,  // 20: driftwake.v1.TradeStep.action:type_name -> driftwake.v1.TradeAction
+	2,  // 21: driftwake.v1.Report.reason:type_name -> driftwake.v1.ReportReason
+	23, // 22: driftwake.v1.ServerMessage.welcome:type_name -> driftwake.v1.Welcome
+	33, // 23: driftwake.v1.ServerMessage.self:type_name -> driftwake.v1.Self
+	34, // 24: driftwake.v1.ServerMessage.snapshot:type_name -> driftwake.v1.Snapshot
+	26, // 25: driftwake.v1.ServerMessage.chat:type_name -> driftwake.v1.Chat
+	27, // 26: driftwake.v1.ServerMessage.info:type_name -> driftwake.v1.Info
+	28, // 27: driftwake.v1.ServerMessage.xp:type_name -> driftwake.v1.Xp
+	29, // 28: driftwake.v1.ServerMessage.boss:type_name -> driftwake.v1.BossStatus
+	24, // 29: driftwake.v1.ServerMessage.trade_request:type_name -> driftwake.v1.TradeRequest
+	25, // 30: driftwake.v1.ServerMessage.trade:type_name -> driftwake.v1.TradeView
+	30, // 31: driftwake.v1.TradeView.mine:type_name -> driftwake.v1.Stack
+	30, // 32: driftwake.v1.TradeView.theirs:type_name -> driftwake.v1.Stack
+	6,  // 33: driftwake.v1.Info.kind:type_name -> driftwake.v1.InfoKind
+	30, // 34: driftwake.v1.InvSlot.stack:type_name -> driftwake.v1.Stack
+	0,  // 35: driftwake.v1.EquipSlot.slot:type_name -> driftwake.v1.Slot
+	30, // 36: driftwake.v1.EquipSlot.stack:type_name -> driftwake.v1.Stack
+	3,  // 37: driftwake.v1.Self.map:type_name -> driftwake.v1.MapId
+	41, // 38: driftwake.v1.Self.xp:type_name -> driftwake.v1.Self.XpEntry
+	31, // 39: driftwake.v1.Self.inventory:type_name -> driftwake.v1.InvSlot
+	32, // 40: driftwake.v1.Self.equipment:type_name -> driftwake.v1.EquipSlot
+	30, // 41: driftwake.v1.Self.bank:type_name -> driftwake.v1.Stack
+	42, // 42: driftwake.v1.Self.boat:type_name -> driftwake.v1.Self.BoatEntry
+	21, // 43: driftwake.v1.Self.look:type_name -> driftwake.v1.Look
+	30, // 44: driftwake.v1.Self.reaper:type_name -> driftwake.v1.Stack
+	30, // 45: driftwake.v1.Self.kept:type_name -> driftwake.v1.Stack
+	43, // 46: driftwake.v1.Self.quests:type_name -> driftwake.v1.Self.QuestsEntry
+	44, // 47: driftwake.v1.Self.found:type_name -> driftwake.v1.Self.FoundEntry
+	45, // 48: driftwake.v1.Self.kills:type_name -> driftwake.v1.Self.KillsEntry
+	3,  // 49: driftwake.v1.Snapshot.map:type_name -> driftwake.v1.MapId
+	35, // 50: driftwake.v1.Snapshot.entities:type_name -> driftwake.v1.Entity
+	38, // 51: driftwake.v1.Snapshot.events:type_name -> driftwake.v1.Event
+	36, // 52: driftwake.v1.Entity.gear:type_name -> driftwake.v1.Gear
+	21, // 53: driftwake.v1.Entity.look:type_name -> driftwake.v1.Look
+	37, // 54: driftwake.v1.Entity.boss:type_name -> driftwake.v1.BossView
+	5,  // 55: driftwake.v1.BossView.state:type_name -> driftwake.v1.BossState
+	39, // 56: driftwake.v1.Event.hit:type_name -> driftwake.v1.Hit
+	40, // 57: driftwake.v1.Event.impact:type_name -> driftwake.v1.Impact
+	58, // [58:58] is the sub-list for method output_type
+	58, // [58:58] is the sub-list for method input_type
+	58, // [58:58] is the sub-list for extension type_name
+	58, // [58:58] is the sub-list for extension extendee
+	0,  // [0:58] is the sub-list for field type_name
 }
 
 func init() { file_driftwake_v1_game_proto_init() }
@@ -3938,6 +3988,7 @@ func file_driftwake_v1_game_proto_init() {
 		(*ClientMessage_SellToTrader)(nil),
 		(*ClientMessage_UseLamp)(nil),
 		(*ClientMessage_ChangePassword)(nil),
+		(*ClientMessage_TakeOff)(nil),
 	}
 	file_driftwake_v1_game_proto_msgTypes[15].OneofWrappers = []any{
 		(*ServerMessage_Welcome)(nil),

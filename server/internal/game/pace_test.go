@@ -238,3 +238,123 @@ func TestPaceOfCombat(t *testing.T) {
 		}
 	}
 }
+
+// maker is a bot that makes the recipe of a skill with the most experience it can, with materials from the bank.
+type maker struct {
+	*env
+	p       *Player
+	recipe  *content.Recipe
+	intense bool
+	wait    int
+	ticks   int
+}
+
+func newMaker(t *testing.T, skill string, level int, intense bool) *maker {
+	e := setup(t)
+	k := &maker{env: e, p: e.player(1), recipe: bestRecipe(skill, level), intense: intense}
+	setLevel(k.p, level)
+	e.atStation(k.p, k.recipe.Station, homeOf(level))
+	return k
+}
+
+// bestRecipe gives the most experience per item; of two alike, the one that needs fewer materials.
+func bestRecipe(skill string, level int) (best *content.Recipe) {
+	for _, r := range content.Recipes {
+		if r.Skill != skill || r.Level > level {
+			continue
+		}
+		if best == nil || r.XP > best.XP || r.XP == best.XP && slotsPerItem(r) < slotsPerItem(best) {
+			best = r
+		}
+	}
+	return
+}
+
+// slotsPerItem is the room in the inventory that the materials of one item take.
+func slotsPerItem(r *content.Recipe) int {
+	n := 0
+	for _, in := range r.In {
+		if !content.Items[in.Item].Stack {
+			n += in.Qty
+		}
+	}
+	return n
+}
+
+// rate is experience per second.
+func (k *maker) rate() float64 {
+	skill := k.recipe.Skill
+	level, earned := k.p.C.XP[skill], 0
+	for k.ticks < sampleTime {
+		k.step()
+		earned += k.p.C.XP[skill] - level
+		k.p.C.XP[skill] = level
+	}
+	return float64(earned) / (float64(k.ticks) * TickMS / 1000)
+}
+
+func (k *maker) step() {
+	if k.p.act.typ != actCraft {
+		if k.wait++; k.wait > reaction {
+			k.wait = 0
+			k.bank()
+			k.do(k.p, cookMsg(k.recipe.ID, 999, k.intense), 0)
+		}
+	} else if ready, _ := k.p.onFire(); ready > 0 && k.w.Tick >= ready+reaction {
+		k.do(k.p, takeOffMsg, 0)
+	}
+	k.run(1)
+	k.ticks++
+}
+
+// bank counts the time of a walk to the bank and back, and fills the inventory with materials.
+func (k *maker) bank() {
+	bank := k.w.mapOf(k.p).Station("bank")
+	away := max(abs(bank.X-k.p.C.X), abs(bank.Y-k.p.C.Y))
+	k.ticks += 2*away/walkSpeed + bankVisit
+	clear(k.p.C.Inv)
+	items := 50
+	if slots := slotsPerItem(k.recipe); slots > 0 {
+		items = (content.InvSize - (len(k.recipe.In) - 1)) / slots
+	}
+	for _, in := range k.recipe.In {
+		k.p.give(in.Item, in.Qty*items)
+	}
+}
+
+// makingHours it takes from one level to another.
+func makingHours(t *testing.T, skill string, from, to int, intense bool) float64 {
+	seconds := 0.0
+	for level := from; level < to; level += 5 {
+		k := newMaker(t, skill, level, intense)
+		rate := k.rate()
+		next := min(level+5, to)
+		seconds += float64(XPForLevel(next)-XPForLevel(level)) / rate
+		t.Logf("level %d: %s, %.1f xp/s, %.1f h", level, k.recipe.ID, rate, seconds/3600)
+	}
+	return seconds / 3600
+}
+
+func TestPaceOfCooking(t *testing.T) {
+	if h := makingHours(t, "cooking", 1, 10, false); h > 0.5 {
+		t.Errorf("level 10 takes %.2f hours", h)
+	}
+	if h := makingHours(t, "cooking", 1, MaxLevel, true); h < 12 || h > 18 {
+		t.Errorf("intense: level 50 takes %.1f hours, not about 15", h)
+	}
+	if h := makingHours(t, "cooking", 1, MaxLevel, false); h < 29 || h > 41 {
+		t.Errorf("relaxed: level 50 takes %.1f hours, not about 35", h)
+	}
+}
+
+// Crafting lost its food to cooking. It must still be trained from level 1, and quickly at first. Its whole pace
+// is set by gathering the materials, which the bot does not do, so it is only logged.
+func TestPaceOfCrafting(t *testing.T) {
+	for level := 1; level < MaxLevel; level++ {
+		check(t, bestRecipe("crafting", level) != nil, level)
+	}
+	if h := makingHours(t, "crafting", 1, 10, false); h > 0.5 {
+		t.Errorf("level 10 takes %.2f hours", h)
+	}
+	t.Logf("level 50 takes %.1f hours at the workbench", makingHours(t, "crafting", 1, MaxLevel, false))
+}

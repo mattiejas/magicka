@@ -46,7 +46,7 @@ export const QUESTS: Quest[] = [
         need: { own: METALS.slice(1).map(metal => `${metal}_sword`) },
       },
       {
-        text: 'Make a trail ration at the workbench, from boar meat and berries.',
+        text: 'Cook a trail ration at the cooking fire in camp, from boar meat and berries.',
         need: { own: ['ration', 'feast', 'ships_wheel'] },
       },
       {

@@ -36,6 +36,11 @@ func (c *Char) fill() {
 	if c.XP == nil {
 		c.XP = n.XP
 	}
+	for skill := range n.XP {
+		if _, known := c.XP[skill]; !known { // a skill added since
+			c.XP[skill] = 0
+		}
+	}
 	for len(c.Inv) < content.InvSize {
 		c.Inv = append(c.Inv, nil)
 	}

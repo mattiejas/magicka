@@ -95,6 +95,25 @@ const crafting: DrawSkill = pixels => {
   pixels.line([17, 17], [21, 12], THREAD[3]).dotsOf(STEEL[4], [22, 10], [21, 11]).dotsOf(STEEL[2], [22, 9]);
 };
 
+const FIRE = ramp('#f08a3c');
+
+const cooking: DrawSkill = pixels => {
+  // A pot over flames, steaming.
+  pixels
+    .paint((x, y) => {
+      const flame = 22 - y - Math.abs(x - 12) * 0.9 - (x % 3 === 0 ? 1.5 : 0);
+      return y >= 18 && flame > 0 && FIRE[flame > 2.5 ? 4 : flame > 1.2 ? 3 : 2];
+    })
+    .paint((x, y) => {
+      const away = ((x - 12) / 8.5) ** 2 + ((y - 11) / 7) ** 2;
+      return y >= 9 && away <= 1 && IRON[away < 0.25 && x < 12 ? 4 : away < 0.6 ? 3 : 2];
+    })
+    .line([3, 9], [21, 9], STEEL[3])
+    .line([4, 8], [20, 8], STEEL[4])
+    .dotsOf(IRON[1], [2, 10], [22, 10], [2, 11], [22, 11])
+    .dotsOf('#e8eef2', [9, 5], [10, 4], [9, 3], [14, 6], [15, 5], [14, 4], [15, 3]);
+};
+
 const melee: DrawSkill = pixels => {
   pixels.diagonal((a, v) => {
     if (a < -6 || Math.abs(v) > Math.min(3, 21 - a)) return null;
@@ -207,6 +226,7 @@ const ART: Record<Skill, DrawSkill> = {
   smithing,
   woodcutting,
   crafting,
+  cooking,
   melee,
   ranged,
   magic,

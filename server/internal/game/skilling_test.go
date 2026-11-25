@@ -83,7 +83,11 @@ func TestRecipesConserveMaterialsAndRange(t *testing.T) {
 		e.do(p, craftMsg(r.ID, 1), 5)
 		eq(t, p.count(r.Out), 0, r.ID)
 		e.atStation(p, r.Station, "island")
-		e.do(p, craftMsg(r.ID, 5), 8)
+		wait := 8
+		if r.Station == "fire" {
+			wait = relaxedCookInterval + 5
+		}
+		e.do(p, craftMsg(r.ID, 5), wait)
 		eq(t, p.count(r.Out), r.Qty, r.ID)
 		for _, i := range r.In {
 			eq(t, p.count(i.Item), 0, r.ID)

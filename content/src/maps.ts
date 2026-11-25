@@ -7,7 +7,16 @@ export const MAX_HEIGHT = 35;
 export const MAX_STEP = 3;
 /** Things stand where the ground is nearly level: its heights around differ by no more than this. */
 const LEVEL = 1;
-export type StationType = 'bank' | 'furnace' | 'anvil' | 'workbench' | 'reaper' | 'dock' | 'shop' | 'mine';
+export type StationType =
+  | 'bank'
+  | 'furnace'
+  | 'anvil'
+  | 'workbench'
+  | 'fire'
+  | 'reaper'
+  | 'dock'
+  | 'shop'
+  | 'mine';
 export interface MapNode {
   id: string;
   type: string;
@@ -379,6 +388,7 @@ function island() {
   b.station('furnace', 33, 30);
   b.station('anvil', 36, 31);
   b.station('workbench', 28, 36);
+  b.station('fire', 35, 34);
   b.station('reaper', 36, 37);
   b.station('dock', 33, 57);
   b.station('shop', 29, 39);
@@ -425,6 +435,7 @@ function mainland() {
   b.station('furnace', 49, 71);
   b.station('anvil', 52, 73);
   b.station('workbench', 44, 79);
+  b.station('fire', 51, 76);
   b.station('reaper', 53, 79);
   b.station('dock', 49, 89);
   b.station('shop', 52, 82);

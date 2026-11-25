@@ -73,6 +73,15 @@
    "tier": 1
   },
   {
+   "value": 5,
+   "id": "cooked_meat",
+   "name": "Cooked meat",
+   "icon": "meat",
+   "color": "#8a5a3a",
+   "tier": 1,
+   "heal": 8
+  },
+  {
    "value": 8,
    "id": "ration",
    "name": "Trail ration",
@@ -96,6 +105,14 @@
    "name": "Ship's wheel",
    "icon": "wheel",
    "color": "#8d7a5e",
+   "tier": 1
+  },
+  {
+   "value": 0,
+   "id": "burnt_food",
+   "name": "Burnt food",
+   "icon": "meat",
+   "color": "#3a302c",
    "tier": 1
   },
   {
@@ -1669,6 +1686,19 @@
   },
   {
    "value": 1,
+   "id": "cape_cooking",
+   "name": "Cooking cape",
+   "icon": "cape",
+   "color": "#c4703a",
+   "tier": 5,
+   "slot": "cape",
+   "req": {
+    "cooking": 50
+   },
+   "trophy": true
+  },
+  {
+   "value": 1,
    "id": "cape_melee",
    "name": "Melee cape",
    "icon": "cape",
@@ -1771,13 +1801,30 @@
  ],
  "recipes": [
   {
+   "id": "cooked_meat",
+   "out": "cooked_meat",
+   "qty": 1,
+   "station": "fire",
+   "skill": "cooking",
+   "level": 1,
+   "xp": 35,
+   "in": [
+    [
+     "meat",
+     1
+    ]
+   ],
+   "safe": 21,
+   "ready": 4
+  },
+  {
    "id": "ration",
    "out": "ration",
    "qty": 1,
-   "station": "workbench",
-   "skill": "crafting",
+   "station": "fire",
+   "skill": "cooking",
    "level": 1,
-   "xp": 12,
+   "xp": 52,
    "in": [
     [
      "meat",
@@ -1787,16 +1834,18 @@
      "berries",
      1
     ]
-   ]
+   ],
+   "safe": 21,
+   "ready": 4
   },
   {
    "id": "feast",
    "out": "feast",
    "qty": 1,
-   "station": "workbench",
-   "skill": "crafting",
+   "station": "fire",
+   "skill": "cooking",
    "level": 25,
-   "xp": 60,
+   "xp": 155,
    "in": [
     [
      "meat",
@@ -1806,7 +1855,9 @@
      "berries",
      2
     ]
-   ]
+   ],
+   "safe": 45,
+   "ready": 5
   },
   {
    "id": "leather_cowl_1",
@@ -4829,6 +4880,12 @@
   "glowBonus": 1.5,
   "glowGroup": 4
  },
+ "cooking": {
+  "safeAfter": 20,
+  "burnt": "burnt_food",
+  "readyTicks": 4,
+  "readyPerLevels": 20
+ },
  "quests": [
   {
    "id": "stranded",
@@ -4873,7 +4930,7 @@
      }
     },
     {
-     "text": "Make a trail ration at the workbench, from boar meat and berries.",
+     "text": "Cook a trail ration at the cooking fire in camp, from boar meat and berries.",
      "need": {
       "own": [
        "ration",

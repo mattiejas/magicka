@@ -107,6 +107,7 @@ function payload(msg: ClientMsg): { case: string; value: unknown } {
     case 'grave':
     case 'depositAll':
     case 'askFees':
+    case 'takeOff':
       return { case: msg.type, value: {} };
     case 'move':
       return { case: 'move', value: { x: msg.x, y: msg.y } };
@@ -118,7 +119,7 @@ function payload(msg: ClientMsg): { case: string; value: unknown } {
     case 'pickup':
       return { case: msg.type, value: Number(msg.id) };
     case 'craft':
-      return { case: 'craft', value: { recipe: msg.recipe, qty: msg.qty } };
+      return { case: 'craft', value: { recipe: msg.recipe, qty: msg.qty, intense: msg.intense ?? false } };
     case 'equip':
       return { case: 'equipSlot', value: msg.slot };
     case 'eat':
@@ -250,6 +251,7 @@ function selfState(self: PbSelf): SelfState {
     found: { ...self.found },
     kills: { ...self.kills },
     look: { cut: self.look?.cut ?? 0, color: self.look?.color ?? 0 },
+    fire: self.fireReady ? { ready: self.fireReady, burns: self.fireBurns } : null,
   };
 }
 

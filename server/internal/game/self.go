@@ -44,6 +44,8 @@ func (w *World) self(p *Player) *pb.Self {
 		Kills:    map[string]uint32{},
 		Look:     &pb.Look{Cut: uint32(l.Cut), Color: uint32(l.Color)},
 	}
+	ready, burns := p.onFire()
+	s.FireReady, s.FireBurns = uint32(ready), uint32(burns)
 	for id, done := range c.Quests {
 		s.Quests[id] = uint32(done)
 	}
@@ -84,7 +86,9 @@ func (p *Player) isCurrent(s *pb.Self) bool {
 	if c.Grave != nil {
 		reaper = c.Grave.Items
 	}
+	ready, burns := p.onFire()
 	return s.Map == pbMap(c.Map) && s.BoatDone == c.BoatDone &&
+		int(s.FireReady) == ready && int(s.FireBurns) == burns &&
 		int(s.Look.Cut) == l.Cut && int(s.Look.Color) == l.Color &&
 		sameCounts(s.Xp, c.XP) && sameCounts(s.Boat, c.Boat) && sameCounts(s.Quests, c.Quests) &&
 		sameCounts(s.Found, c.Found) && sameCounts(s.Kills, c.Kills) && slices.Equal(s.Blocked, c.Blocked) &&

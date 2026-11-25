@@ -3,7 +3,16 @@ import data from '../../content/data/maps.json';
 import { NODES } from './content';
 export type MapId = 'island' | 'mainland' | 'mine';
 export const T = { WATER: 0, SAND: 1, GRASS: 2, DIRT: 3, STONE: 4, WOOD: 5, PATH: 6 } as const;
-export type StationType = 'bank' | 'furnace' | 'anvil' | 'workbench' | 'reaper' | 'dock' | 'shop' | 'mine';
+export type StationType =
+  | 'bank'
+  | 'furnace'
+  | 'anvil'
+  | 'workbench'
+  | 'fire'
+  | 'reaper'
+  | 'dock'
+  | 'shop'
+  | 'mine';
 export interface MapNode {
   id: string;
   type: string;

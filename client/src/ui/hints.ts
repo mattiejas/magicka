@@ -86,7 +86,7 @@ const ON_THE_ISLAND: Hint[] = [
   },
   {
     applies: self => self.xp.vitality < 60,
-    text: 'Fight the boars south-west of camp. Their hides become leather at the workbench.',
+    text: 'Fight the boars south-west of camp. Their hides become leather at the workbench; cook their meat at the fire.',
   },
   {
     applies: self => (self.boat.hull ?? 0) < 20,

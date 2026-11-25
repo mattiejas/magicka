@@ -53,7 +53,11 @@ func (w *World) actPlayer(p *Player) {
 	switch p.act.typ {
 	case actNone:
 	case actCraft:
-		w.craft(p)
+		if p.act.recipe.Station == "fire" {
+			w.cook(p)
+		} else {
+			w.craft(p)
+		}
 	case actMove:
 		if !p.isRooted(w.Tick) {
 			w.walk(p)

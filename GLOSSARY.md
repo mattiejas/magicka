@@ -8,6 +8,10 @@ A shared-world adventure sandbox in which players decide where to go, and grow s
 Gaining levels by gathering or making things, as opposed to fighting.
 _Avoid_: Grinding, professions
 
+**Cooking**:
+The skill of turning raw meat and fish into food at a cooking fire. Food can burn, less often as the level rises.
+_Avoid_: Baking, chef
+
 **Tier**:
 One of five grades of material and gear, copper and ash being the first and adamantite and ebony the last. A tier is not a level.
 _Avoid_: Rank, level

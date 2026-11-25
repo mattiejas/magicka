@@ -33,6 +33,7 @@ const STATION_NAMES: Record<StationType, string> = {
   furnace: 'Furnace',
   anvil: 'Anvil',
   workbench: 'Workbench',
+  fire: 'Cooking fire',
   reaper: 'Reaper',
   shop: 'Shopkeeper',
   mine: 'Old mine',

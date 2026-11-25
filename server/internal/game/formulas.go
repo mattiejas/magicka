@@ -66,6 +66,17 @@ func GatherChance(level, req, toolTier int) float64 {
 	return math.Min(0.95, 0.3+float64(level-req)*0.015+float64(toolTier)*0.08)
 }
 
+// burnAtFirst is the chance to burn food at the level a recipe needs.
+const burnAtFirst = 0.4
+
+// BurnChance falls as the level rises, to nothing at the recipe's safe level.
+func BurnChance(level, req, safe int) float64 {
+	if level >= safe {
+		return 0
+	}
+	return burnAtFirst * float64(safe-level) / float64(safe-req)
+}
+
 // LampXP is about ten minutes of a relaxed method at a level.
 func LampXP(level int) float64 { return 600 * (3 + 0.009*float64(level*level)) }
 

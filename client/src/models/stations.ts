@@ -1,6 +1,6 @@
 // Camp stations, each about one tile wide and facing +z.
 import * as THREE from 'three';
-import { ball, blob, cyl, lathe, merge, part, plate, rbox, shade, taper, torus } from '../geo';
+import { ball, blob, cone, cyl, lathe, merge, part, plate, rbox, shade, taper, torus } from '../geo';
 import { posePlayer } from './animation';
 import { type Geometry, ring, TAU } from './model';
 import { playerModel } from './player';
@@ -146,6 +146,41 @@ const workbench = () =>
     ),
   ]);
 
+const EMBER = '#f0a050';
+const FLAME = '#f7d27a';
+
+/** A ring of stones around crossed logs and flames, with a spit of meat across it. */
+const fire = () =>
+  merge([
+    ...ring(8).map((a, i) =>
+      part(
+        blob(0.11, 0.25, i),
+        shade(STONE, 0.85 + (i % 3) * 0.08),
+        [Math.cos(a) * 0.36, 0.07, Math.sin(a) * 0.36],
+        [0, a, 0],
+        [1.2, 0.8, 1],
+      ),
+    ),
+    part(cyl(0.25, 0.27, 0.03, 10), '#3a302c', [0, 0.02, 0]),
+    ...ring(4).map((a, i) =>
+      part(
+        cyl(0.04, 0.05, 0.5, 6),
+        shade(WOOD, 0.7 + i * 0.05),
+        [0, 0.09, 0],
+        [Math.PI / 2 - 0.35, a + 0.4, 0],
+      ),
+    ),
+    part(cone(0.17, 0.42, 6), EMBER, [0, 0.27, 0]),
+    part(cone(0.1, 0.32, 6), FLAME, [0.03, 0.24, 0.05], [0, 0.5, 0]),
+    part(cone(0.07, 0.22, 5), FLAME, [-0.08, 0.17, -0.04], [0.2, 0, 0.3]),
+    ...[-1, 1].flatMap(side => [
+      part(cyl(0.025, 0.03, 0.7, 6), shade(WOOD, 0.85), [side * 0.42, 0.35, 0]),
+      part(cyl(0.02, 0.02, 0.14, 6), shade(WOOD, 0.85), [side * 0.45, 0.7, 0], [0, 0, side * 0.5]),
+    ]),
+    part(cyl(0.018, 0.018, 0.98, 6), shade(WOOD, 1.1), [0, 0.66, 0], [0, 0, Math.PI / 2]),
+    part(blob(0.1, 0.2, 3), '#8a5a3a', [0.05, 0.64, 0], [0, 0, Math.PI / 2], [1.5, 1, 1]),
+  ]);
+
 const reaper = () =>
   merge([
     part(
@@ -281,7 +316,17 @@ const mine = () =>
     part(rbox(0.5, 0.16, 0.05, 0.02), shade(WOOD, 1.25), [0, 1.08, 0.2], [0, 0, 0.06]),
   ]);
 
-const SHAPES: Record<string, () => Geometry> = { bank, furnace, anvil, workbench, reaper, dock, shop, mine };
+const SHAPES: Record<string, () => Geometry> = {
+  bank,
+  furnace,
+  anvil,
+  workbench,
+  fire,
+  reaper,
+  dock,
+  shop,
+  mine,
+};
 
 /** The person at a station, if there is one. */
 export function keeperOf(type: string): THREE.Object3D | null {

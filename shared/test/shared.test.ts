@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
   BOAT_PARTS,
+  COOKING,
   ECONOMY,
   gatherChance,
   hitChance,
@@ -59,6 +60,7 @@ describe('content graph', () => {
     const craftable = () => RECIPES.filter(r => !have.has(r.out) && r.in.every(([item]) => have.has(item)));
     for (let next = craftable(); next.length; next = craftable())
       for (const recipe of next) have.add(recipe.out);
+    if (RECIPES.some(r => r.station === 'fire' && have.has(r.out))) have.add(COOKING.burnt);
     expect(Object.keys(ITEMS).filter(i => !have.has(i))).toEqual([]);
   });
   it('the boat can be built from the island alone', () => {
