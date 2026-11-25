@@ -117,13 +117,15 @@ export class EntityLayer {
     poseBoss(model, boss, progress);
 
     const { id, type } = track.entity;
-    const key = boss.state === 'choose' ? '' : telegraphKey(boss.attack, boss.tiles);
+    const key = telegraphKey(id, boss);
     if (this.telegraphs.get(id)?.key !== key) this.removeTelegraph(id);
     if (key && !this.telegraphs.has(id)) {
       const thrown = MONSTERS[type!].shape === 'crab';
       const telegraph = new Telegraph({
         attack: boss.attack!,
         tiles: boss.tiles,
+        centres: boss.centres,
+        key,
         origin: centreOf(track),
         thrown,
       });

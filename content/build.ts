@@ -2,9 +2,21 @@
 import { writeFileSync } from 'node:fs';
 import * as f from '../shared/src/formulas';
 import * as c from './src/items';
+import { BOSS_SHAPES } from './src/items';
 import { MAPS } from './src/maps';
 import { QUESTS } from './src/quests';
+/** Throws for an attack whose shape is missing or unknown, so that none silently hits nobody. */
+export function checkAttacks(monsters: c.MonsterDef[]) {
+  for (const m of monsters)
+    for (const a of m.boss?.attacks ?? []) {
+      const known = (BOSS_SHAPES as readonly string[]).includes(a.shape ?? '');
+      if (a.id === 'melee' ? a.shape : !known)
+        throw new Error(`${m.id}: attack "${a.name}" has a missing, unknown or misplaced shape: ${a.shape}`);
+    }
+}
+
 export function build(): Record<string, string> {
+  checkAttacks(Object.values(c.MONSTERS));
   const line = (o: unknown) => `${JSON.stringify(o, null, 1)}\n`;
   // One character per tile. Heights and walls are left out of a map that has none.
   const rowsOf = (cells: Uint8Array, size: number, digit: (n: number) => string = String) =>

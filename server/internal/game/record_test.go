@@ -47,7 +47,7 @@ func encodings() (names []string, encoded [][]byte) {
 
 	boss := entityID(kindMonster, 3)
 	idle := &bossState{st: choose}
-	slam := &bossState{st: windup, atk: &content.Attack{ID: "boulder"}, tiles: []Point{{X: 4, Y: 5}, {X: 5, Y: 5}}, start: 100, end: 105}
+	slam := &bossState{st: windup, atk: &content.Attack{ID: "boulder"}, tiles: []Point{{X: 4, Y: 5}, {X: 5, Y: 5}}, centres: []Point{{X: 5, Y: 5}}, start: 100, end: 105}
 	melee := &bossState{st: execute, atk: &content.Attack{ID: "melee"}, start: 110, end: 112, tgt: player}
 	resting := fields{x: 3, y: 4, typ: "gnashclaw", hp: 300, maxHP: 300, boss: true, bossSt: choose}
 	slamming := fields{x: 3, y: 4, typ: "gnashclaw", hp: 250, maxHP: 300, boss: true, bossSt: windup, bossStart: 100, target: player}
