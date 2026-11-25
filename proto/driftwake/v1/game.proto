@@ -107,7 +107,8 @@ message Entity {
   optional uint32 public_at = 23;
 }
 message Gear { string weapon = 1; string head = 2; string body = 3; string legs = 4; string cape = 5; }
-message BossView { BossState state = 1; string attack = 2; repeated uint32 tiles = 3; uint32 start = 4; uint32 end = 5; uint32 target = 6; }
+// Centres are where an attack is aimed, as x, y pairs. A boulder falls on one even when its square is clipped.
+message BossView { BossState state = 1; string attack = 2; repeated uint32 tiles = 3; uint32 start = 4; uint32 end = 5; uint32 target = 6; repeated uint32 centres = 7; }
 message Event { oneof event { Hit hit = 1; Impact impact = 2; uint32 death = 3; } }
 message Hit { uint32 from = 1; uint32 to = 2; uint32 damage = 3; string style = 4; }
-message Impact { uint32 boss = 1; string attack = 2; repeated uint32 tiles = 3; }
+message Impact { uint32 boss = 1; string attack = 2; repeated uint32 tiles = 3; repeated uint32 centres = 4; }

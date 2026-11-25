@@ -4359,6 +4359,7 @@
      },
      {
       "id": "boulder",
+      "shape": "square",
       "name": "Hurled stone",
       "weight": 3,
       "windup": 5,
@@ -4371,6 +4372,7 @@
      },
      {
       "id": "vines",
+      "shape": "cross",
       "name": "Grasping kelp",
       "weight": 2,
       "windup": 6,
@@ -4469,6 +4471,7 @@
      },
      {
       "id": "boulder",
+      "shape": "square",
       "name": "Falling rock",
       "weight": 3,
       "windup": 5,
@@ -4481,6 +4484,7 @@
      },
      {
       "id": "quake",
+      "shape": "rings",
       "name": "Tremor",
       "weight": 3,
       "windup": 6,
@@ -4684,6 +4688,7 @@
      },
      {
       "id": "boulder",
+      "shape": "square",
       "name": "Falling boulder",
       "weight": 4,
       "windup": 5,
@@ -4696,6 +4701,7 @@
      },
      {
       "id": "vines",
+      "shape": "cross",
       "name": "Creeping vines",
       "weight": 3,
       "windup": 6,
@@ -4709,6 +4715,7 @@
      },
      {
       "id": "quake",
+      "shape": "rings",
       "name": "Root quake",
       "weight": 2,
       "windup": 4,
