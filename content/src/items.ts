@@ -679,8 +679,13 @@ export interface MonsterDef {
   loot: LootTable;
   boss?: BossDef;
 }
+/** How an attack marks ground. Melee marks none: it has a target. */
+export const BOSS_SHAPES = ['square', 'cross', 'rings'] as const;
+export type BossShape = (typeof BOSS_SHAPES)[number];
 export interface BossAttack {
+  /** Chooses the damage text, the name and the pose; the shape says where and when it hits. */
   id: 'melee' | 'boulder' | 'vines' | 'quake';
+  shape?: BossShape;
   name: string;
   weight: number;
   windup: number;
@@ -924,9 +929,19 @@ mon({
     world: false,
     attacks: [
       { id: 'melee', name: 'Claw', weight: 4, windup: 3, execute: 1, damage: [3, 6] },
-      { id: 'boulder', name: 'Hurled stone', weight: 3, windup: 5, execute: 2, damage: [9, 14], count: 1 },
+      {
+        id: 'boulder',
+        shape: 'square',
+        name: 'Hurled stone',
+        weight: 3,
+        windup: 5,
+        execute: 2,
+        damage: [9, 14],
+        count: 1,
+      },
       {
         id: 'vines',
+        shape: 'cross',
         name: 'Grasping kelp',
         weight: 2,
         windup: 6,
@@ -972,8 +987,17 @@ mon({
     world: false,
     attacks: [
       { id: 'melee', name: 'Fist', weight: 4, windup: 4, execute: 1, damage: [12, 20] },
-      { id: 'boulder', name: 'Falling rock', weight: 3, windup: 5, execute: 2, damage: [22, 32], count: 2 },
-      { id: 'quake', name: 'Tremor', weight: 3, windup: 6, execute: 2, damage: [16, 26] },
+      {
+        id: 'boulder',
+        shape: 'square',
+        name: 'Falling rock',
+        weight: 3,
+        windup: 5,
+        execute: 2,
+        damage: [22, 32],
+        count: 2,
+      },
+      { id: 'quake', shape: 'rings', name: 'Tremor', weight: 3, windup: 6, execute: 2, damage: [16, 26] },
     ],
   },
 });
@@ -1053,6 +1077,7 @@ mon({
       { id: 'melee', name: 'Crushing limb', weight: 3, windup: 2, execute: 1, damage: [14, 24] },
       {
         id: 'boulder',
+        shape: 'square',
         name: 'Falling boulder',
         weight: 4,
         windup: 5,
@@ -1062,6 +1087,7 @@ mon({
       },
       {
         id: 'vines',
+        shape: 'cross',
         name: 'Creeping vines',
         weight: 3,
         windup: 6,
@@ -1070,7 +1096,7 @@ mon({
         root: 5,
         count: 5,
       },
-      { id: 'quake', name: 'Root quake', weight: 2, windup: 4, execute: 2, damage: [24, 36] },
+      { id: 'quake', shape: 'rings', name: 'Root quake', weight: 2, windup: 4, execute: 2, damage: [24, 36] },
     ],
   },
 });

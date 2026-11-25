@@ -3126,6 +3126,7 @@ func (x *Gear) GetCape() string {
 	return ""
 }
 
+// Centres are where an attack is aimed, as x, y pairs. A boulder falls on one even when its square is clipped.
 type BossView struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	State         BossState              `protobuf:"varint,1,opt,name=state,proto3,enum=driftwake.v1.BossState" json:"state,omitempty"`
@@ -3134,6 +3135,7 @@ type BossView struct {
 	Start         uint32                 `protobuf:"varint,4,opt,name=start,proto3" json:"start,omitempty"`
 	End           uint32                 `protobuf:"varint,5,opt,name=end,proto3" json:"end,omitempty"`
 	Target        uint32                 `protobuf:"varint,6,opt,name=target,proto3" json:"target,omitempty"`
+	Centres       []uint32               `protobuf:"varint,7,rep,packed,name=centres,proto3" json:"centres,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -3208,6 +3210,13 @@ func (x *BossView) GetTarget() uint32 {
 		return x.Target
 	}
 	return 0
+}
+
+func (x *BossView) GetCentres() []uint32 {
+	if x != nil {
+		return x.Centres
+	}
+	return nil
 }
 
 type Event struct {
@@ -3381,6 +3390,7 @@ type Impact struct {
 	Boss          uint32                 `protobuf:"varint,1,opt,name=boss,proto3" json:"boss,omitempty"`
 	Attack        string                 `protobuf:"bytes,2,opt,name=attack,proto3" json:"attack,omitempty"`
 	Tiles         []uint32               `protobuf:"varint,3,rep,packed,name=tiles,proto3" json:"tiles,omitempty"`
+	Centres       []uint32               `protobuf:"varint,4,rep,packed,name=centres,proto3" json:"centres,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -3432,6 +3442,13 @@ func (x *Impact) GetAttack() string {
 func (x *Impact) GetTiles() []uint32 {
 	if x != nil {
 		return x.Tiles
+	}
+	return nil
+}
+
+func (x *Impact) GetCentres() []uint32 {
+	if x != nil {
+		return x.Centres
 	}
 	return nil
 }
@@ -3673,14 +3690,15 @@ const file_driftwake_v1_game_proto_rawDesc = "" +
 	"\x04head\x18\x02 \x01(\tR\x04head\x12\x12\n" +
 	"\x04body\x18\x03 \x01(\tR\x04body\x12\x12\n" +
 	"\x04legs\x18\x04 \x01(\tR\x04legs\x12\x12\n" +
-	"\x04cape\x18\x05 \x01(\tR\x04cape\"\xa7\x01\n" +
+	"\x04cape\x18\x05 \x01(\tR\x04cape\"\xc1\x01\n" +
 	"\bBossView\x12-\n" +
 	"\x05state\x18\x01 \x01(\x0e2\x17.driftwake.v1.BossStateR\x05state\x12\x16\n" +
 	"\x06attack\x18\x02 \x01(\tR\x06attack\x12\x14\n" +
 	"\x05tiles\x18\x03 \x03(\rR\x05tiles\x12\x14\n" +
 	"\x05start\x18\x04 \x01(\rR\x05start\x12\x10\n" +
 	"\x03end\x18\x05 \x01(\rR\x03end\x12\x16\n" +
-	"\x06target\x18\x06 \x01(\rR\x06target\"\x7f\n" +
+	"\x06target\x18\x06 \x01(\rR\x06target\x12\x18\n" +
+	"\acentres\x18\a \x03(\rR\acentres\"\x7f\n" +
 	"\x05Event\x12%\n" +
 	"\x03hit\x18\x01 \x01(\v2\x11.driftwake.v1.HitH\x00R\x03hit\x12.\n" +
 	"\x06impact\x18\x02 \x01(\v2\x14.driftwake.v1.ImpactH\x00R\x06impact\x12\x16\n" +
@@ -3690,11 +3708,12 @@ const file_driftwake_v1_game_proto_rawDesc = "" +
 	"\x04from\x18\x01 \x01(\rR\x04from\x12\x0e\n" +
 	"\x02to\x18\x02 \x01(\rR\x02to\x12\x16\n" +
 	"\x06damage\x18\x03 \x01(\rR\x06damage\x12\x14\n" +
-	"\x05style\x18\x04 \x01(\tR\x05style\"J\n" +
+	"\x05style\x18\x04 \x01(\tR\x05style\"d\n" +
 	"\x06Impact\x12\x12\n" +
 	"\x04boss\x18\x01 \x01(\rR\x04boss\x12\x16\n" +
 	"\x06attack\x18\x02 \x01(\tR\x06attack\x12\x14\n" +
-	"\x05tiles\x18\x03 \x03(\rR\x05tiles*\x87\x01\n" +
+	"\x05tiles\x18\x03 \x03(\rR\x05tiles\x12\x18\n" +
+	"\acentres\x18\x04 \x03(\rR\acentres*\x87\x01\n" +
 	"\x04Slot\x12\x14\n" +
 	"\x10SLOT_UNSPECIFIED\x10\x00\x12\x0f\n" +
 	"\vSLOT_WEAPON\x10\x01\x12\r\n" +

@@ -117,6 +117,8 @@ export interface Quest {
 }
 export interface BossAttack {
   id: 'melee' | 'boulder' | 'vines' | 'quake';
+  /** How it marks ground; melee has none. */
+  shape?: string;
   name: string;
   weight: number;
   windup: number;

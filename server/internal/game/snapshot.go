@@ -45,11 +45,12 @@ func u32(v int) *uint32 {
 
 func (v *view) bossView() *pb.BossView {
 	b := &pb.BossView{
-		State:  v.boss.st,
-		Tiles:  flat(v.boss.tiles),
-		Start:  uint32(v.boss.start),
-		End:    uint32(v.boss.end),
-		Target: v.boss.tgt,
+		State:   v.boss.st,
+		Tiles:   flat(v.boss.tiles),
+		Centres: flat(v.boss.centres),
+		Start:   uint32(v.boss.start),
+		End:     uint32(v.boss.end),
+		Target:  v.boss.tgt,
 	}
 	if v.boss.atk != nil {
 		b.Attack = v.boss.atk.ID

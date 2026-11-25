@@ -96,11 +96,32 @@ type Loot struct {
 	Unique         []Unique
 }
 
+// Shapes are the ways in which an attack can mark ground. Melee has none: it has a target.
+var Shapes = []string{"square", "cross", "rings"}
+
 type Attack struct {
-	ID, Name                     string
+	ID, Name, Shape              string
 	Weight                       float64
 	Windup, Execute, Root, Count int
 	Damage                       [2]int
+}
+
+// CheckAttacks refuses an attack whose shape is missing or unknown, so that none silently hits nobody.
+func CheckAttacks(monsters []*Monster) error {
+	for _, m := range monsters {
+		if m.Boss == nil {
+			continue
+		}
+		for _, a := range m.Boss.Attacks {
+			switch {
+			case a.ID == "melee" && a.Shape != "":
+				return fmt.Errorf("%s: melee %q has no ground to mark, so no shape", m.ID, a.Name)
+			case a.ID != "melee" && !slices.Contains(Shapes, a.Shape):
+				return fmt.Errorf("%s: attack %q has unknown shape %q", m.ID, a.Name, a.Shape)
+			}
+		}
+	}
+	return nil
 }
 
 type Boss struct {
@@ -280,6 +301,7 @@ func init() {
 	for _, n := range d.Nodes {
 		Nodes[n.ID] = n
 	}
+	must(CheckAttacks(d.Monsters))
 	for _, m := range d.Monsters {
 		Monsters[m.ID] = m
 	}

@@ -74,7 +74,10 @@ describe('mergeEntity, with bytes recorded from the server', () => {
     expect(after('busy player', 'plain player')).toEqual(plainPlayer);
   });
   it('follows bosses and monsters', () => {
-    expect(after('boss')).toEqual({ ...boss, boss: { state: 'choose', tiles: [], start: 0, end: 0 } });
+    expect(after('boss')).toEqual({
+      ...boss,
+      boss: { state: 'choose', tiles: [], centres: [], start: 0, end: 0 },
+    });
     const tiles = [
       [4, 5],
       [5, 5],
@@ -83,13 +86,21 @@ describe('mergeEntity, with bytes recorded from the server', () => {
       ...boss,
       hp: 250,
       target: PLAYER,
-      boss: { state: 'windup', attack: 'boulder', tiles, start: 100, end: 105 },
+      boss: { state: 'windup', attack: 'boulder', tiles, centres: [[5, 5]], start: 100, end: 105 },
     });
     expect(after('boss', 'boss winds up', 'boss strikes')).toEqual({
       ...boss,
       hp: 250,
       maxHp: 600,
-      boss: { state: 'execute', attack: 'melee', tiles: [], start: 110, end: 112, target: PLAYER },
+      boss: {
+        state: 'execute',
+        attack: 'melee',
+        tiles: [],
+        centres: [],
+        start: 110,
+        end: 112,
+        target: PLAYER,
+      },
     });
     const boar = { id: '34', kind: 'monster', x: 1, y: 2, type: 'boar', hp: 5, maxHp: 8, target: PLAYER };
     expect(after('monster')).toEqual(boar);

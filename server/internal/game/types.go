@@ -137,9 +137,11 @@ func (p *Player) at() Point { return Point{X: p.C.X, Y: p.C.Y} }
 type bossState struct {
 	st         pb.BossState
 	atk        *content.Attack
-	tiles      []Point // marked ground
-	start, end int     // ticks
-	tgt        uint32  // of melee
+	tiles      []Point // marked ground, all strikes together
+	centres    []Point // where the attack is aimed
+	strikes    []strike
+	start, end int    // ticks
+	tgt        uint32 // of melee
 }
 
 // tally is a small map that remembers insertion order.

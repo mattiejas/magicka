@@ -10,6 +10,10 @@ type Animate = (progress: number, state: State) => void;
 export interface TelegraphSource {
   attack: string;
   tiles: TilePos[];
+  /** Where each boulder lands, as the server aimed it. */
+  centres: TilePos[];
+  /** Identifies the attack, see telegraphKey. */
+  key: string;
   /** Centre of the boss. */
   origin: TilePos;
   /** Hurled from the boss rather than falling from the sky. */
@@ -24,7 +28,7 @@ export class Telegraph {
   private animations: Animate[] = [];
 
   constructor(source: TelegraphSource) {
-    this.key = telegraphKey(source.attack, source.tiles);
+    this.key = source.key;
     this.markTiles(source);
     if (source.attack === 'boulder') this.boulders(source);
     else if (source.attack === 'vines') this.vines(source.tiles);
@@ -55,8 +59,8 @@ export class Telegraph {
   }
 
   /** A shadow that grows and darkens until a boulder lands in it. */
-  private boulders({ tiles, origin, thrown }: TelegraphSource) {
-    for (const [x, y] of boulderCentres(tiles)) {
+  private boulders({ centres, origin, thrown }: TelegraphSource) {
+    for (const [x, y] of centres) {
       const centre: TilePos = [x + 0.5, y + 0.5];
       this.boulderShadow(centre);
       this.boulder(centre, thrown ? origin : null);
@@ -144,16 +148,11 @@ export class Telegraph {
   }
 }
 
-/** Identifies an attack, so that its telegraph is built once. Empty when there is nothing to show. */
-export const telegraphKey = (attack: string | undefined, tiles: TilePos[]) =>
-  tiles.length ? `${attack}:${JSON.stringify(tiles)}` : '';
-
-/** A boulder covers three by three tiles: these are the tiles whose neighbours are all marked. */
-function boulderCentres(tiles: TilePos[]): TilePos[] {
-  const marked = new Set(tiles.map(tile => tile.join()));
-  const around = [-1, 0, 1];
-  const centres = tiles.filter(([x, y]) =>
-    around.every(dx => around.every(dy => marked.has(`${x + dx},${y + dy}`))),
-  );
-  return centres.length ? centres : [tiles[Math.floor(tiles.length / 2)]];
-}
+/**
+ * Identifies an attack, so that its telegraph is built once: the boss and the tick at which the attack lands, which is
+ * where the wind-up ends and the execution begins. Empty when there is nothing to show.
+ */
+export const telegraphKey = (bossId: string, boss: BossView) =>
+  boss.state === 'choose' || !boss.tiles.length
+    ? ''
+    : `${bossId}:${boss.state === 'windup' ? boss.end : boss.start}`;

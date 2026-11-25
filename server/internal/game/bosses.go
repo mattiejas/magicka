@@ -13,13 +13,8 @@ const (
 	execute = pb.BossState_BOSS_STATE_EXECUTE
 )
 
-// Attacks with rules of their own.
-const (
-	attackMelee   = "melee"
-	attackBoulder = "boulder"
-	attackVines   = "vines"
-	attackQuake   = "quake"
-)
+// attackMelee has a target instead of marked ground, and so no shape.
+const attackMelee = "melee"
 
 // --- the world boss's schedule
 
@@ -120,8 +115,9 @@ func (w *World) bossAI(m *Monster) {
 	case b.st == choose:
 		w.bossChoose(m, players)
 	case w.Tick < b.end:
+		w.bossStrikes(m)
 	case b.st == windup:
-		w.bossExecute(m, players)
+		w.bossExecute(m)
 	default:
 		m.boss = &bossState{st: choose, start: b.start, end: b.end}
 	}
@@ -145,7 +141,7 @@ func (w *World) bossChoose(m *Monster, players []*Player) {
 	if a.ID == attackMelee {
 		b.tgt = close[randomInt(w.rnd, len(close))].ID
 	} else {
-		b.tiles = w.markTiles(m, a, players)
+		b.plan(shapes[a.Shape](w, m, a, players), b.end)
 	}
 	m.boss = b
 }
@@ -170,103 +166,58 @@ func (w *World) pickAttack(m *Monster, inMelee bool) *content.Attack {
 	return options[0]
 }
 
-func (w *World) bossExecute(m *Monster, players []*Player) {
+func (w *World) bossExecute(m *Monster) {
 	b := m.boss
 	a := b.atk
 	b.st, b.start, b.end = execute, w.Tick, w.Tick+a.Execute
-	impact := &pb.Impact{Boss: m.ID, Attack: a.ID, Tiles: flat(b.tiles)}
-	w.emit(m.Map, m.X, m.Y, &pb.Event{Event: &pb.Event_Impact{Impact: impact}})
-	marked := map[Point]bool{}
-	for _, t := range b.tiles {
-		marked[t] = true
+	if a.ID == attackMelee {
+		w.emit(m.Map, m.X, m.Y, &pb.Event{Event: &pb.Event_Impact{Impact: &pb.Impact{Boss: m.ID, Attack: a.ID}}})
+		w.bossMelee(m)
+		return
 	}
-	for _, p := range players {
-		if a.ID == attackMelee && (p.ID != b.tgt || !inReach(p.C.X, p.C.Y, m.rect(), 1)) {
+	w.bossStrikes(m)
+}
+
+// bossMelee hits the player it targeted, if still in reach.
+func (w *World) bossMelee(m *Monster) {
+	b := m.boss
+	for _, p := range w.challengers(m) {
+		if p.ID == b.tgt && inReach(p.C.X, p.C.Y, m.rect(), 1) {
+			w.bossHit(m, p)
+		}
+	}
+}
+
+// bossStrikes lands the strikes of this tick, in order.
+func (w *World) bossStrikes(m *Monster) {
+	for _, s := range m.boss.strikes {
+		if s.at != w.Tick {
 			continue
 		}
-		if a.ID != attackMelee && !marked[p.at()] {
-			continue
+		impact := &pb.Impact{Boss: m.ID, Attack: m.boss.atk.ID, Tiles: flat(s.tiles), Centres: flat(s.centres)}
+		w.emit(m.Map, m.X, m.Y, &pb.Event{Event: &pb.Event_Impact{Impact: impact}})
+		marked := map[Point]bool{}
+		for _, t := range s.tiles {
+			marked[t] = true
 		}
-		m.active.set(p.ID, w.Tick)
-		if a.Root > 0 {
-			p.rooted, p.path = w.Tick+a.Root, nil
-		}
-		w.addXP(p, "defence", float64(6+m.Def.Level))
-		w.hurt(p, m.ID, a.Damage[0]+randomInt(w.rnd, a.Damage[1]-a.Damage[0]+1), a.ID)
-	}
-}
-
-// --- marked ground
-
-// tileSet collects walkable tiles once each, in order.
-type tileSet struct {
-	m    *content.Map
-	seen map[Point]bool
-	list []Point
-}
-
-func (s *tileSet) add(x, y int) {
-	if p := (Point{X: x, Y: y}); s.m.Walkable(x, y) && !s.seen[p] {
-		s.seen[p] = true
-		s.list = append(s.list, p)
-	}
-}
-
-func (w *World) markTiles(m *Monster, a *content.Attack, players []*Player) []Point {
-	tiles := &tileSet{m: m.Map, seen: map[Point]bool{}}
-	if a.ID == attackQuake {
-		w.markRings(m, tiles)
-		return tiles.list
-	}
-	targets := w.shuffled(players)
-	for _, p := range targets[:min(len(targets), max(1, a.Count))] {
-		switch a.ID {
-		case attackBoulder:
-			markSquare(tiles, p.at())
-		case attackVines:
-			markCross(tiles, p.at())
-		}
-	}
-	return tiles.list
-}
-
-// markRings marks every other pair of rings around a boss.
-func (w *World) markRings(m *Monster, tiles *tileSet) {
-	arena, parity := m.Def.Boss.Arena, 1
-	if w.rnd() < 0.5 {
-		parity = 0
-	}
-	for y := m.Y - arena; y < m.Y+m.Def.Size+arena; y++ {
-		for x := m.X - arena; x < m.X+m.Def.Size+arena; x++ {
-			distance := RectDist(x, y, m.rect())
-			if distance > 0 && distance <= arena && (distance-1)/2%2 == parity {
-				tiles.add(x, y)
+		// Looked up again for each strike: a player who died to an earlier one is in town now,
+		// where the same coordinates may be marked on another map.
+		for _, p := range w.challengers(m) {
+			if marked[p.at()] {
+				w.bossHit(m, p)
 			}
 		}
 	}
 }
 
-func markSquare(tiles *tileSet, centre Point) {
-	for dy := -1; dy <= 1; dy++ {
-		for dx := -1; dx <= 1; dx++ {
-			tiles.add(centre.X+dx, centre.Y+dy)
-		}
+func (w *World) bossHit(m *Monster, p *Player) {
+	a := m.boss.atk
+	m.active.set(p.ID, w.Tick)
+	if a.Root > 0 {
+		p.rooted, p.path = w.Tick+a.Root, nil
 	}
-}
-
-func markCross(tiles *tileSet, centre Point) {
-	for _, d := range [...]Point{{}, {X: 1}, {X: -1}, {Y: 1}, {Y: -1}} {
-		tiles.add(centre.X+d.X, centre.Y+d.Y)
-	}
-}
-
-func (w *World) shuffled(players []*Player) []*Player {
-	out := append([]*Player(nil), players...)
-	for i := len(out) - 1; i > 0; i-- {
-		j := randomInt(w.rnd, i+1)
-		out[i], out[j] = out[j], out[i]
-	}
-	return out
+	w.addXP(p, "defence", float64(6+m.Def.Level))
+	w.hurt(p, m.ID, a.Damage[0]+randomInt(w.rnd, a.Damage[1]-a.Damage[0]+1), a.ID)
 }
 
 // flat lists tiles as x, y pairs.

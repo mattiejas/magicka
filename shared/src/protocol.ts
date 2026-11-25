@@ -52,6 +52,8 @@ export interface BossView {
   state: 'choose' | 'windup' | 'execute';
   attack?: string;
   tiles: TilePos[];
+  /** Where the attack is aimed, which a clipped square of tiles does not show. */
+  centres: TilePos[];
   /** Ticks at which the current state began and ends. */
   start: number;
   end: number;
@@ -95,7 +97,7 @@ export interface Entity {
 
 export type GameEvent =
   | { type: 'hit'; from: string; to: string; damage: number; style: string }
-  | { type: 'impact'; boss: string; attack: string; tiles: TilePos[] }
+  | { type: 'impact'; boss: string; attack: string; tiles: TilePos[]; centres: TilePos[] }
   | { type: 'death'; id: string };
 
 /** The player's own character, which only they can see in full. */

@@ -182,6 +182,7 @@ function bossView(boss: PbBossView): Entity['boss'] {
     state: BOSS_STATES[boss.state],
     attack: boss.attack || undefined,
     tiles: tilePairs(boss.tiles),
+    centres: tilePairs(boss.centres),
     start: boss.start,
     end: boss.end,
     target: boss.target ? clientId(boss.target) : undefined,
@@ -264,8 +265,16 @@ function gameEvent({ event }: PbEvent): GameEvent[] {
       return [{ type: 'hit', from: clientId(from), to: clientId(to), damage, style }];
     }
     case 'impact': {
-      const { boss, attack, tiles } = event.value;
-      return [{ type: 'impact', boss: clientId(boss), attack, tiles: tilePairs(tiles) }];
+      const { boss, attack, tiles, centres } = event.value;
+      return [
+        {
+          type: 'impact',
+          boss: clientId(boss),
+          attack,
+          tiles: tilePairs(tiles),
+          centres: tilePairs(centres),
+        },
+      ];
     }
     case 'death':
       return [{ type: 'death', id: clientId(event.value) }];
