@@ -11,6 +11,7 @@ import {
   monsterModel,
   nodeGeo,
   npcModel,
+  PoseBlend,
   playerModel,
   poseBoss,
   poseMonster,
@@ -37,16 +38,35 @@ const name = query.get('name') ?? 'Matts';
 const UNARMED: Gear = [null, null, null, null];
 const STILL = { moving: false, walk: 0, hit: 0, time };
 
-function person(
-  gear: Gear,
-  pose: { action?: string; hit?: number; tool?: string; time?: number },
-  who = name,
-) {
+interface Shown {
+  action?: string;
+  hit?: number;
+  tool?: string;
+  time?: number;
+}
+
+function poseOf(shown: Shown) {
+  const moving = shown.action === 'walk';
+  return { ...STILL, ...shown, action: moving ? undefined : shown.action, moving, walk: 1 };
+}
+
+function person(gear: Gear, shown: Shown, who = name) {
   const model = playerModel(who, gear);
-  const moving = pose.action === 'walk';
-  posePlayer(model, { ...STILL, ...pose, action: moving ? undefined : pose.action, moving, walk: 1 });
+  posePlayer(model, poseOf(shown));
   return model.root;
 }
+
+/** Someone who was in the pose `before` and began to take on the pose `after` so many milliseconds ago. */
+function changing(gear: Gear, before: Shown, after: Shown, sinceMs: number) {
+  const model = playerModel(name, gear);
+  const blend = new PoseBlend();
+  posePlayer(model, poseOf({ ...before, time: time - sinceMs }), blend);
+  posePlayer(model, poseOf(after), blend);
+  return model.root;
+}
+
+const ATTACK_MS = 550;
+const SWORD: Gear = ['iron_sword', null, null, null, 'cape_mining'];
 
 const SETS: Record<string, GallerySet> = {
   people: {
@@ -143,6 +163,33 @@ const SETS: Record<string, GallerySet> = {
           turn: 0.9,
         })),
       ),
+  },
+  // Each row goes from one pose to another; the last two begin with a blow.
+  blend: {
+    columns: 6,
+    gap: 1.9,
+    exhibits: () => {
+      const work = { action: 'mine', tool: 'iron_pickaxe' };
+      const rows: [Gear, Shown, Shown][] = [
+        [SWORD, {}, { action: 'walk' }],
+        [SWORD, { action: 'walk' }, { action: 'melee' }],
+        [UNARMED, { action: 'walk' }, work],
+        [UNARMED, { action: 'pick' }, {}],
+        [SWORD, { action: 'walk' }, { action: 'melee', hit: 1 }],
+        [['oak_staff', null, null, null], {}, { action: 'magic', hit: 1 }],
+      ];
+      return rows.flatMap(([gear, before, after]) =>
+        [0, 30, 60, 90, 120, 150].map(sinceMs => ({
+          object: changing(
+            gear,
+            before,
+            { ...after, hit: after.hit ? after.hit - sinceMs / ATTACK_MS : 0 },
+            sinceMs,
+          ),
+          turn: 0.9,
+        })),
+      );
+    },
   },
   monsters: {
     columns: 5,

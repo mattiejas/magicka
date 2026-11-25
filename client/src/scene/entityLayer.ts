@@ -8,6 +8,7 @@ import {
   modelKey,
   monsterModel,
   npcModel,
+  PoseBlend,
   playerModel,
   poseBoss,
   poseMonster,
@@ -26,6 +27,7 @@ const DEFAULT_HEIGHT = 1.6;
 interface Figure {
   model: Model;
   facing: number;
+  blend: PoseBlend;
 }
 
 export class EntityLayer {
@@ -60,10 +62,14 @@ export class EntityLayer {
   private remove(id: string) {
     const figure = this.figures.get(id);
     if (!figure) return;
-    this.scene.remove(figure.model.root);
-    figure.model.root.traverse(object => (object as THREE.Mesh).geometry?.dispose());
+    this.removeModel(figure.model);
     this.figures.delete(id);
     this.attackedAt.delete(id);
+  }
+
+  private removeModel({ root }: Model) {
+    this.scene.remove(root);
+    root.traverse(object => (object as THREE.Mesh).geometry?.dispose());
   }
 
   /** The entity's model, rebuilt when a player changes gear or hair. */
@@ -73,9 +79,12 @@ export class EntityLayer {
       const outdated =
         entity.kind === 'player' && existing.model.key !== modelKey(entity.gear!, entity.look!);
       if (!outdated) return existing;
-      this.remove(entity.id);
+      this.removeModel(existing.model);
+      existing.model = buildModel(entity);
+      this.scene.add(existing.model.root);
+      return existing;
     }
-    const figure = { model: buildModel(entity), facing: 0 };
+    const figure = { model: buildModel(entity), facing: 0, blend: new PoseBlend() };
     this.figures.set(entity.id, figure);
     this.scene.add(figure.model.root);
     return figure;
@@ -104,7 +113,7 @@ export class EntityLayer {
       tool: entity.tool,
     };
     if (entity.kind === 'player') {
-      posePlayer(figure.model, pose);
+      posePlayer(figure.model, pose, figure.blend);
       this.effects.work(entity, figure.facing, now);
     } else if (entity.boss) this.updateBoss(track, figure.model);
     else poseMonster(figure.model, { ...pose, phase: positionOf(track)[0] });

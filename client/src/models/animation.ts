@@ -1,10 +1,12 @@
-// Posing models. Every function sets all joints it uses, so poses never depend on the frame before.
+// Posing models. Poses depend on the moment alone and every function sets all joints it uses. Only a
+// player's `PoseBlend` remembers the frame before, to mix one pose into the next.
 import { type BossView, ITEMS } from '@driftwake/shared';
 import type * as THREE from 'three';
 import { heldGeo } from './held';
 import { type Model, mesh, TAU } from './model';
 import { CLAW_JOINT } from './monsters/crab';
 import { HIP } from './player/plan';
+import type { PoseBlend } from './poseBlend';
 
 export interface Pose {
   action?: string;
@@ -19,8 +21,8 @@ export interface Pose {
   tool?: string;
 }
 
-const ease = (t: number) => t * t * (3 - 2 * t);
-const mix = (a: number, b: number, t: number) => a + (b - a) * t;
+export const ease = (t: number) => t * t * (3 - 2 * t);
+export const mix = (a: number, b: number, t: number) => a + (b - a) * t;
 
 // --- work
 const WORK_CYCLE_MS: Record<string, number> = { mine: 1200, chop: 1200, craft: 750 };
@@ -43,7 +45,7 @@ const strokeAt = ({ action, time }: Pose) => {
 
 // --- players
 /** Joint angles of a player, in radians. Arms and legs: shoulder or hip, then elbow or knee. */
-interface PlayerJoints {
+export interface PlayerJoints {
   lean: number;
   twist: number;
   nod: number;
@@ -59,6 +61,10 @@ interface PlayerJoints {
   rightKnee: number;
   /** Change in hip height. */
   drop: number;
+  /** How far the legs stand apart. */
+  legSpread: number;
+  /** How far a cape is from hanging straight down. */
+  capeTrail: number;
 }
 
 function standing({ time }: Pose): PlayerJoints {
@@ -77,6 +83,8 @@ function standing({ time }: Pose): PlayerJoints {
     rightLeg: 0,
     rightKnee: 0,
     drop: 0,
+    legSpread: 0.055,
+    capeTrail: 0.06 + Math.sin(time / 900) * 0.02,
   };
 }
 
@@ -94,6 +102,8 @@ function walking(pose: Pose): PlayerJoints {
     leftKnee: Math.max(0, -kneeBend) * 0.9 + 0.1,
     rightKnee: Math.max(0, kneeBend) * 0.9 + 0.1,
     drop: Math.abs(Math.cos(pose.walk)) * 0.035,
+    legSpread: 0.015,
+    capeTrail: 0.34 + Math.sin(pose.walk * 2) * 0.07,
   };
 }
 
@@ -266,15 +276,17 @@ const ACTIONS: Record<string, ActionPose> = {
   melee: slashing,
 };
 
-export function posePlayer(model: Model, pose: Pose) {
+/** Without a `blend`, the pose is taken on at once. */
+export function posePlayer(model: Model, pose: Pose, blend?: PoseBlend) {
   const base = pose.moving ? walking(pose) : standing(pose);
   const joints = { ...base, ...ACTIONS[pose.action ?? '']?.(pose, base) };
-  applyJoints(model.parts, joints, pose.moving);
-  hangCape(model.parts, joints.lean, pose);
+  blend?.apply(joints, pose);
+  applyJoints(model.parts, joints);
+  hangCape(model.parts, joints);
   holdTool(model.parts, pose);
 }
 
-function applyJoints(parts: Model['parts'], j: PlayerJoints, moving: boolean) {
+function applyJoints(parts: Model['parts'], j: PlayerJoints) {
   const hip = HIP + j.drop;
   parts.upper.rotation.set(j.lean, j.twist, 0);
   parts.upper.position.y = parts.hips.position.y = hip;
@@ -284,19 +296,16 @@ function applyJoints(parts: Model['parts'], j: PlayerJoints, moving: boolean) {
   parts.ra.rotation.set(j.rightArm, 0, j.rightSpread);
   parts.la2.rotation.x = j.leftElbow;
   parts.ra2.rotation.x = j.rightElbow;
-  const legSpread = moving ? 0.015 : 0.055;
-  parts.ll.rotation.set(j.leftLeg, 0, legSpread);
-  parts.rl.rotation.set(j.rightLeg, 0, -legSpread);
+  parts.ll.rotation.set(j.leftLeg, 0, j.legSpread);
+  parts.rl.rotation.set(j.rightLeg, 0, -j.legSpread);
   parts.ll2.rotation.x = j.leftKnee;
   parts.rl2.rotation.x = j.rightKnee;
   parts.ll.position.y = parts.rl.position.y = hip;
 }
 
 /** Hangs straight down whatever the body does, and trails behind while walking. */
-function hangCape({ cape }: Model['parts'], lean: number, { moving, walk, time }: Pose) {
-  if (!cape) return;
-  const trail = moving ? 0.34 + Math.sin(walk * 2) * 0.07 : 0.06 + Math.sin(time / 900) * 0.02;
-  cape.rotation.x = trail - Math.min(0.3, lean);
+function hangCape({ cape }: Model['parts'], { lean, capeTrail }: PlayerJoints) {
+  if (cape) cape.rotation.x = capeTrail - Math.min(0.3, lean);
 }
 
 const HAMMER = 'hammer';
