@@ -680,11 +680,11 @@ export interface MonsterDef {
   boss?: BossDef;
 }
 /** How an attack marks ground. Melee marks none: it has a target. */
-export const BOSS_SHAPES = ['square', 'cross', 'rings'] as const;
+export const BOSS_SHAPES = ['square', 'cross', 'rings', 'side', 'sides', 'line'] as const;
 export type BossShape = (typeof BOSS_SHAPES)[number];
 export interface BossAttack {
   /** Chooses the damage text, the name and the pose; the shape says where and when it hits. */
-  id: 'melee' | 'boulder' | 'vines' | 'quake';
+  id: 'melee' | 'boulder' | 'vines' | 'quake' | 'snap' | 'double_snap' | 'jet';
   shape?: BossShape;
   name: string;
   weight: number;
@@ -928,28 +928,17 @@ mon({
     arena: 9,
     world: false,
     attacks: [
-      { id: 'melee', name: 'Claw', weight: 4, windup: 3, execute: 1, damage: [3, 6] },
+      { id: 'snap', shape: 'side', name: 'Snap', weight: 5, windup: 3, execute: 2, damage: [8, 12] },
       {
-        id: 'boulder',
-        shape: 'square',
-        name: 'Hurled stone',
-        weight: 3,
+        id: 'double_snap',
+        shape: 'sides',
+        name: 'Double snap',
+        weight: 2,
         windup: 5,
         execute: 2,
-        damage: [9, 14],
-        count: 1,
+        damage: [12, 16],
       },
-      {
-        id: 'vines',
-        shape: 'cross',
-        name: 'Grasping kelp',
-        weight: 2,
-        windup: 6,
-        execute: 2,
-        damage: [4, 7],
-        root: 4,
-        count: 1,
-      },
+      { id: 'jet', shape: 'line', name: 'Water jet', weight: 3, windup: 4, execute: 2, damage: [9, 14] },
     ],
   },
 });

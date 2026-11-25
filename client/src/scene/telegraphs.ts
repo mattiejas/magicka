@@ -10,17 +10,28 @@ type Animate = (progress: number, state: State) => void;
 export interface TelegraphSource {
   attack: string;
   tiles: TilePos[];
-  /** Where each boulder lands, as the server aimed it. */
+  /** Where each boulder, claw or jet is aimed, as the server aimed it. */
   centres: TilePos[];
   /** Identifies the attack, see telegraphKey. */
   key: string;
   /** Centre of the boss. */
   origin: TilePos;
-  /** Hurled from the boss rather than falling from the sky. */
-  thrown: boolean;
 }
 
-const TILE_COLORS: Record<string, string> = { vines: '#4f6b34', quake: '#7a4a30', boulder: '#2f2b2a' };
+const TILE_COLORS: Record<string, string> = {
+  vines: '#4f6b34',
+  quake: '#7a4a30',
+  boulder: '#2f2b2a',
+  snap: '#8a2c1c',
+  double_snap: '#8a2c1c',
+  jet: '#1f5f96',
+};
+/** A jet leaves the mouth this far from the middle of the boss, and this high. */
+const MOUTH = { distance: 0.95, height: 0.55 };
+const JET_DROPS = 36;
+const JET_SPREAD = 0.07;
+/** The share of the wind-up at which water leaves the mouth, to arrive when the attack lands. */
+const JET_LEAVES = 0.8;
 
 export class Telegraph {
   readonly group = new THREE.Group();
@@ -32,7 +43,8 @@ export class Telegraph {
     this.markTiles(source);
     if (source.attack === 'boulder') this.boulders(source);
     else if (source.attack === 'vines') this.vines(source.tiles);
-    else this.cracks(source.tiles);
+    else if (source.attack === 'quake') this.cracks(source.tiles);
+    else if (source.attack === 'jet') this.jet(source);
   }
 
   update(progress: number, state: State) {
@@ -59,11 +71,11 @@ export class Telegraph {
   }
 
   /** A shadow that grows and darkens until a boulder lands in it. */
-  private boulders({ centres, origin, thrown }: TelegraphSource) {
+  private boulders({ centres }: TelegraphSource) {
     for (const [x, y] of centres) {
       const centre: TilePos = [x + 0.5, y + 0.5];
       this.boulderShadow(centre);
-      this.boulder(centre, thrown ? origin : null);
+      this.boulder(centre);
     }
   }
 
@@ -79,7 +91,7 @@ export class Telegraph {
     });
   }
 
-  private boulder([x, z]: TilePos, thrownFrom: TilePos | null) {
+  private boulder([x, z]: TilePos) {
     const rock = new THREE.Mesh(
       merge([part(blob(0.95, 0.18, 3), '#8a857e'), part(blob(0.3, 0.2, 5), '#7a756e', [0.7, 0.3, 0.3])]),
       MAT,
@@ -93,15 +105,9 @@ export class Telegraph {
         return;
       }
       rock.rotation.x = t * 5;
-      if (thrownFrom) {
-        const [fromX, fromZ] = thrownFrom;
-        rock.visible = t > 0.15;
-        rock.position.set(fromX + (x - fromX) * t, 1 + Math.sin(t * 3.14) * 5, fromZ + (z - fromZ) * t);
-      } else {
-        const fall = Math.max(0, (t - 0.55) / 0.45);
-        rock.visible = t > 0.55;
-        rock.position.set(x, 0.5 + (1 - fall * fall) * 14, z);
-      }
+      const fall = Math.max(0, (t - 0.55) / 0.45);
+      rock.visible = t > 0.55;
+      rock.position.set(x, 0.5 + (1 - fall * fall) * 14, z);
     });
   }
 
@@ -133,6 +139,36 @@ export class Telegraph {
       }
   }
 
+  /** Water that shoots from the mouth of the boss to where it is aimed. */
+  private jet({ centres: [[tileX, tileY]], origin: [fromX, fromZ] }: TelegraphSource) {
+    const [toX, toZ] = [tileX + 0.5, tileY + 0.5];
+    const length = Math.hypot(toX - fromX, toZ - fromZ) || 1;
+    const [mouthX, mouthZ] = [toX - fromX, toZ - fromZ].map(
+      d => (d / length) * Math.min(MOUTH.distance, length),
+    );
+    const material = new THREE.MeshStandardMaterial({ color: '#9fd3ee', transparent: true, opacity: 0.85 });
+    const water = new THREE.InstancedMesh(new THREE.IcosahedronGeometry(0.12, 1), material, JET_DROPS);
+    water.frustumCulled = false;
+    this.group.add(water);
+    const at = new THREE.Matrix4();
+    this.animations.push((t, state) => {
+      const front = state === 'windup' ? Math.max(0, (t - JET_LEAVES) / (1 - JET_LEAVES)) : 1;
+      const back = state === 'windup' ? 0 : Math.min(1, t * 2);
+      const flow = (performance.now() / 300) % 1;
+      for (let i = 0; i < JET_DROPS; i++) {
+        const along = (i + flow) / JET_DROPS;
+        const size = along <= front && along >= back ? 0.5 + along * 0.7 + (i % 3) * 0.15 : 0;
+        at.makeScale(size, size, size).setPosition(
+          fromX + mouthX + (toX - fromX - mouthX) * along + Math.sin(i * 2.4) * JET_SPREAD,
+          MOUTH.height + Math.sin(along * Math.PI) * 0.35 - (MOUTH.height - 0.1) * along * along,
+          fromZ + mouthZ + (toZ - fromZ - mouthZ) * along + Math.cos(i * 2.4) * JET_SPREAD,
+        );
+        water.setMatrixAt(i, at);
+      }
+      water.instanceMatrix.needsUpdate = true;
+    });
+  }
+
   /** Stones that tremble, then burst out of the ground. */
   private cracks(tiles: TilePos[]) {
     for (const [x, y] of tiles) {
@@ -156,3 +192,12 @@ export const telegraphKey = (bossId: string, boss: BossView) =>
   boss.state === 'choose' || !boss.tiles.length
     ? ''
     : `${bossId}:${boss.state === 'windup' ? boss.end : boss.start}`;
+
+const AIMED = ['snap', 'double_snap', 'jet'];
+
+/** The point a boss faces during such an attack: between where it is aimed. Others follow their target. */
+export function aimOf({ state, attack, centres }: BossView): TilePos | null {
+  if (state === 'choose' || !centres.length || !AIMED.includes(attack!)) return null;
+  const mean = (axis: 0 | 1) => centres.reduce((sum, at) => sum + at[axis] + 0.5, 0) / centres.length;
+  return [mean(0), mean(1)];
+}

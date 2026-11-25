@@ -50,7 +50,7 @@ export const QUESTS: Quest[] = [
         need: { own: ['ration', 'feast', 'ships_wheel'] },
       },
       {
-        text: "Defeat Old Gnashclaw on the eastern sand. He swallowed the ship's wheel. Step off marked ground.",
+        text: "Defeat Old Gnashclaw on the eastern sand. He swallowed the ship's wheel. When he opens a claw, step off the marked ground.",
         need: { own: ['ships_wheel'] },
       },
       { text: "Bring the ship's wheel to the shipwright.", need: { boat: 'wheel' } },

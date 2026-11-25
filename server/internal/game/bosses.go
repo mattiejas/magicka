@@ -124,46 +124,62 @@ func (w *World) bossAI(m *Monster) {
 }
 
 func (w *World) bossChoose(m *Monster, players []*Player) {
-	var close []*Player // in reach of melee
 	noticed := m.active.len() > 0
 	for _, p := range players {
-		distance := RectDist(p.C.X, p.C.Y, m.rect())
-		noticed = noticed || distance <= approachRange
-		if distance <= 1 {
-			close = append(close, p)
-		}
+		noticed = noticed || RectDist(p.C.X, p.C.Y, m.rect()) <= approachRange
 	}
 	if len(players) == 0 || !noticed {
 		return
 	}
-	a := w.pickAttack(m, len(close) > 0)
+	a, targets := w.pickAttack(m, players)
+	if a == nil {
+		return
+	}
 	b := &bossState{st: windup, atk: a, start: w.Tick, end: w.Tick + a.Windup}
 	if a.ID == attackMelee {
-		b.tgt = close[randomInt(w.rnd, len(close))].ID
+		b.tgt = targets[randomInt(w.rnd, len(targets))].ID
 	} else {
-		b.plan(shapes[a.Shape](w, m, a, players), b.end)
+		b.plan(shapes[a.Shape].mark(w, m, a, targets), b.end)
 	}
 	m.boss = b
 }
 
-// pickAttack draws by weight. Melee needs someone in reach.
-func (w *World) pickAttack(m *Monster, inMelee bool) *content.Attack {
-	var options []*content.Attack
+// pickAttack draws by weight among the attacks that have someone to aim at, and returns who that is.
+func (w *World) pickAttack(m *Monster, players []*Player) (*content.Attack, []*Player) {
+	type option struct {
+		a       *content.Attack
+		targets []*Player
+	}
+	var options []option
 	total := 0.0
 	for i := range m.Def.Boss.Attacks {
 		a := &m.Def.Boss.Attacks[i]
-		if a.ID != attackMelee || inMelee {
-			options = append(options, a)
+		if targets := targetsOf(m, a, players); len(targets) > 0 {
+			options = append(options, option{a, targets})
 			total += a.Weight
 		}
 	}
+	if len(options) == 0 {
+		return nil, nil
+	}
 	draw := w.rnd() * total
-	for _, a := range options {
-		if draw -= a.Weight; draw < 0 {
-			return a
+	for _, o := range options {
+		if draw -= o.a.Weight; draw < 0 {
+			return o.a, o.targets
 		}
 	}
-	return options[0]
+	return options[0].a, options[0].targets
+}
+
+// targetsOf are the players an attack can be aimed at. Melee needs someone in reach.
+func targetsOf(m *Monster, a *content.Attack, players []*Player) (out []*Player) {
+	for _, p := range players {
+		distance := RectDist(p.C.X, p.C.Y, m.rect())
+		if a.ID == attackMelee && distance <= 1 || a.ID != attackMelee && shapes[a.Shape].reaches(distance) {
+			out = append(out, p)
+		}
+	}
+	return
 }
 
 func (w *World) bossExecute(m *Monster) {

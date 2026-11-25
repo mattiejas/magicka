@@ -1,5 +1,5 @@
 // Models of players, monsters, dropped items and graves, kept in step with the state.
-import { type Entity, MONSTERS } from '@driftwake/shared';
+import type { Entity } from '@driftwake/shared';
 import type * as THREE from 'three';
 import {
   dropModel,
@@ -15,7 +15,7 @@ import {
 } from '../models';
 import { centreOf, isMoving, positionOf, state, type Track, tickNow, walkDirection } from '../net/state';
 import type { Effects } from './effects';
-import { Telegraph, telegraphKey } from './telegraphs';
+import { aimOf, Telegraph, telegraphKey } from './telegraphs';
 import type { WorldView } from './worldView';
 
 /** How long an attack swing is shown. */
@@ -116,18 +116,16 @@ export class EntityLayer {
     const progress = boss.state === 'choose' ? 0 : Math.min(1, (tickNow() - boss.start) / duration);
     poseBoss(model, boss, progress);
 
-    const { id, type } = track.entity;
+    const { id } = track.entity;
     const key = telegraphKey(id, boss);
     if (this.telegraphs.get(id)?.key !== key) this.removeTelegraph(id);
     if (key && !this.telegraphs.has(id)) {
-      const thrown = MONSTERS[type!].shape === 'crab';
       const telegraph = new Telegraph({
         attack: boss.attack!,
         tiles: boss.tiles,
         centres: boss.centres,
         key,
         origin: centreOf(track),
-        thrown,
       });
       this.telegraphs.set(id, telegraph);
       this.scene.add(telegraph.group);
@@ -170,6 +168,8 @@ function walkingAngle(track: Track): number | null {
 
 /** Towards whatever the entity is working on or fighting. An idle boss looks at you. */
 function targetAngle(entity: Entity, position: THREE.Vector3, world: WorldView): number | null {
+  const aim = entity.boss && aimOf(entity.boss);
+  if (aim) return Math.atan2(aim[0] - position.x, aim[1] - position.z);
   const targetId = entity.boss?.target ?? entity.target ?? (entity.boss ? state.me : undefined);
   if (!targetId) return null;
   const centre = targetCentre(targetId, world);

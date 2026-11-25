@@ -71,6 +71,7 @@ Existing characters are kept until one restart at the public launch.
 
 - Claiming an uncollected unique from the reaper is free, since it was never lost by dying. It waits forever.
 - Mini bosses regenerate at the same rate as world bosses, and their scaling follows the same rule. Gnashclaw's unique is 1 in 50 since trading arrived.
+- Gnashclaw's double snap does 12 to 16 damage and his water jet 9 to 14, measured in `gnashclaw_test.go`. A snap at someone on a corner beside him marks that corner and the tile on each side of it. Snaps are for whoever is beside him, the jet for everyone else.
 - The death fee counts shop value at the time of collecting, rounded up, at least 1 coin per stack. Coins themselves count at face value.
 - Trees glow like rocks do, so that woodcutting has an intense method too. A glowing node gives everyone one sure strike at 1.5 times the XP, lasts about seven seconds, and needs a group of at least four.
 - Danger at higher tiers means aggressive monsters beside the mithril, cobalt and adamantite rocks. Big rocks, and a few trees of every tier, stand out of their reach.

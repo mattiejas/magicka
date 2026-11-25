@@ -25,6 +25,7 @@ interface Debris {
   height: number;
   scale: number;
 }
+const IMPACT_COLORS: Record<string, string> = { vines: '#6f9048', jet: '#9fd3ee' };
 const DEBRIS: Record<string, Debris> = {
   mine: { color: '#8f8a82', glow: '#000000', height: 0.6, scale: 1 },
   chop: { color: '#d0b183', glow: '#000000', height: 0.6, scale: 1 },
@@ -67,7 +68,7 @@ export class Effects {
   }
 
   impact({ attack, tiles }: Extract<GameEvent, { type: 'impact' }>) {
-    const color = attack === 'vines' ? '#6f9048' : '#9a8f7c';
+    const color = IMPACT_COLORS[attack] ?? '#9a8f7c';
     for (const [x, y] of tiles) {
       if ((x + y) % 2) continue; // half the tiles is plenty
       const angle = Math.random() * 6;

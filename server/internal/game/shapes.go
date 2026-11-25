@@ -9,14 +9,31 @@ type strike struct {
 	centres []Point // where it is aimed, for the browser to show
 }
 
+// A shape is a way to mark ground.
+type shape struct {
+	mark shapeFunc
+	// reaches tells whether it can be aimed at a player at a distance from the boss.
+	reaches func(distance int) bool
+}
+
+func anywhere(int) bool        { return true }
+func beside(distance int) bool { return distance == 1 }
+
+// notBeside holds for who stands inside the boss too, where no claw reaches.
+func notBeside(distance int) bool { return distance != 1 }
+
 // A shapeFunc chooses an attack's strikes when it is chosen. Strikes are at ticks counted from the start of execute.
+// It gets the players that the shape can be aimed at, of whom there is at least one.
 type shapeFunc func(w *World, m *Monster, a *content.Attack, players []*Player) []strike
 
 // shapes is every shape content can name. TestEveryShapeIsKnown keeps it equal to content.Shapes.
-var shapes = map[string]shapeFunc{
-	"square": aimed(markSquare),
-	"cross":  aimed(markCross),
-	"rings":  rings,
+var shapes = map[string]shape{
+	"square": {aimed(markSquare), anywhere},
+	"cross":  {aimed(markCross), anywhere},
+	"rings":  {rings, anywhere},
+	"side":   {snaps(1), beside},
+	"sides":  {snaps(2), beside},
+	"line":   {jet, notBeside},
 }
 
 // plan fixes the strikes to the ticks of the attack, given the tick at which execute begins.

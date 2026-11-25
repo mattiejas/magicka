@@ -116,7 +116,7 @@ export interface Quest {
   reward: [string, number][];
 }
 export interface BossAttack {
-  id: 'melee' | 'boulder' | 'vines' | 'quake';
+  id: 'melee' | 'boulder' | 'vines' | 'quake' | 'snap' | 'double_snap' | 'jet';
   /** How it marks ground; melee has none. */
   shape?: string;
   name: string;
