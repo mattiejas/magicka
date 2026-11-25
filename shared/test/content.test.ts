@@ -1,6 +1,7 @@
 import { readFileSync } from 'node:fs';
 import { expect, it } from 'vitest';
-import { build } from '../../content/build';
+import { build, checkAttacks } from '../../content/build';
+import { MONSTERS as AUTHORED_MONSTERS } from '../../content/src/items';
 import { MAPS as AUTHORED } from '../../content/src/maps';
 import { MAPS } from '../src';
 
@@ -13,4 +14,19 @@ it('loaded maps match the authored ones', () => {
     expect(MAPS[m.id].tiles).toEqual(m.tiles);
     expect(MAPS[m.id].blocked).toEqual(m.blocked);
   }
+});
+it('refuses an attack whose shape is missing or unknown', () => {
+  const boss = (id: string, shape?: string) =>
+    [
+      {
+        id: 'b',
+        boss: { attacks: [{ id, shape, name: 'Test' }] },
+      },
+    ] as never;
+  expect(() => checkAttacks(Object.values(AUTHORED_MONSTERS))).not.toThrow();
+  expect(() => checkAttacks(boss('boulder', 'square'))).not.toThrow();
+  expect(() => checkAttacks(boss('melee'))).not.toThrow();
+  expect(() => checkAttacks(boss('boulder', 'blob'))).toThrow();
+  expect(() => checkAttacks(boss('quake'))).toThrow();
+  expect(() => checkAttacks(boss('melee', 'square'))).toThrow();
 });
