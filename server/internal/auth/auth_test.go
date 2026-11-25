@@ -68,3 +68,57 @@ func TestAccounts(t *testing.T) {
 		t.Fatal(err)
 	}
 }
+
+func TestChangePassword(t *testing.T) {
+	db, err := store.Open(filepath.Join(t.TempDir(), "t.db"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer db.Close()
+	a := New(db)
+	s, err := a.Register("Changer", "old-password")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := a.ChangePassword(s.Account, s.Token, "wrong-password", "new-password"); !errors.Is(err, ErrWrongPassword) {
+		t.Fatal(err)
+	}
+	if _, err := a.Login("Changer", "old-password"); err != nil {
+		t.Fatal("wrong old password must not change it", err)
+	}
+	if err := a.ChangePassword(s.Account, s.Token, "old-password", "new-password"); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := a.Login("Changer", "old-password"); !errors.Is(err, ErrWrong) {
+		t.Fatal(err)
+	}
+	if _, err := a.Login("Changer", "new-password"); err != nil {
+		t.Fatal(err)
+	}
+}
+
+func TestChangePasswordEndsOtherSessions(t *testing.T) {
+	db, err := store.Open(filepath.Join(t.TempDir(), "t.db"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer db.Close()
+	a := New(db)
+	first, err := a.Register("Sess", "a-long-phrase")
+	if err != nil {
+		t.Fatal(err)
+	}
+	other, err := a.Login("Sess", "a-long-phrase")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := a.ChangePassword(first.Account, first.Token, "a-long-phrase", "another-phrase"); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := a.Resume(other.Token); !errors.Is(err, ErrExpired) {
+		t.Fatal("other sessions must end", err)
+	}
+	if r, err := a.Resume(first.Token); err != nil || r.Account != first.Account {
+		t.Fatal("the session that changed the password stays", r, err)
+	}
+}

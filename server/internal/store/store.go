@@ -173,6 +173,17 @@ func (s *Store) DropSession(tokenHash string) error {
 	return err
 }
 
+// DropOtherSessions ends every session for the account except the one kept.
+func (s *Store) DropOtherSessions(account int64, keepTokenHash string) error {
+	_, err := s.db.Exec("DELETE FROM sessions WHERE account=? AND token_hash!=?", account, keepTokenHash)
+	return err
+}
+
+func (s *Store) SetPassword(id int64, salt, hash []byte) error {
+	_, err := s.db.Exec("UPDATE accounts SET salt=?, hash=? WHERE id=?", salt, hash, id)
+	return err
+}
+
 // Load returns nil for a character that was never saved.
 func (s *Store) Load(account int64) (*game.Char, error) {
 	s.mu.Lock()

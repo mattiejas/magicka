@@ -128,6 +128,8 @@ func (s *session) receive(msg *pb.ClientMessage) (done bool) {
 			log.Print(err)
 		}
 		return true
+	case *pb.ClientMessage_ChangePassword:
+		s.changePassword(m.ChangePassword.OldPassword, m.ChangePassword.NewPassword)
 	default:
 		if s.server.config.logMessages {
 			log.Print("<- ", protojson.Format(msg))
@@ -214,6 +216,27 @@ func (s *session) signIn(attempt func(*auth.Auth) (*auth.Session, error)) {
 	}
 	s.player, s.account = player, *account
 	s.signedIn.Store(true)
+}
+
+func (s *session) changePassword(oldPW, newPW string) {
+	if !s.inCharge() {
+		return
+	}
+	if !s.server.logins.allow(s.address) {
+		s.tell("Too many attempts. Wait a minute.")
+		return
+	}
+	err := s.server.auth.ChangePassword(s.account.Account, s.account.Token, oldPW, newPW)
+	if err == nil {
+		s.tell("Password changed.")
+		return
+	}
+	if errors.Is(err, auth.ErrWrongPassword) {
+		s.tell(err.Error())
+		return
+	}
+	log.Print(err)
+	s.tell("Something went wrong.")
 }
 
 // signInError is what the player is told. Anything unexpected is logged instead.

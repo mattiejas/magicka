@@ -1,4 +1,5 @@
 // The settings window. A native dialog, which keeps the focus inside and closes on Escape.
+import { send } from '../net/connection';
 import { state } from '../net/state';
 import { QUALITIES, QUALITY_LABEL, type Quality } from '../quality';
 import { changeSetting, type LabelMode, type Settings, settings } from '../settings';
@@ -87,6 +88,38 @@ function qualityRow(): HTMLElement {
   );
 }
 
+function passwordField(label: string, autocomplete: string): HTMLInputElement {
+  return h('input', {
+    type: 'password',
+    autocomplete,
+    minlength: 8,
+    maxlength: 128,
+    required: true,
+    'aria-label': label,
+  }) as HTMLInputElement;
+}
+
+function passwordSection(): HTMLElement[] {
+  const oldPassword = passwordField('Current password', 'current-password');
+  const newPassword = passwordField('New password', 'new-password');
+  const status = h('p', { class: 'mute', role: 'status', id: 'password-status' });
+  const form = h('form', { class: 'password-form' }) as HTMLFormElement;
+  form.append(
+    h('label', {}, 'Current password', oldPassword),
+    h('label', {}, 'New password, at least 8 characters', newPassword),
+    status,
+    h('button', { class: 'primary', type: 'submit' }, 'Change password'),
+  );
+  form.addEventListener('submit', event => {
+    event.preventDefault();
+    if (!form.reportValidity()) return;
+    status.textContent = '';
+    send({ type: 'changePassword', oldPassword: oldPassword.value, newPassword: newPassword.value });
+    form.dataset.awaiting = '1';
+  });
+  return [h('h2', { class: 'section' }, 'Password'), form];
+}
+
 function labelRows(): HTMLElement[] {
   const threshold = h('input', {
     type: 'number',
@@ -150,6 +183,18 @@ function blockedPlayers(): HTMLElement[] {
 
 export const isSettingsOpen = () => !!byId('settings');
 
+/** Fills the password form status when the server replies after a change. */
+export function passwordChangeReply(text: string) {
+  const form = document.querySelector('#settings .password-form') as HTMLFormElement | null;
+  if (!form?.dataset.awaiting) return;
+  delete form.dataset.awaiting;
+  const status = byId('password-status');
+  if (status) status.textContent = text;
+  if (text === 'Password changed.') {
+    for (const input of form.querySelectorAll('input')) (input as HTMLInputElement).value = '';
+  }
+}
+
 export function openSettings() {
   if (isSettingsOpen()) return;
   closeMenu();
@@ -178,6 +223,7 @@ export function openSettings() {
         qualityRow(),
         ...labelRows(),
         ...TOGGLES.map(toggleRow),
+        ...passwordSection(),
         ...blockedPlayers(),
       ),
     ),

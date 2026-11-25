@@ -22,10 +22,12 @@ message ClientMessage {
     uint32 trade = 25; TradeStep trade_step = 26; Block block = 27; Report report = 28;
     // npc: walks to someone and speaks to them. use_lamp: the skill to train.
     string start_quest = 29; uint32 npc = 30; uint32 sell_to_trader = 31; string use_lamp = 32;
+    ChangePassword change_password = 33;
   }
 }
 message Empty {}
 message Credentials { string name = 1; string password = 2; }
+message ChangePassword { string old_password = 1; string new_password = 2; }
 message Tile { uint32 x = 1; uint32 y = 2; }
 message Craft { string recipe = 1; uint32 qty = 2; }
 message Swap { uint32 a = 1; uint32 b = 2; }

@@ -11,6 +11,7 @@ import { isLoginShown, loginError, showLogin, showLoginError, takeJustRegistered
 import { drawMinimap, minimapPanel } from './minimap';
 import { closePanel, closePanelWhenFar, isPanelId, openPanel, showTrade, updatePanel } from './panels';
 import { warmPortraits } from './portrait';
+import { passwordChangeReply } from './settingsModal';
 import { sidebar, updateSidebar } from './sidebar';
 import { updateVitals } from './vitals';
 import { showXp } from './xpGains';
@@ -78,6 +79,7 @@ function handleMessage(msg: ServerMsg) {
     case 'chat':
       return showChat(msg.from, msg.text);
     case 'info':
+      passwordChangeReply(msg.text);
       return showInfo(msg.text, msg.kind);
     case 'xp':
       return showXp(msg.skill, msg.amount);

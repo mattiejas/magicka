@@ -21,9 +21,12 @@ func Decode(b []byte) (*pb.ClientMessage, bool) {
 	}
 	slot := func(v uint32) bool { return v < content.InvSize }
 	qty := func(v, hi uint32) bool { return v >= 1 && v <= hi }
+	password := func(pw string) bool {
+		n := utf8.RuneCountInString(pw)
+		return n >= 8 && n <= 128
+	}
 	cred := func(c *pb.Credentials) bool {
-		n := utf8.RuneCountInString(c.GetPassword())
-		return nameRE.MatchString(c.GetName()) && n >= 8 && n <= 128
+		return nameRE.MatchString(c.GetName()) && password(c.GetPassword())
 	}
 	ok := true
 	switch m := msg.Msg.(type) {
@@ -33,6 +36,8 @@ func Decode(b []byte) (*pb.ClientMessage, bool) {
 		ok = cred(m.Register)
 	case *pb.ClientMessage_Login:
 		ok = cred(m.Login)
+	case *pb.ClientMessage_ChangePassword:
+		ok = password(m.ChangePassword.GetOldPassword()) && password(m.ChangePassword.GetNewPassword())
 	case *pb.ClientMessage_ResumeToken:
 		ok = len(m.ResumeToken) == 64
 	case *pb.ClientMessage_Move:
