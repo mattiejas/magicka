@@ -2,6 +2,7 @@
 import { type Entity, MONSTERS, type TilePos } from '@driftwake/shared';
 import { centreOf, state } from '../net/state';
 import { DropLabels } from './dropLabels';
+import { XpLabels } from './xpLabels';
 
 export type Project = (x: number, z: number, height: number) => { x: number; y: number; visible: boolean };
 
@@ -24,6 +25,7 @@ export class Overlay {
   private tags = new Map<string, Tag>();
   private texts: FloatingText[] = [];
   private dropLabels: DropLabels;
+  private xpLabels: XpLabels;
 
   constructor(
     private root: HTMLElement,
@@ -31,6 +33,7 @@ export class Overlay {
     private heightOf: (id: string) => number,
   ) {
     this.dropLabels = new DropLabels(root, project);
+    this.xpLabels = new XpLabels(root, project, heightOf);
   }
 
   damage(target: string, at: TilePos, amount: number) {
@@ -52,6 +55,7 @@ export class Overlay {
       this.updateTag(track.entity, centreOf(track));
     }
     this.dropLabels.update();
+    this.xpLabels.update(now);
     this.texts = this.texts.filter(text => this.updateText(text, now));
   }
 
