@@ -99,6 +99,7 @@ func TestSelfIsCurrentWhateverChanges(t *testing.T) {
 		p.C.Kept = []*Stack{{"rootcleaver", 1}}
 		p.C.Boat["sail"] = 1
 		p.C.Found = map[string]int{"a/b": 1}
+		p.C.Kills = map[string]int{"gnashclaw": 1}
 		p.C.Blocked = []string{"someone"}
 		p.C.Quests["stranded"] = 0
 		p.C.Look = &Look{}

@@ -247,6 +247,7 @@ function selfState(self: PbSelf): SelfState {
     blocked: self.blocked,
     quests: { ...self.quests },
     found: { ...self.found },
+    kills: { ...self.kills },
     look: { cut: self.look?.cut ?? 0, color: self.look?.color ?? 0 },
   };
 }
