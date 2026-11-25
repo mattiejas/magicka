@@ -16,6 +16,8 @@ const updateInput = bindInput(canvas, scene);
 const updateUi = initUi();
 onMessage(msg => {
   if (msg.type === 'snapshot') for (const event of msg.events) scene.handleEvent(event);
+  if (msg.type === 'chat') scene.showChat(msg.id, msg.text);
+  if (msg.type === 'welcome') scene.forgetChat();
 });
 
 let last = performance.now();

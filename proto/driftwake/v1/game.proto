@@ -59,7 +59,11 @@ message TradeView {
   // Tick from which the offers can be accepted, so that nothing changes at the last moment.
   uint32 ready_at = 7;
 }
-message Chat { string from = 1; string text = 2; }
+message Chat {
+  string from = 1; string text = 2;
+  // Entity of the speaker, so the line can be shown above their head.
+  uint32 player = 3;
+}
 message Info { string text = 1; InfoKind kind = 2; }
 message Xp { string skill = 1; uint32 amount = 2; }
 message BossStatus {

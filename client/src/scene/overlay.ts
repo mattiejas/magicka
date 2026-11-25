@@ -1,6 +1,7 @@
-// Text drawn over the world: names, health bars and damage numbers.
+// Text drawn over the world: names, health bars, damage numbers and chat.
 import { type Entity, MONSTERS, type TilePos } from '@driftwake/shared';
 import { centreOf, state } from '../net/state';
+import { ChatLabels } from './chatLabels';
 import { DropLabels } from './dropLabels';
 import { XpLabels } from './xpLabels';
 
@@ -26,6 +27,7 @@ export class Overlay {
   private texts: FloatingText[] = [];
   private dropLabels: DropLabels;
   private xpLabels: XpLabels;
+  private chatLabels: ChatLabels;
 
   constructor(
     private root: HTMLElement,
@@ -34,6 +36,16 @@ export class Overlay {
   ) {
     this.dropLabels = new DropLabels(root, project);
     this.xpLabels = new XpLabels(root, project, heightOf);
+    this.chatLabels = new ChatLabels(root, project, heightOf, () => this.xpLabels.height);
+  }
+
+  /** Shows a chat line above its speaker's head. */
+  chat(speaker: string, text: string) {
+    this.chatLabels.say(speaker, text);
+  }
+
+  forgetChat() {
+    this.chatLabels.forget();
   }
 
   damage(target: string, at: TilePos, amount: number) {
@@ -56,6 +68,7 @@ export class Overlay {
     }
     this.dropLabels.update();
     this.xpLabels.update(now);
+    this.chatLabels.update(now);
     this.texts = this.texts.filter(text => this.updateText(text, now));
   }
 

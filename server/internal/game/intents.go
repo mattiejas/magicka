@@ -207,7 +207,7 @@ func (w *World) chat(p *Player, text string) {
 		w.devCommand(p, text[1:])
 		return
 	}
-	line := &pb.ServerMessage{Msg: &pb.ServerMessage_Chat{Chat: &pb.Chat{From: p.Name, Text: text}}}
+	line := &pb.ServerMessage{Msg: &pb.ServerMessage_Chat{Chat: &pb.Chat{From: p.Name, Text: text, Player: p.ID}}}
 	for _, o := range w.order {
 		if !o.C.hasBlocked(p.Name) {
 			w.send(o, line)

@@ -2181,9 +2181,11 @@ func (x *TradeView) GetReadyAt() uint32 {
 }
 
 type Chat struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	From          string                 `protobuf:"bytes,1,opt,name=from,proto3" json:"from,omitempty"`
-	Text          string                 `protobuf:"bytes,2,opt,name=text,proto3" json:"text,omitempty"`
+	state protoimpl.MessageState `protogen:"open.v1"`
+	From  string                 `protobuf:"bytes,1,opt,name=from,proto3" json:"from,omitempty"`
+	Text  string                 `protobuf:"bytes,2,opt,name=text,proto3" json:"text,omitempty"`
+	// Entity of the speaker, so the line can be shown above their head.
+	Player        uint32 `protobuf:"varint,3,opt,name=player,proto3" json:"player,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -2230,6 +2232,13 @@ func (x *Chat) GetText() string {
 		return x.Text
 	}
 	return ""
+}
+
+func (x *Chat) GetPlayer() uint32 {
+	if x != nil {
+		return x.Player
+	}
+	return 0
 }
 
 type Info struct {
@@ -3571,10 +3580,11 @@ const file_driftwake_v1_game_proto_rawDesc = "" +
 	"\n" +
 	"i_accepted\x18\x05 \x01(\bR\tiAccepted\x12#\n" +
 	"\rthey_accepted\x18\x06 \x01(\bR\ftheyAccepted\x12\x19\n" +
-	"\bready_at\x18\a \x01(\rR\areadyAt\".\n" +
+	"\bready_at\x18\a \x01(\rR\areadyAt\"F\n" +
 	"\x04Chat\x12\x12\n" +
 	"\x04from\x18\x01 \x01(\tR\x04from\x12\x12\n" +
-	"\x04text\x18\x02 \x01(\tR\x04text\"F\n" +
+	"\x04text\x18\x02 \x01(\tR\x04text\x12\x16\n" +
+	"\x06player\x18\x03 \x01(\rR\x06player\"F\n" +
 	"\x04Info\x12\x12\n" +
 	"\x04text\x18\x01 \x01(\tR\x04text\x12*\n" +
 	"\x04kind\x18\x02 \x01(\x0e2\x16.driftwake.v1.InfoKindR\x04kind\"2\n" +
