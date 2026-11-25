@@ -122,7 +122,8 @@ function bindKeys(scene: Scene): (dt: number) => void {
       closeMenu();
       closePanel();
     }
-    if (event.key === 'Enter' && state.me) {
+    // Enter on a focused button presses it; anywhere else it opens the chat.
+    if (event.key === 'Enter' && state.me && !(document.activeElement instanceof HTMLButtonElement)) {
       focusChat();
       event.preventDefault();
     }

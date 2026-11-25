@@ -1,5 +1,6 @@
 // The tooltip and the right-click menu.
 import { button, byId, h, uiRoot } from './dom';
+import { uiScale } from './scale';
 
 const EDGE_MARGIN = 8;
 export type MenuItem = [label: string, action: () => void];
@@ -38,9 +39,13 @@ export function showMenu(x: number, y: number, items: MenuItem[]) {
 
 export const closeMenu = () => byId('menu')?.remove();
 
-/** Positions an element, moved inwards if it would leave the window. */
+/**
+ * Positions an element at a point in the window, moved inwards if it would leave it. The interface is
+ * scaled, so window pixels are divided by the scale to give its own.
+ */
 function placeWithin(element: HTMLElement, x: number, y: number) {
   const { width, height } = element.getBoundingClientRect();
-  element.style.left = `${Math.min(x, innerWidth - width - EDGE_MARGIN)}px`;
-  element.style.top = `${Math.min(y, innerHeight - height - EDGE_MARGIN)}px`;
+  const scale = uiScale();
+  element.style.left = `${Math.min(x, innerWidth - width - EDGE_MARGIN) / scale}px`;
+  element.style.top = `${Math.min(y, innerHeight - height - EDGE_MARGIN) / scale}px`;
 }

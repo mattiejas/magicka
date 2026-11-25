@@ -2,10 +2,11 @@
 import { send } from '../net/connection';
 import { state } from '../net/state';
 import { QUALITIES, QUALITY_LABEL, type Quality } from '../quality';
-import { changeSetting, type LabelMode, type Settings, settings } from '../settings';
+import { changeSetting, type LabelMode, type Settings, settings, UI_SCALES, type UiScale } from '../settings';
 import { button, byId, h, uiRoot } from './dom';
 import { setBlocked } from './players';
 import { closeMenu, hideTooltip } from './popups';
+import { onUiScale, uiScale } from './scale';
 
 type Toggle = { [K in keyof Settings]: Settings[K] extends boolean ? K : never }[keyof Settings];
 
@@ -86,6 +87,35 @@ function qualityRow(): HTMLElement {
       'quality',
     ),
   );
+}
+
+const percent = (scale: number) => `${Math.round(scale * 100)}%`;
+
+/** The scale choices, and a note while the window is too small for the chosen one. */
+function scaleRow(): { row: HTMLElement; stop: () => void } {
+  const note = h('small', { class: 'scale-note' });
+  const showNote = () => {
+    const limited = uiScale() < settings().uiScale;
+    note.hidden = !limited;
+    note.textContent = limited ? `This window fits ${percent(uiScale())}.` : '';
+  };
+  showNote();
+  const row = h(
+    'div',
+    { class: 'setting' },
+    h('span', {}, 'Interface size', h('small', {}, 'Panels, menus and names over the world.'), note),
+    choiceGroup(
+      'Interface size',
+      UI_SCALES.map(scale => ({ value: String(scale), label: percent(scale) })),
+      String(settings().uiScale),
+      value => {
+        changeSetting('uiScale', Number(value) as UiScale);
+        showNote();
+      },
+      'scale',
+    ),
+  );
+  return { row, stop: onUiScale(showNote) };
 }
 
 function passwordField(label: string, autocomplete: string): HTMLInputElement {
@@ -199,11 +229,15 @@ export function openSettings() {
   if (isSettingsOpen()) return;
   closeMenu();
   hideTooltip();
+  const scale = scaleRow();
   const dialog = h('dialog', {
     id: 'settings',
     class: 'panel',
     'aria-label': 'Settings',
-    onclose: () => dialog.remove(),
+    onclose: () => {
+      scale.stop();
+      dialog.remove();
+    },
     // The content fills the window, so only a click beside it lands on the dialog itself.
     onclick: (event: MouseEvent) => event.target === dialog && dialog.close(),
   }) as HTMLDialogElement;
@@ -220,6 +254,7 @@ export function openSettings() {
       h(
         'div',
         { class: 'body' },
+        scale.row,
         qualityRow(),
         ...labelRows(),
         ...TOGGLES.map(toggleRow),

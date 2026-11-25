@@ -2,6 +2,9 @@
 import { isQuality, type Quality } from './quality';
 
 export type LabelMode = 'all' | 'valuable' | 'none';
+/** How large the interface is drawn, as a share of its normal size. */
+export const UI_SCALES = [0.75, 1, 1.25, 1.5] as const;
+export type UiScale = (typeof UI_SCALES)[number];
 
 export interface Settings {
   showFps: boolean;
@@ -9,11 +12,21 @@ export interface Settings {
   labelMode: LabelMode;
   /** Shop value in coins at which a pile counts as valuable. */
   labelThreshold: number;
+  uiScale: UiScale;
 }
 
 const STORAGE_KEY = 'settings';
 const LABEL_MODES: LabelMode[] = ['all', 'valuable', 'none'];
-const DEFAULTS: Settings = { showFps: false, quality: 'high', labelMode: 'all', labelThreshold: 100 };
+const DEFAULTS: Settings = {
+  showFps: false,
+  quality: 'high',
+  labelMode: 'all',
+  labelThreshold: 100,
+  uiScale: 1,
+};
+
+// Above `load`, which runs at once and would otherwise find it not yet defined.
+const isUiScale = (value: unknown): value is UiScale => UI_SCALES.includes(value as UiScale);
 
 const current = load();
 const listeners: ((settings: Settings) => void)[] = [];
@@ -52,6 +65,7 @@ function load(): Settings {
         typeof threshold === 'number' && Number.isFinite(threshold) && threshold >= 0
           ? Math.floor(threshold)
           : DEFAULTS.labelThreshold,
+      uiScale: isUiScale(saved?.uiScale) ? saved.uiScale : DEFAULTS.uiScale,
     };
   } catch {
     return { ...DEFAULTS };
