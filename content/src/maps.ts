@@ -394,7 +394,7 @@ function island() {
   b.mobs('boar', 6, 22, 44, 6);
   b.mobs('spitter', 4, 33, 18, 5);
   b.mobs('wisp', 4, 40, 14, 4);
-  m.spawns.push({ type: 'gnashclaw', x: 51, y: 40 });
+  m.spawns.push({ type: 'gnashclaw', x: 50, y: 39 });
   b.mobs('chicken', 5, 39, 43, 3);
   m.labels.push(
     { name: 'Camp', x: 32, y: 34 },

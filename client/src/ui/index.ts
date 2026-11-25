@@ -50,7 +50,6 @@ function showGame() {
     minimapPanel(),
     sidebar(),
     chatBox(),
-    h('div', { id: 'drops' }),
   );
 }
 

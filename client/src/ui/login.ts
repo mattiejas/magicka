@@ -2,6 +2,7 @@
 import { GAME_NAME } from '@driftwake/shared';
 import { connect } from '../net/connection';
 import { button, byId, h, uiRoot } from './dom';
+import { clearXp } from './xpGains';
 
 let registering = false;
 
@@ -15,6 +16,7 @@ export function takeJustRegistered(): boolean {
 export const isLoginShown = () => !!byId('login');
 
 export function showLogin(message = '') {
+  clearXp();
   const name = h('input', {
     name: 'name',
     autocomplete: 'username',

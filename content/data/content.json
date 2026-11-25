@@ -4282,7 +4282,7 @@
    "speed": 5,
    "range": 1,
    "respawn": 60,
-   "size": 2,
+   "size": 3,
    "id": "gnashclaw",
    "name": "Old Gnashclaw",
    "style": "melee",
