@@ -66,7 +66,7 @@ interface Scatter {
 export function groundDetail(map: GameMap, random: () => number, density = 1): THREE.InstancedMesh[] {
   if (density <= 0) return [];
   const onGrass = (tile: number) => tile === T.GRASS;
-  const onBareGround = (tile: number) => tile !== T.GRASS;
+  const onBareGround = (tile: number) => tile !== T.GRASS && tile !== T.PATH;
   const scatters: Scatter[] = [
     { geometry: merge(grassBlades().slice(0, 3)), count: map.size * 10 * density, growsOn: onGrass },
     { geometry: flower(), count: map.size * 1.5 * density, growsOn: onGrass },

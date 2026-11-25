@@ -28,7 +28,7 @@ export const QUESTS: Quest[] = [
     offer: 'My ship broke on these rocks, as yours did. Help me build one boat, and you may have it.',
     thanks: 'She floats! Take this for the crossing.',
     steps: [
-      { text: 'Mine copper ore on the rise north-east of camp.', need: { xp: 'mining' } },
+      { text: 'Mine copper ore in the crater north-east of camp.', need: { xp: 'mining' } },
       {
         text: `Chop ${part('hull').qty} ash logs in the grove north-west of camp, and bring them to the shipwright.`,
         need: { boat: 'hull' },

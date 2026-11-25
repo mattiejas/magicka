@@ -194,10 +194,83 @@ type Map struct {
 	Methods                 bool // whether methods beyond the basic one are found here
 	Labels                  []Label
 	Blocked                 []bool `json:"-"`
+	Reach                   []bool `json:"-"` // tiles that can be walked to from the spawn
 }
 
 func (m *Map) Walkable(x, y int) bool {
 	return x >= 0 && y >= 0 && x < m.Size && y < m.Size && !m.Blocked[y*m.Size+x]
+}
+
+// CanStep reports whether one step can be taken. A diagonal step may not cut a corner.
+func (m *Map) CanStep(x, y, dx, dy int) bool {
+	if !m.Walkable(x+dx, y+dy) {
+		return false
+	}
+	return dx == 0 || dy == 0 || (m.Walkable(x+dx, y) && m.Walkable(x, y+dy))
+}
+
+// steps are the directions of a step, straight ones first.
+var steps = [...]Point{{0, -1}, {1, 0}, {0, 1}, {-1, 0}, {1, -1}, {1, 1}, {-1, 1}, {-1, -1}}
+
+// markReach finds the tiles that can be walked to from the spawn.
+func (m *Map) markReach() {
+	m.Reach = make([]bool, m.Size*m.Size)
+	if !m.Walkable(m.Spawn.X, m.Spawn.Y) {
+		return
+	}
+	m.Reach[m.Spawn.Y*m.Size+m.Spawn.X] = true
+	queue := []Point{m.Spawn}
+	for len(queue) > 0 {
+		at := queue[0]
+		queue = queue[1:]
+		for _, d := range steps {
+			x, y := at.X+d.X, at.Y+d.Y
+			if m.CanStep(at.X, at.Y, d.X, d.Y) && !m.Reach[y*m.Size+x] {
+				m.Reach[y*m.Size+x] = true
+				queue = append(queue, Point{x, y})
+			}
+		}
+	}
+}
+
+// CanStandOn reports whether someone can be at a tile and walk to the rest of the map.
+func (m *Map) CanStandOn(x, y int) bool { return m.Walkable(x, y) && m.Reach[y*m.Size+x] }
+
+// CanReach reports whether someone can stand within reach of a tile, however many tiles that is.
+func (m *Map) CanReach(x, y, reach int) bool {
+	for j := y - reach; j <= y+reach; j++ {
+		for i := x - reach; i <= x+reach; i++ {
+			if m.CanStandOn(i, j) {
+				return true
+			}
+		}
+	}
+	return false
+}
+
+// Nearest is the tile closest to a point on which someone can stand, or the spawn if there is none.
+func (m *Map) Nearest(x, y int) Point {
+	best, bestDistance := m.Spawn, -1
+	for r := 0; r < m.Size && bestDistance < 0; r++ {
+		for j := y - r; j <= y+r; j++ {
+			for i := x - r; i <= x+r; i++ {
+				if max(abs(i-x), abs(j-y)) != r || !m.CanStandOn(i, j) {
+					continue
+				}
+				if d := (i-x)*(i-x) + (j-y)*(j-y); bestDistance < 0 || d < bestDistance {
+					best, bestDistance = Point{i, j}, d
+				}
+			}
+		}
+	}
+	return best
+}
+
+func abs(n int) int {
+	if n < 0 {
+		return -n
+	}
+	return n
 }
 
 func (m *Map) block(x, y, size int) {
@@ -305,6 +378,7 @@ func init() {
 		for _, s := range m.Stations {
 			m.block(s.X, s.Y, 1)
 		}
+		m.markReach()
 	}
 }
 

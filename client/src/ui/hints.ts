@@ -70,7 +70,7 @@ const ON_THE_ISLAND: Hint[] = [
     applies: self => !ownsTool(self, 'pickaxe') || !ownsTool(self, 'axe'),
     text: 'Out of tools? Kill chickens south-east of camp for coins, and buy worn tools from the shopkeeper.',
   },
-  { applies: self => self.xp.mining === 0, text: 'Mine copper on the rise north-east of camp.' },
+  { applies: self => self.xp.mining === 0, text: 'Mine copper in the crater north-east of camp.' },
   {
     applies: self => self.xp.woodcutting === 0,
     text: 'Chop ash in the grove north-west of camp. You need logs for handles and bows.',

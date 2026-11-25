@@ -57,6 +57,7 @@ func (c *Char) fill() {
 	if content.MapByID[c.Map] == nil {
 		c.Map, c.X, c.Y = n.Map, n.X, n.Y
 	}
+	c.leaveBlockedGround()
 }
 
 // Items and boat parts that were renamed, for characters saved before.

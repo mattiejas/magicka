@@ -14,6 +14,7 @@ const WALL_HEIGHT = 1.15;
 const WALL_FOOT = new THREE.Color('#6a635f');
 const WALL_TOP = new THREE.Color('#2b2830');
 const TILE_LINE_HEIGHT = 0.012;
+const ROCK = new THREE.Color('#8a847b');
 
 export function terrain(map: GameMap): THREE.Group {
   const group = new THREE.Group();
@@ -125,10 +126,25 @@ function ground(map: GameMap): THREE.Mesh {
   shared.setIndex(index);
   const geometry = shared.toNonIndexed();
   geometry.computeVertexNormals();
+  if (!map.cave) bareSteepFaces(geometry);
   facetColors(geometry);
   const mesh = new THREE.Mesh(geometry, new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 1 }));
   mesh.receiveShadow = true;
   return mesh;
+}
+
+/** Faces too steep for grass or sand show rock, which also makes cliffs and crater walls read from afar. */
+function bareSteepFaces(geometry: THREE.BufferGeometry) {
+  const { color, normal } = geometry.attributes;
+  for (let face = 0; face < color.count; face += 3) {
+    const bare = THREE.MathUtils.smoothstep(0.92 - normal.getY(face), 0.08, 0.35);
+    if (!bare) continue;
+    for (let v = face; v < face + 3; v++) {
+      const rock = ROCK.clone().multiplyScalar(0.85 + 0.3 * normal.getY(face));
+      const mixed = new THREE.Color().fromBufferAttribute(color, v).lerp(rock, bare * 0.85);
+      color.setXYZ(v, mixed.r, mixed.g, mixed.b);
+    }
+  }
 }
 
 /** Pulls each face almost to its own average, so the ground reads as facets like everything on it. */

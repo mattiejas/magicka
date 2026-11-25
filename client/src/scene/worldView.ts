@@ -17,6 +17,7 @@ import { boatGeo, keeperOf, nodeGeo, stationGeo } from '../models';
 import { FallingTrees } from './fallingTrees';
 import { Glows } from './glows';
 import { groundDetail } from './groundDetail';
+import { paving } from './paving';
 import { type FixedPick, pickBox } from './picking';
 import { terrain } from './terrain';
 
@@ -59,6 +60,8 @@ export class WorldView {
     this.water = water(map);
     this.water.visible = !map.cave;
     this.group.add(terrain(map), this.water);
+    const slabs = paving(map);
+    if (slabs) this.group.add(slabs);
     this.addNodes(random);
     for (const station of map.stations) this.addStation(station);
     this.group.add(

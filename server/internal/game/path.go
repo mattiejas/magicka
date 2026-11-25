@@ -21,12 +21,7 @@ var dirs = [...]Point{
 }
 
 // canStep refuses diagonal moves that would cut a corner.
-func canStep(m *content.Map, x, y, dx, dy int) bool {
-	if !m.Walkable(x+dx, y+dy) {
-		return false
-	}
-	return dx == 0 || dy == 0 || (m.Walkable(x+dx, y) && m.Walkable(x, y+dy))
-}
+func canStep(m *content.Map, x, y, dx, dy int) bool { return m.CanStep(x, y, dx, dy) }
 
 type heapItem struct {
 	f float64
