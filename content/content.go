@@ -171,6 +171,12 @@ type Passage struct {
 	X, Y int
 }
 
+// Label is a place name drawn on the map.
+type Label struct {
+	Name string
+	X, Y int
+}
+
 type Map struct {
 	ID, Name                string
 	Size                    int
@@ -181,7 +187,8 @@ type Map struct {
 	Cave                    bool
 	Town                    string // where players wake up after dying here
 	Passage                 *Passage
-	Methods                 bool   // whether methods beyond the basic one are found here
+	Methods                 bool // whether methods beyond the basic one are found here
+	Labels                  []Label
 	Blocked                 []bool `json:"-"`
 }
 

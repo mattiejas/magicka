@@ -2337,11 +2337,13 @@ func (x *Xp) GetAmount() uint32 {
 }
 
 type BossStatus struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Alive         bool                   `protobuf:"varint,1,opt,name=alive,proto3" json:"alive,omitempty"`
-	NextTicks     uint32                 `protobuf:"varint,2,opt,name=next_ticks,json=nextTicks,proto3" json:"next_ticks,omitempty"`
-	Contribution  float32                `protobuf:"fixed32,3,opt,name=contribution,proto3" json:"contribution,omitempty"`
-	Online        uint32                 `protobuf:"varint,4,opt,name=online,proto3" json:"online,omitempty"`
+	state        protoimpl.MessageState `protogen:"open.v1"`
+	Alive        bool                   `protobuf:"varint,1,opt,name=alive,proto3" json:"alive,omitempty"`
+	NextTicks    uint32                 `protobuf:"varint,2,opt,name=next_ticks,json=nextTicks,proto3" json:"next_ticks,omitempty"`
+	Contribution float32                `protobuf:"fixed32,3,opt,name=contribution,proto3" json:"contribution,omitempty"`
+	Online       uint32                 `protobuf:"varint,4,opt,name=online,proto3" json:"online,omitempty"`
+	// Name of the world boss that is up, or that rises next.
+	Next          string `protobuf:"bytes,5,opt,name=next,proto3" json:"next,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -2402,6 +2404,13 @@ func (x *BossStatus) GetOnline() uint32 {
 		return x.Online
 	}
 	return 0
+}
+
+func (x *BossStatus) GetNext() string {
+	if x != nil {
+		return x.Next
+	}
+	return ""
 }
 
 type Stack struct {
@@ -3554,14 +3563,15 @@ const file_driftwake_v1_game_proto_rawDesc = "" +
 	"\x04kind\x18\x02 \x01(\x0e2\x16.driftwake.v1.InfoKindR\x04kind\"2\n" +
 	"\x02Xp\x12\x14\n" +
 	"\x05skill\x18\x01 \x01(\tR\x05skill\x12\x16\n" +
-	"\x06amount\x18\x02 \x01(\rR\x06amount\"}\n" +
+	"\x06amount\x18\x02 \x01(\rR\x06amount\"\x91\x01\n" +
 	"\n" +
 	"BossStatus\x12\x14\n" +
 	"\x05alive\x18\x01 \x01(\bR\x05alive\x12\x1d\n" +
 	"\n" +
 	"next_ticks\x18\x02 \x01(\rR\tnextTicks\x12\"\n" +
 	"\fcontribution\x18\x03 \x01(\x02R\fcontribution\x12\x16\n" +
-	"\x06online\x18\x04 \x01(\rR\x06online\"-\n" +
+	"\x06online\x18\x04 \x01(\rR\x06online\x12\x12\n" +
+	"\x04next\x18\x05 \x01(\tR\x04next\"-\n" +
 	"\x05Stack\x12\x12\n" +
 	"\x04item\x18\x01 \x01(\tR\x04item\x12\x10\n" +
 	"\x03qty\x18\x02 \x01(\rR\x03qty\"J\n" +

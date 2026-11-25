@@ -316,8 +316,8 @@ export function decode(data: ArrayBuffer): ServerMsg | null {
     case 'feesTaken':
       return { type: 'fees', taken: Number(msg.value) };
     case 'boss': {
-      const { alive, nextTicks, contribution, online } = msg.value;
-      return { type: 'boss', alive, nextTicks, contribution, online };
+      const { alive, nextTicks, contribution, online, next } = msg.value;
+      return { type: 'boss', alive, nextTicks, contribution, online, next };
     }
     default:
       return null;
