@@ -14,6 +14,7 @@ import { send } from '../net/connection';
 import { state } from '../net/state';
 import { collectionLog } from './collection';
 import { bar, button, h, renderIfChanged } from './dom';
+import { skillIcon } from './icons/skills';
 import { clickAction, type ItemAction, menuActions } from './itemActions';
 import { itemSlot, level } from './items';
 import { currentPanel, openPanel } from './panels';
@@ -146,7 +147,7 @@ function skillRow(skill: Skill, xp: number): HTMLElement {
   return h(
     'div',
     { class: 'skill', title: isMax ? `${xp} xp` : `${xp} xp, ${to - xp} to level ${current + 1}` },
-    h('span', {}, skill),
+    h('span', { class: 'skill-name', html: `${skillIcon(skill, 'skill-icon')}${skill}` }),
     h('b', { class: 'num' }, String(current)),
     bar(isMax ? 1 : (xp - from) / (to - from)),
   );

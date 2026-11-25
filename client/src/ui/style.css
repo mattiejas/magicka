@@ -356,11 +356,22 @@ h2 {
 }
 .skill {
   display: grid;
-  grid-template-columns: 96px 24px 1fr;
+  grid-template-columns: 112px 24px 1fr;
   gap: 8px;
   align-items: center;
   font-size: 13px;
   text-transform: capitalize;
+}
+.skill-name {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.skill-icon {
+  width: 24px;
+  height: 24px;
+  image-rendering: pixelated;
+  flex: none;
 }
 .skill b {
   text-align: right;
@@ -532,20 +543,34 @@ h2 {
   white-space: pre-line;
   max-width: 240px;
 }
-#drops {
-  left: 50%;
-  bottom: 200px;
-  transform: translateX(-50%);
-  pointer-events: none;
-  display: grid;
-  gap: 2px;
-  justify-items: center;
+.xp-gains {
   position: absolute;
-  font-size: 13px;
+  left: 0;
+  top: 0;
+  display: grid;
+  gap: 1px;
+  justify-items: start;
+  pointer-events: none;
+  font-weight: 700;
+  font-size: 15px;
+  color: #f5ecd8;
   text-shadow:
     0 1px 2px #222a30,
     0 0 4px #222a30;
-  text-transform: capitalize;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+.xp-gain {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+}
+.xp-icon {
+  width: 24px;
+  height: 24px;
+  image-rendering: pixelated;
+  /* A dark rim keeps the icon readable over light ground such as sand and snow. */
+  filter: drop-shadow(0 0 1px #222a30) drop-shadow(0 1px 1px #222a30);
 }
 [hidden] {
   /* biome-ignore lint/complexity/noImportantStyles: hidden must win over any display */
@@ -790,4 +815,9 @@ h2 {
 .choices button {
   text-transform: capitalize;
   text-align: left;
+}
+.skill-choice {
+  display: flex;
+  align-items: center;
+  gap: 6px;
 }
