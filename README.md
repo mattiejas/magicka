@@ -60,4 +60,4 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) before changing code.
 
 The `throwaway` entry in `.claude/launch.json` starts a server with an empty database on port 3997, for trying things out.
 
-Model gallery while developing: `http://localhost:5173/gallery.html?set=people|hair|head|turn|swing|guard|monsters|chicken|capes|nodes|camp&t=600` (`t` freezes the animation at that millisecond).
+Model gallery while developing: `http://localhost:5173/gallery.html?set=people|hair|head|turn|swing|guard|blend|monsters|chicken|capes|nodes|camp&t=600` (`t` freezes the animation at that millisecond).
