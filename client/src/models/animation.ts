@@ -184,6 +184,22 @@ const picking: ActionPose = ({ time }) => {
   };
 };
 
+/** Rod held out in both hands, the tip nodding with the line, now and then a tug. */
+const fishing: ActionPose = ({ time }) => {
+  const nod = Math.sin(time / 650) * 0.04;
+  const tug = Math.max(0, Math.sin(time / 1900) - 0.92) * 4;
+  return {
+    lean: -0.04,
+    nod: 0.12,
+    rightArm: -0.85 + nod - tug * 0.5,
+    rightElbow: -0.55,
+    rightSpread: 0.05,
+    leftArm: -0.65 + nod * 0.5 - tug * 0.3,
+    leftElbow: -0.85,
+    leftSpread: -0.25,
+  };
+};
+
 const eating: ActionPose = ({ time }) => ({
   rightArm: -1.2,
   rightElbow: -1.7 + Math.sin(time / 90) * 0.12,
@@ -270,6 +286,7 @@ const ACTIONS: Record<string, ActionPose> = {
   chop: overheadStroke(-0.25, 0.5),
   craft: hammering,
   pick: picking,
+  fish: fishing,
   eat: eating,
   ranged: shooting,
   magic: casting,
@@ -311,7 +328,7 @@ function hangCape({ cape }: Model['parts'], { lean, capeTrail }: PlayerJoints) {
 const HAMMER = 'hammer';
 
 function toolFor({ action, tool }: Pose): string | undefined {
-  if (action === 'mine' || action === 'chop') return tool;
+  if (action === 'mine' || action === 'chop' || action === 'fish') return tool;
   return action === 'craft' ? HAMMER : undefined;
 }
 

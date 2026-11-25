@@ -72,7 +72,7 @@ func TestDeathKeepsGearAndStoresItemsForever(t *testing.T) {
 	e.do(q, graveMsg, 3)
 	check(t, p.C.Grave != nil)
 	e.run(3000)
-	eq(t, len(p.C.Grave.Items), 5)
+	eq(t, len(p.C.Grave.Items), 6)
 	// Reload into a new world and claim from the reaper.
 	var c Char
 	check(t, json.Unmarshal(e.saved.chars[1], &c) == nil)

@@ -45,6 +45,33 @@ const woodcutting: DrawSkill = pixels => {
     .line([11, 8], [14, 11], IRON[2]);
 };
 
+const FISH = ramp('#5aa0c0');
+
+/** A fish leaping, and a rod bending over it. */
+const fishing: DrawSkill = pixels => {
+  pixels
+    .diagonal((a, v) => a >= -20 && a <= 6 && v >= 0 && v <= 1 && WOOD[v ? 2 : 3])
+    .paint((x, y) => {
+      const away = Math.hypot(x - 8, y - 12) - 9;
+      return x >= 13 && y <= 9 && Math.abs(away) < 0.7 && WOOD[2];
+    })
+    .line([17, 6], [17, 12], '#e8e4da')
+    .paint((x, y) => {
+      const away = Math.hypot((x - 13) / 5.5, (y - 18) / 3);
+      return away < 1 && FISH[y < 17 ? 4 : y < 19 ? 2 : 1];
+    })
+    .poly(
+      [
+        [18, 18],
+        [22, 14],
+        [21, 18],
+        [22, 22],
+      ],
+      FISH[1],
+    )
+    .dotsOf('#1c1a20', [10, 17]);
+};
+
 const smithing: DrawSkill = pixels => {
   pixels
     .lit(
@@ -206,6 +233,7 @@ const ART: Record<Skill, DrawSkill> = {
   mining,
   smithing,
   woodcutting,
+  fishing,
   crafting,
   melee,
   ranged,

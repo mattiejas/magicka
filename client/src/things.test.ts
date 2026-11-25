@@ -19,7 +19,7 @@ const entity = (fields: Partial<Entity> & Pick<Entity, 'kind'>): Thing => ({
   entity: { id: '7', x: 0, y: 0, ...fields },
 });
 
-const nodeOf = (kind: 'rock' | 'tree' | 'plant') => {
+const nodeOf = (kind: 'rock' | 'tree' | 'plant' | 'spot') => {
   const [type, node] = Object.entries(NODES).find(([, n]) => n.kind === kind && n.skill)!;
   return {
     thing: { kind: 'node', id: 'n1', type } as Thing,
@@ -44,6 +44,7 @@ describe('nodes', () => {
     ['rock', 'Mine'],
     ['tree', 'Chop'],
     ['plant', 'Pick'],
+    ['spot', 'Fish'],
   ] as const)('a %s is gathered, and shows its level', (kind, verb) => {
     const { thing, label } = nodeOf(kind);
     expectAction(thing, `${verb} ${label}`, { type: 'gather', id: 'n1' });

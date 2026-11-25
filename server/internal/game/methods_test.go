@@ -1,7 +1,6 @@
 package game
 
 import (
-	"strings"
 	"testing"
 
 	"driftwake/content"
@@ -49,7 +48,10 @@ func TestOnlyMainlandGroupsGlow(t *testing.T) {
 	for tier := '1'; tier <= '5'; tier++ {
 		check(t, kinds["rock_"+string(tier)] && kinds["tree_"+string(tier)], string(tier))
 	}
-	eq(t, len(kinds), 10)
+	for tier := '2'; tier <= '5'; tier++ {
+		check(t, kinds["spot_"+string(tier)], "spot", string(tier))
+	}
+	eq(t, len(kinds), 14)
 }
 
 func TestGlowGivesOneBonusToEveryone(t *testing.T) {
@@ -145,7 +147,7 @@ func TestRelaxedSpotsAreOutOfReach(t *testing.T) {
 		if safe {
 			quiet[n.Def.ID]++
 		}
-		check(t, safe || !strings.HasPrefix(n.Def.ID, "big_"), n.Def.ID)
+		check(t, safe || n.Def.Deplete > 0, "a relaxed method", n.Def.ID)
 	}
 	for _, kind := range []string{"tree_1", "tree_2", "tree_3", "tree_4", "tree_5"} {
 		check(t, quiet[kind] >= 3, kind, quiet[kind])

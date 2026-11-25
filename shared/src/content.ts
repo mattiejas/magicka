@@ -5,6 +5,7 @@ export const SKILLS = [
   'mining',
   'smithing',
   'woodcutting',
+  'fishing',
   'crafting',
   'melee',
   'ranged',
@@ -34,7 +35,7 @@ export interface Item {
   speed?: number;
   range?: number;
   req?: Partial<Record<Skill, number>>;
-  tool?: 'pickaxe' | 'axe';
+  tool?: 'pickaxe' | 'axe' | 'rod';
   ammo?: 'arrow' | 'essence';
   heal?: number;
   unique?: boolean;
@@ -61,13 +62,13 @@ export type Station = 'furnace' | 'anvil' | 'workbench';
 export interface NodeDef {
   id: string;
   name: string;
-  kind: 'rock' | 'tree' | 'plant';
+  kind: 'rock' | 'tree' | 'plant' | 'spot';
   tier: number;
   skill: Skill | null;
   level: number;
   xp: number;
   item: string;
-  tool?: 'pickaxe' | 'axe';
+  tool?: 'pickaxe' | 'axe' | 'rod';
   respawn: number;
   deplete: number;
   /** Skill level that counts as a beginner's, which decides how often an attempt succeeds. */
@@ -78,6 +79,8 @@ export interface NodeDef {
   size: number;
   /** Whether one of a group of these glows at times. */
   glows: boolean;
+  /** Instead of running out, it moves to another place of its group. */
+  moves?: boolean;
   color: string;
 }
 export interface LootTable {

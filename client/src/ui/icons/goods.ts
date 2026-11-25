@@ -99,6 +99,39 @@ const log: Draw = (pixels, _, color) => {
   trunk(1, 13);
 };
 
+const fish: Draw = (pixels, _, color) => {
+  const belly = ramp('#efe6d2');
+  pixels
+    .poly(
+      [
+        [1, 6],
+        [6, 11],
+        [6, 14],
+        [1, 19],
+        [4, 12],
+      ],
+      (_, y) => color[y < 12 ? 2 : 1],
+    )
+    .paint((x, y) => {
+      const away = Math.hypot((x - 13.5) / 9, (y - 12.5) / 5.2);
+      if (away >= 1) return null;
+      if (y > 13 && away > 0.35) return belly[y > 15 ? 1 : 2];
+      return color[y < 9 ? 4 : y < 11 ? 3 : y < 14 ? 2 : 1];
+    })
+    .poly(
+      [
+        [10, 8],
+        [13, 4],
+        [17, 5],
+        [16, 8],
+      ],
+      color[1],
+    )
+    .line([9, 10], [9, 15], color[0])
+    .dotsOf('#1c1a20', [19, 11])
+    .dotsOf('#ffffff', [19, 10]);
+};
+
 const hide: Draw = (pixels, _, color) =>
   pixels
     .lit(
@@ -380,6 +413,7 @@ export const GOODS: Record<string, Draw> = {
   ore,
   bar,
   log,
+  fish,
   hide,
   fibre,
   gem,

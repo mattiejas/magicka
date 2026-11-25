@@ -24,6 +24,7 @@ const COLORS = {
   tree: '#54703f',
   plant: '#b8bf6a',
   rock: '#5f5c57',
+  spot: '#cfeef2',
   label: '#f5f0e4',
   labelEdge: 'rgba(34,42,48,.8)',
 };
@@ -99,8 +100,10 @@ function paintMap(map: GameMap): HTMLCanvasElement {
 
 const emptyColor = ({ cave }: GameMap) => (cave ? CAVE_COLOR : TILE_COLORS[0]);
 
+/** Every place a fishing spot can be is shown, since spots move among them. */
 function nodeColor(type: string): string {
   if (type.startsWith('tree')) return COLORS.tree;
+  if (type.startsWith('spot') || type.startsWith('shoal')) return COLORS.spot;
   return type.startsWith('plant') || type === 'berry_bush' ? COLORS.plant : COLORS.rock;
 }
 

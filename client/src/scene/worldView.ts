@@ -19,11 +19,12 @@ import { Glows } from './glows';
 import { groundDetail } from './groundDetail';
 import { paving } from './paving';
 import { type FixedPick, pickBox } from './picking';
+import { Ripples } from './ripples';
 import { terrain } from './terrain';
 
 const HIDDEN = new THREE.Matrix4().makeScale(0, 0, 0);
 const UP = new THREE.Vector3(0, 1, 0);
-const WATER_LEVEL = -0.22;
+export const WATER_LEVEL = -0.22;
 /** Water beyond the edge of the map, in tiles. */
 const WATER_MARGIN = 160;
 
@@ -48,6 +49,7 @@ export class WorldView {
   private glows = new Glows('#ffd27a');
   private veins = new Glows('#7fd0ff');
   private fallingTrees = new FallingTrees();
+  private ripples = new Ripples();
   private boat: THREE.Mesh | null = null;
   private boatKey = '';
 
@@ -69,6 +71,7 @@ export class WorldView {
       this.glows.group,
       this.veins.group,
       this.fallingTrees.group,
+      this.ripples.group,
     );
   }
 
@@ -105,7 +108,20 @@ export class WorldView {
     this.glows.update(now);
     this.veins.update(now);
     this.fallingTrees.update(now);
+    this.ripples.show(this.spotsHere(), id => {
+      const { node, placement } = this.nodes.get(id)!;
+      return { at: new THREE.Vector3().setFromMatrixPosition(placement), size: NODES[node.type].size };
+    });
+    this.ripples.update(now, this.water.position.y);
     this.updateBoat(self);
+  }
+
+  /** The fishing spots that are where they are drawn. */
+  private spotsHere(): Set<string> {
+    const here = new Set<string>();
+    for (const [id, { node, isDepleted }] of this.nodes)
+      if (!isDepleted && NODES[node.type].kind === 'spot') here.add(id);
+    return here;
   }
 
   private addNodes(random: () => number) {
@@ -178,8 +194,10 @@ function water(map: GameMap): THREE.Mesh {
 function nodePlacement(map: GameMap, node: MapNode, random: () => number): THREE.Matrix4 {
   const scale = 0.9 + random() * 0.25;
   const half = NODES[node.type].size / 2;
+  const onWater = NODES[node.type].kind === 'spot';
+  const base = onWater ? WATER_LEVEL : groundHeight(map, node.x + half, node.y + half);
   return new THREE.Matrix4().compose(
-    new THREE.Vector3(node.x + half, groundHeight(map, node.x + half, node.y + half), node.y + half),
+    new THREE.Vector3(node.x + half, base, node.y + half),
     new THREE.Quaternion().setFromAxisAngle(UP, random() * 6.28),
     new THREE.Vector3(scale, scale, scale),
   );

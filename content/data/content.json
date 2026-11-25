@@ -22,6 +22,16 @@
   },
   {
    "value": 10,
+   "id": "worn_rod",
+   "name": "Worn fishing rod",
+   "icon": "rod",
+   "color": "#8a7a60",
+   "tier": 0,
+   "tool": "rod",
+   "basic": true
+  },
+  {
+   "value": 10,
    "id": "worn_sword",
    "name": "Worn sword",
    "icon": "sword",
@@ -120,6 +130,14 @@
    "name": "Ash log",
    "icon": "log",
    "color": "#d8b47c",
+   "tier": 1
+  },
+  {
+   "value": 4,
+   "id": "raw_perch",
+   "name": "Raw perch",
+   "icon": "fish",
+   "color": "#8f9a6a",
    "tier": 1
   },
   {
@@ -413,6 +431,14 @@
    "tier": 2
   },
   {
+   "value": 11,
+   "id": "raw_trout",
+   "name": "Raw trout",
+   "icon": "fish",
+   "color": "#a07a6a",
+   "tier": 2
+  },
+  {
    "value": 101,
    "id": "iron_pickaxe",
    "name": "Iron pickaxe",
@@ -700,6 +726,14 @@
    "name": "Oak log",
    "icon": "log",
    "color": "#8f5c38",
+   "tier": 3
+  },
+  {
+   "value": 25,
+   "id": "raw_pike",
+   "name": "Raw pike",
+   "icon": "fish",
+   "color": "#6f8a6a",
    "tier": 3
   },
   {
@@ -993,6 +1027,14 @@
    "tier": 4
   },
   {
+   "value": 48,
+   "id": "raw_salmon",
+   "name": "Raw salmon",
+   "icon": "fish",
+   "color": "#d08068",
+   "tier": 4
+  },
+  {
    "value": 408,
    "id": "cobalt_pickaxe",
    "name": "Cobalt pickaxe",
@@ -1280,6 +1322,14 @@
    "name": "Ebony log",
    "icon": "log",
    "color": "#4a3454",
+   "tier": 5
+  },
+  {
+   "value": 90,
+   "id": "raw_sturgeon",
+   "name": "Raw sturgeon",
+   "icon": "fish",
+   "color": "#6a6f80",
    "tier": 5
   },
   {
@@ -1651,6 +1701,19 @@
    "slot": "cape",
    "req": {
     "woodcutting": 50
+   },
+   "trophy": true
+  },
+  {
+   "value": 1,
+   "id": "cape_fishing",
+   "name": "Fishing cape",
+   "icon": "cape",
+   "color": "#3f86a8",
+   "tier": 5,
+   "slot": "cape",
+   "req": {
+    "fishing": 50
    },
    "trophy": true
   },
@@ -3782,6 +3845,196 @@
    "size": 2,
    "glows": false,
    "color": "#8fb8d8"
+  },
+  {
+   "id": "spot_1",
+   "name": "Perch spot",
+   "kind": "spot",
+   "tier": 1,
+   "skill": "fishing",
+   "level": 1,
+   "difficulty": -4,
+   "xp": 25,
+   "item": "raw_perch",
+   "tool": "rod",
+   "interval": 3,
+   "respawn": 0,
+   "deplete": 0.2,
+   "size": 1,
+   "glows": true,
+   "moves": true,
+   "color": "#8f9a6a"
+  },
+  {
+   "id": "shoal_1",
+   "name": "Perch shoal",
+   "kind": "spot",
+   "tier": 1,
+   "skill": "fishing",
+   "level": 15,
+   "difficulty": -4,
+   "xp": 25,
+   "item": "raw_perch",
+   "tool": "rod",
+   "interval": 9,
+   "respawn": 0,
+   "deplete": 0,
+   "size": 2,
+   "glows": false,
+   "moves": false,
+   "color": "#8f9a6a"
+  },
+  {
+   "id": "spot_2",
+   "name": "Trout spot",
+   "kind": "spot",
+   "tier": 2,
+   "skill": "fishing",
+   "level": 10,
+   "difficulty": -1,
+   "xp": 45,
+   "item": "raw_trout",
+   "tool": "rod",
+   "interval": 3,
+   "respawn": 0,
+   "deplete": 0.2,
+   "size": 1,
+   "glows": true,
+   "moves": true,
+   "color": "#a07a6a"
+  },
+  {
+   "id": "shoal_2",
+   "name": "Trout shoal",
+   "kind": "spot",
+   "tier": 2,
+   "skill": "fishing",
+   "level": 15,
+   "difficulty": -1,
+   "xp": 45,
+   "item": "raw_trout",
+   "tool": "rod",
+   "interval": 9,
+   "respawn": 0,
+   "deplete": 0,
+   "size": 2,
+   "glows": false,
+   "moves": false,
+   "color": "#a07a6a"
+  },
+  {
+   "id": "spot_3",
+   "name": "Pike spot",
+   "kind": "spot",
+   "tier": 3,
+   "skill": "fishing",
+   "level": 20,
+   "difficulty": 4,
+   "xp": 75,
+   "item": "raw_pike",
+   "tool": "rod",
+   "interval": 3,
+   "respawn": 0,
+   "deplete": 0.2,
+   "size": 1,
+   "glows": true,
+   "moves": true,
+   "color": "#6f8a6a"
+  },
+  {
+   "id": "shoal_3",
+   "name": "Pike shoal",
+   "kind": "spot",
+   "tier": 3,
+   "skill": "fishing",
+   "level": 20,
+   "difficulty": 4,
+   "xp": 75,
+   "item": "raw_pike",
+   "tool": "rod",
+   "interval": 9,
+   "respawn": 0,
+   "deplete": 0,
+   "size": 2,
+   "glows": false,
+   "moves": false,
+   "color": "#6f8a6a"
+  },
+  {
+   "id": "spot_4",
+   "name": "Salmon spot",
+   "kind": "spot",
+   "tier": 4,
+   "skill": "fishing",
+   "level": 30,
+   "difficulty": 9,
+   "xp": 120,
+   "item": "raw_salmon",
+   "tool": "rod",
+   "interval": 3,
+   "respawn": 0,
+   "deplete": 0.2,
+   "size": 1,
+   "glows": true,
+   "moves": true,
+   "color": "#d08068"
+  },
+  {
+   "id": "shoal_4",
+   "name": "Salmon shoal",
+   "kind": "spot",
+   "tier": 4,
+   "skill": "fishing",
+   "level": 30,
+   "difficulty": 9,
+   "xp": 120,
+   "item": "raw_salmon",
+   "tool": "rod",
+   "interval": 9,
+   "respawn": 0,
+   "deplete": 0,
+   "size": 2,
+   "glows": false,
+   "moves": false,
+   "color": "#d08068"
+  },
+  {
+   "id": "spot_5",
+   "name": "Sturgeon spot",
+   "kind": "spot",
+   "tier": 5,
+   "skill": "fishing",
+   "level": 40,
+   "difficulty": 13,
+   "xp": 180,
+   "item": "raw_sturgeon",
+   "tool": "rod",
+   "interval": 3,
+   "respawn": 0,
+   "deplete": 0.2,
+   "size": 1,
+   "glows": true,
+   "moves": true,
+   "color": "#6a6f80"
+  },
+  {
+   "id": "shoal_5",
+   "name": "Sturgeon shoal",
+   "kind": "spot",
+   "tier": 5,
+   "skill": "fishing",
+   "level": 40,
+   "difficulty": 13,
+   "xp": 180,
+   "item": "raw_sturgeon",
+   "tool": "rod",
+   "interval": 9,
+   "respawn": 0,
+   "deplete": 0,
+   "size": 2,
+   "glows": false,
+   "moves": false,
+   "color": "#6a6f80"
   }
  ],
  "monsters": [
@@ -4817,6 +5070,7 @@
   "shopStock": [
    "worn_pickaxe",
    "worn_axe",
+   "worn_rod",
    "worn_sword"
   ],
   "sellPercent": 50,
