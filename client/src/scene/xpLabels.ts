@@ -13,7 +13,7 @@ import {
 import type { Project } from './overlay';
 
 /** Above the head, in world units, so the column clears the name, the health bar and damage numbers. */
-const COLUMN_HEIGHT = 1.35;
+export const COLUMN_HEIGHT = 1.35;
 const FADE_MS = 400;
 const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)');
 
@@ -57,6 +57,11 @@ export class XpLabels {
     this.element.style.display = '';
     this.element.style.opacity = reducedMotion.matches ? '' : String(Math.min(1, (SHOWN_MS - age) / FADE_MS));
     this.element.style.transform = `translate(${screen.x | 0}px,${screen.y | 0}px) translate(-50%,-100%)`;
+  }
+
+  /** In pixels; nothing when no gains are showing. */
+  get height(): number {
+    return this.element.offsetHeight;
   }
 
   private hide() {

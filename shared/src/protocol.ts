@@ -145,7 +145,7 @@ export type ServerMsg =
       gone: string[];
       events: GameEvent[];
     }
-  | { type: 'chat'; from: string; text: string }
+  | { type: 'chat'; from: string; text: string /** Entity of the speaker. */; id: string }
   | { type: 'info'; text: string; kind?: InfoKind }
   | { type: 'xp'; skill: Skill; amount: number }
   | { type: 'open'; station: StationType | 'grave' | 'trader' }

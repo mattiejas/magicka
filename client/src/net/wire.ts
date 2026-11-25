@@ -311,7 +311,7 @@ export function decode(data: ArrayBuffer): ServerMsg | null {
     case 'snapshot':
       return snapshot(msg.value);
     case 'chat':
-      return { type: 'chat', from: msg.value.from, text: msg.value.text };
+      return { type: 'chat', from: msg.value.from, text: msg.value.text, id: clientId(msg.value.player) };
     case 'info':
       return { type: 'info', text: msg.value.text, kind: INFO_KINDS[msg.value.kind] };
     case 'xp':
