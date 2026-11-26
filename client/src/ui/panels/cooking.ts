@@ -9,7 +9,8 @@ import { materials } from './crafting';
 import { atStation } from './place';
 
 const ALL = 999;
-const DISHES = RECIPES.filter(r => r.station === 'fire');
+/** By the level they need, so what opens next is below what is open now. */
+const DISHES = RECIPES.filter(r => r.station === 'fire').sort((a, b) => a.level - b.level);
 
 /** What the food on the fire is doing. Only a change of this redraws the panel, so no click is swallowed. */
 function phase(fire: SelfState['fire']): 'none' | 'cooking' | 'done' {

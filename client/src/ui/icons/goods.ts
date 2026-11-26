@@ -99,7 +99,10 @@ const log: Draw = (pixels, _, color) => {
   trunk(1, 13);
 };
 
-const fish: Draw = (pixels, _, color) => {
+/** Seared stripes across a cooked fish, so it is told from a raw one by more than its colour. */
+const GRILL = '#4a2e20';
+
+const fish: Draw = (pixels, { id }, color) => {
   const belly = ramp('#efe6d2');
   pixels
     .poly(
@@ -130,6 +133,7 @@ const fish: Draw = (pixels, _, color) => {
     .line([9, 10], [9, 15], color[0])
     .dotsOf('#1c1a20', [19, 11])
     .dotsOf('#ffffff', [19, 10]);
+  if (id.startsWith('cooked_')) for (const x of [11, 14, 17]) pixels.line([x + 1, 9], [x - 2, 16], GRILL);
 };
 
 const hide: Draw = (pixels, _, color) =>
