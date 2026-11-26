@@ -60,6 +60,7 @@ export class Scene {
   handleEvent(event: GameEvent) {
     if (event.type === 'hit') this.showHit(event);
     else if (event.type === 'impact') this.effects.impact(event);
+    else if (event.type === 'death') this.entities.die(event.id);
   }
 
   showChat(speaker: string, text: string) {
@@ -174,9 +175,10 @@ export class Scene {
 
   private showHit({ from, to, damage, style }: Extract<GameEvent, { type: 'hit' }>) {
     this.entities.noteAttack(from);
+    // The figure, not the entity: after a killing blow the entity is gone, or a player is already in town.
     const target = state.entities.get(to);
-    if (!target) return;
-    const at = centreOf(target);
+    const at = this.entities.centreOf(to) ?? (target && centreOf(target));
+    if (!at) return;
     const showDamage = () => this.overlay.damage(to, at, damage);
     const attacker = state.entities.get(from);
     if (attacker && (style === 'ranged' || style === 'magic')) {
