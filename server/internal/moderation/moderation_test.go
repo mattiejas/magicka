@@ -155,3 +155,16 @@ func TestNames(t *testing.T) {
 		}
 	}
 }
+
+func TestRetentionIsForModeratorsAndShowsAnyWeek(t *testing.T) {
+	e := setup(t)
+	_, handled := e.Command("Troll", "/retention")
+	e.check(!handled, "players see no numbers")
+	e.command("Boss_lady", "/retention 0", "New characters: 4.") // made by setup, this week
+	e.command("Boss_lady", "/retention 0", "so far")
+	e.clock = time.Date(2026, time.November, 26, 15, 0, 0, 0, time.UTC) // a Thursday
+	e.command("Boss_lady", "/retention", "Week of 2 November 2026")
+	e.command("Boss_lady", "/retention 0", "Week of 23 November 2026")
+	e.command("Boss_lady", "/retention 10", "Week of 14 September 2026")
+	e.command("Boss_lady", "/retention soon", "/retention weeks ago")
+}

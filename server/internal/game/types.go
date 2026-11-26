@@ -69,6 +69,7 @@ type Char struct {
 	PlayTicks int      `json:"playTicks"`
 	GenieAt   int      `json:"genieAt"`
 	Blocked   []string `json:"blocked,omitempty"` // names of players not to hear from
+	Deaths    int      `json:"deaths,omitempty"`  // counted since November 2026, for seeing where new players stop
 }
 
 type actionType int
