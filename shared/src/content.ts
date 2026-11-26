@@ -49,6 +49,10 @@ export interface Item {
   trophy?: boolean;
   /** Can never be traded or sold. */
   bound?: boolean;
+  /** The name of a single one, when `name` is plural: "1 coin". */
+  one?: string;
+  /** The name of more than one, when it is not `name` with an "s" (unless it ends in one): "5 flax". */
+  plural?: string;
 }
 export interface Recipe {
   id: string;

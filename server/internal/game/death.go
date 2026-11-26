@@ -7,6 +7,7 @@ import (
 // die moves what a player carries to their grave, and the player to town. Worn gear stays on.
 func (w *World) die(p *Player) {
 	c := p.C
+	c.Deaths++
 	var items []*Stack
 	if c.Grave != nil { // an earlier grave moves along
 		items = c.Grave.Items

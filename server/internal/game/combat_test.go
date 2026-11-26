@@ -54,6 +54,16 @@ func TestBowNeedsArrowsNoBetterThanItself(t *testing.T) {
 	eq(t, p.count("iron_arrow"), 5)
 }
 
+func TestEveryDeathIsCounted(t *testing.T) {
+	e := setup(t)
+	p := e.player(1)
+	e.at(p, 20, 44, "island")
+	e.w.hurt(p, 0, 999, melee)
+	e.at(p, 20, 44, "island")
+	e.w.hurt(p, 0, 999, melee)
+	eq(t, p.C.Deaths, 2)
+}
+
 func TestDeathKeepsGearAndStoresItemsForever(t *testing.T) {
 	e := setup(t)
 	p, q := e.player(1), e.player(2)
