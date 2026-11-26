@@ -1,6 +1,6 @@
-// Resource nodes: trees, rocks and plants, each whole and depleted.
+// Resource nodes: trees, rocks, plants and fishing spots, each whole and depleted.
 import { NODES, type NodeDef, WOOD_COLORS } from '@driftwake/shared';
-import { ball, bend, blob, crystal, cyl, gem, lathe, merge, part, shade, taper, torus } from '../geo';
+import { ball, bend, blob, cone, crystal, cyl, gem, lathe, merge, part, shade, taper, torus } from '../geo';
 import { type Geometry, ring } from './model';
 
 export interface NodeShape {
@@ -16,6 +16,7 @@ export function nodeGeo(type: string): NodeShape {
   const node = NODES[type];
   if (node.kind === 'tree') return node.tier === PINE_TIER ? pine(node) : leafyTree(node);
   if (node.kind === 'rock') return node.size > 1 ? bigRock(node) : rock(node);
+  if (node.kind === 'spot') return fishingSpot(node);
   return type === 'berry_bush' ? berryBush(node) : flowers(node);
 }
 
@@ -269,4 +270,55 @@ function flowers({ color }: NodeDef): NodeShape {
     ];
   });
   return { whole: merge([...blades, ...heads]), depleted: merge(blades), height: 0.8 };
+}
+
+// --- fishing spots
+const FOAM = '#e6f6f4';
+/** Drawn at the water's surface; the moving ripples are added by the scene. */
+const SURFACE = 0.06;
+
+/** A fish's back and fin, breaking the surface. */
+const back = (color: string, x: number, z: number, turn: number, length: number) => [
+  part(
+    torus(length, 0.035, Math.PI * 0.7),
+    shade(color, 0.8),
+    [x, SURFACE - length * 0.55, z],
+    [0, turn, Math.PI * 0.15],
+  ),
+  part(cone(0.04, 0.11, 4), shade(color, 0.6), [x, SURFACE + length * 0.36, z], [0, turn, -0.4], [0.4, 1, 1]),
+];
+
+/** Where rings spread from, by a spot's width in tiles. */
+const RING_CENTRES: Record<number, [number, number][]> = {
+  1: [[0, 0]],
+  2: [
+    [-0.4, -0.3],
+    [0.45, 0.2],
+    [-0.15, 0.5],
+  ],
+};
+
+/** Rings of foam on the water with fish beneath. A spot that has moved away leaves nothing behind. */
+function fishingSpot({ color, size }: NodeDef): NodeShape {
+  const rings = RING_CENTRES[size].flatMap(([x, z]) =>
+    [0.18, 0.34, 0.5].map((r, i) =>
+      part(torus(r, 0.018 - i * 0.004), shade(FOAM, 1 - i * 0.06), [x, SURFACE, z], [Math.PI / 2, 0, 0]),
+    ),
+  );
+  const fish =
+    size > 1
+      ? [
+          ...back(color, -0.5, 0.3, 0.4, 0.2),
+          ...back(color, 0.45, -0.35, 2.2, 0.22),
+          ...back(color, 0.2, 0.55, 4, 0.18),
+        ]
+      : back(color, 0.1, 0.05, 0.7, 0.17);
+  const splashes = ring(5).map((a, i) =>
+    part(ball(0.03 + (i % 2) * 0.015), FOAM, [
+      Math.cos(a) * 0.3 * size,
+      SURFACE + 0.03,
+      Math.sin(a) * 0.3 * size,
+    ]),
+  );
+  return { whole: merge([...rings, ...fish, ...splashes]), depleted: part(ball(0.001), FOAM), height: 0.3 };
 }

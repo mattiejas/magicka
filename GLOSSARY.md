@@ -17,7 +17,7 @@ One of five grades of material and gear, copper and ash being the first and adam
 _Avoid_: Rank, level
 
 **Worn tool**:
-A basic pickaxe, axe or sword below the first tier, sold cheaply in a shop so that a player can always start over.
+A basic pickaxe, axe, fishing rod or sword below the first tier, sold cheaply in a shop so that a player can always start over.
 _Avoid_: Starter gear, tier 0
 
 ## Bosses
@@ -61,12 +61,20 @@ A way to train a skill that needs constant attention and gives more XP.
 _Avoid_: Active method, click-intensive
 
 **Glowing**:
-The state of one rock or tree of a group that, for a few seconds, rewards whoever strikes it with extra XP.
+The state of one rock, tree or fishing spot of a group that, for a few seconds, rewards whoever strikes it with extra XP.
 _Avoid_: Shiny, active, lucky
 
 **Big rock**:
 A rock that never runs out and gives ore slowly.
 _Avoid_: Infinite rock, AFK rock
+
+**Fishing spot**:
+Ripples on the water beside the shore where fish can be caught from the land next to it. After a few catches it moves to another place along the same shore.
+_Avoid_: Fishing hole, pool
+
+**Shoal**:
+A fishing spot that never moves or runs out and gives fish slowly; the big rock of fishing.
+_Avoid_: Big spot, AFK spot
 
 ## World
 

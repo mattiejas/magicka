@@ -4,6 +4,7 @@ export const SKILLS = [
   'mining',
   'smithing',
   'woodcutting',
+  'fishing',
   'crafting',
   'cooking',
   'melee',
@@ -29,6 +30,9 @@ export const WOOD_COLORS = ['#8a7a60', '#d8b47c', '#b87a48', '#8f5c38', '#b04a38
 const HIDE_COLORS = ['', '#b98f66', '#8d6a4c', '#6e7b4a', '#5c6f8c', '#6b4456'];
 const FIBRE_COLORS = ['', '#d7c98f', '#a8c27a', '#a9b6d6', '#8fc7cf', '#8a6cae'];
 const GEM_COLORS = ['', '#dfe3e6', '#e0a640', '#a83b4b', '#b9d6d0', '#4fb38a'];
+/** One fish for each tier. Raw fish heals nothing; cooking it is another skill's work. */
+export const FISH = ['', 'perch', 'trout', 'pike', 'salmon', 'sturgeon'];
+const FISH_COLORS = ['', '#8f9a6a', '#a07a6a', '#6f8a6a', '#d08068', '#6a6f80'];
 
 export interface Item {
   id: string;
@@ -45,7 +49,7 @@ export interface Item {
   speed?: number;
   range?: number;
   req?: Partial<Record<Skill, number>>;
-  tool?: 'pickaxe' | 'axe';
+  tool?: Tool;
   ammo?: 'arrow' | 'essence';
   heal?: number;
   unique?: boolean;
@@ -58,6 +62,7 @@ export interface Item {
   /** Can never be traded or sold. */
   bound?: boolean;
 }
+export type Tool = 'pickaxe' | 'axe' | 'rod';
 export const ITEMS: Record<string, Item> = {};
 /** Items that are made get their value from what goes into them; see valueCraftedItems. */
 const add = (i: Omit<Item, 'value'> & { value?: number }) => {
@@ -69,6 +74,7 @@ const LOG_VALUES = [0, 5, 12, 28, 52, 95];
 const HIDE_VALUES = [0, 8, 20, 40, 75, 140];
 const FIBRE_VALUES = [0, 4, 10, 22, 45, 85];
 const GEM_VALUES = [0, 30, 80, 180, 350, 700];
+const FISH_VALUES = [0, 4, 11, 25, 48, 90];
 const WORN_VALUE = 10;
 const WORLD_UNIQUE_VALUE = 150_000;
 const cap = (s: string) => s[0].toUpperCase() + s.slice(1);
@@ -116,6 +122,16 @@ add({
   color: METAL_COLORS[0],
   tier: 0,
   tool: 'axe',
+  value: WORN_VALUE,
+  basic: true,
+});
+add({
+  id: 'worn_rod',
+  name: 'Worn fishing rod',
+  icon: 'rod',
+  color: WOOD_COLORS[0],
+  tier: 0,
+  tool: 'rod',
   value: WORN_VALUE,
   basic: true,
 });
@@ -200,6 +216,14 @@ for (let t = 1; t <= 5; t++) {
   add({ id: `${m}_ore`, name: `${M} ore`, icon: 'ore', color: mc, tier: t, value: ORE_VALUES[t] });
   add({ id: `${m}_bar`, name: `${M} bar`, icon: 'bar', color: mc, tier: t });
   add({ id: `${w}_log`, name: `${W} log`, icon: 'log', color: wc, tier: t, value: LOG_VALUES[t] });
+  add({
+    id: `raw_${FISH[t]}`,
+    name: `Raw ${FISH[t]}`,
+    icon: 'fish',
+    color: FISH_COLORS[t],
+    tier: t,
+    value: FISH_VALUES[t],
+  });
   add({
     id: `${m}_pickaxe`,
     name: `${M} pickaxe`,
@@ -478,6 +502,7 @@ const CAPE_COLORS: Record<Skill, string> = {
   mining: '#8c8478',
   smithing: '#c0643c',
   woodcutting: '#5f8a4a',
+  fishing: '#3f86a8',
   crafting: '#b08a4e',
   cooking: '#c4703a',
   melee: '#a8413c',
@@ -539,13 +564,13 @@ add({
 export interface NodeDef {
   id: string;
   name: string;
-  kind: 'rock' | 'tree' | 'plant';
+  kind: 'rock' | 'tree' | 'plant' | 'spot';
   tier: number;
   skill: Skill | null;
   level: number;
   xp: number;
   item: string;
-  tool?: 'pickaxe' | 'axe';
+  tool?: Tool;
   /** Skill level that counts as a beginner's, which decides how often an attempt succeeds. */
   difficulty: number;
   /** Ticks between attempts. */
@@ -557,6 +582,8 @@ export interface NodeDef {
   size: number;
   /** Whether one of a group of these glows at times. */
   glows: boolean;
+  /** Instead of running out, it moves to another place of its group. Only some places hold it at a time. */
+  moves?: boolean;
   color: string;
 }
 /** Methods beyond the basic one. */
@@ -681,6 +708,48 @@ function addBigRock(id: string, of: NodeDef) {
 }
 for (let t = 1; t <= 5; t++) addBigRock(`big_rock_${t}`, NODES[`rock_${t}`]);
 addBigRock('big_essence_rock', NODES.essence_rock);
+
+/** Catches before a fishing spot moves along the shore. */
+const CATCHES_PER_SPOT = 5;
+/**
+ * Levels a worn rod catches as if they were more, as many as a tool of the spot's tier would add, until rods
+ * come by tier. Each tier of tool adds what 5⅓ levels add (`GatherChance` in formulas.go).
+ */
+const ROD_LEVELS_PER_TIER = 0.08 / 0.015;
+for (let t = 1; t <= 5; t++) {
+  const fish = cap(FISH[t]);
+  NODES[`spot_${t}`] = {
+    id: `spot_${t}`,
+    name: `${fish} spot`,
+    kind: 'spot',
+    tier: t,
+    skill: 'fishing',
+    level: TIER_LEVEL[t],
+    difficulty: TIER_LEVEL[t] - Math.round(t * ROD_LEVELS_PER_TIER),
+    xp: TIER_XP[t],
+    item: `raw_${FISH[t]}`,
+    tool: 'rod',
+    interval: WORK_INTERVAL,
+    respawn: 0,
+    deplete: 1 / CATCHES_PER_SPOT,
+    size: 1,
+    glows: true,
+    moves: true,
+    color: FISH_COLORS[t],
+  };
+  // The big rock of fishing: slow, and it never moves.
+  NODES[`shoal_${t}`] = {
+    ...NODES[`spot_${t}`],
+    id: `shoal_${t}`,
+    name: `${fish} shoal`,
+    level: Math.max(METHODS.level, TIER_LEVEL[t]),
+    interval: BIG_ROCK_INTERVAL,
+    deplete: 0,
+    size: 2,
+    glows: false,
+    moves: false,
+  };
+}
 
 // Loot: every guaranteed entry, plus one weighted common, plus independent rare and unique chances.
 export interface LootTable {
@@ -1144,7 +1213,7 @@ valueCraftedItems();
 
 /** Percentages are of an item's shop value. */
 export const ECONOMY = {
-  shopStock: ['worn_pickaxe', 'worn_axe', 'worn_sword'],
+  shopStock: ['worn_pickaxe', 'worn_axe', 'worn_rod', 'worn_sword'],
   sellPercent: 50,
   graveFeePercent: 5,
   reaperFeePercent: 10,

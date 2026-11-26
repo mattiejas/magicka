@@ -18,6 +18,7 @@ import {
   posePlayer,
   stationGeo,
 } from '../models';
+import { Ripples } from '../scene/ripples';
 
 type Gear = (string | null)[];
 interface Exhibit {
@@ -102,6 +103,7 @@ const SETS: Record<string, GallerySet> = {
       { object: person(['rootcleaver', null, 'adamantite_plate', null], {}) },
       { object: person(['briarstring', 'leather_cowl_5', 'leather_jerkin_5', null], {}) },
       { object: person(UNARMED, { action: 'eat' }, 'Name11') },
+      { object: person(UNARMED, { action: 'fish', tool: 'worn_rod' }, 'Name12'), turn: 1.3 },
     ],
   },
   hair: {
@@ -253,6 +255,18 @@ const SETS: Record<string, GallerySet> = {
     gap: 2.2,
     exhibits: () => Object.keys(NODES).map(id => ({ object: mesh(nodeGeo(id).whole) })),
   },
+  // Fishing spots on water, from a perch spot to a shoal, and someone fishing at moments around a tug.
+  shore: {
+    columns: 4,
+    gap: 2.4,
+    exhibits: () => [
+      ...['spot_1', 'spot_3', 'spot_5', 'shoal_2'].map(id => ({ object: onWater(id), turn: 0 })),
+      ...[0, 900, 2700, 2950].map(ms => ({
+        object: person(UNARMED, { action: 'fish', tool: 'worn_rod', time: time + ms }),
+        turn: 1.3,
+      })),
+    ],
+  },
   camp: {
     columns: 4,
     gap: 2.6,
@@ -268,6 +282,23 @@ const SETS: Record<string, GallerySet> = {
     ],
   },
 };
+
+/** A fishing spot on a patch of water, with its ripples as they are at `time`. */
+function onWater(id: string) {
+  const patch = new THREE.Mesh(
+    new THREE.PlaneGeometry(2.2, 2.2).rotateX(-Math.PI / 2),
+    new THREE.MeshStandardMaterial({ color: '#3fb0bd', transparent: true, opacity: 0.85, roughness: 0.6 }),
+  );
+  patch.position.y = 0.02;
+  const spot = mesh(nodeGeo(id).whole);
+  spot.position.y = 0.02;
+  const ripples = new Ripples();
+  ripples.show(new Set([id]), () => ({ at: new THREE.Vector3(), size: NODES[id].size }));
+  ripples.update(time, 0.02);
+  const group = new THREE.Group();
+  group.add(patch, spot, ripples.group);
+  return group;
+}
 
 const set = SETS[query.get('set') ?? 'people'] ?? SETS.people;
 const canvas = document.getElementById('c') as HTMLCanvasElement;

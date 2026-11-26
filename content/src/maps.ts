@@ -204,6 +204,73 @@ class Builder {
     if (!this.level(x, y, size)) throw new Error(`${type} does not stand level at ${x},${y}`);
     this.m.nodes.push({ id: `${this.m.id}:n${this.m.nodes.length}`, type, x, y });
   }
+  /** Fishing spots on water beside the shore, somewhere within `r` of a point. Needs `settle` first. */
+  spots(type: string, n: number, cx: number, cy: number, r: number) {
+    const rnd = this.stream();
+    for (let k = 0, tries = 0; k < n && tries < 2000; tries++) {
+      const a = rnd() * 6.283,
+        d = Math.sqrt(rnd()) * r,
+        x = Math.round(cx + Math.cos(a) * d),
+        y = Math.round(cy + Math.sin(a) * d);
+      if (!this.fishable(x, y, 1) || this.crowded(x, y, 1)) continue;
+      this.used.add(y * this.m.size + x);
+      this.m.nodes.push({ id: `${this.m.id}:n${this.m.nodes.length}`, type, x, y });
+      k++;
+    }
+  }
+  /** A spot of more than one tile, such as a shoal, at a given place. */
+  placeSpot(type: string, x: number, y: number) {
+    const { size } = NODES[type];
+    if (!this.fishable(x, y, size)) throw new Error(`${type} cannot be fished at ${x},${y}`);
+    for (let j = 0; j < size; j++)
+      for (let i = 0; i < size; i++) this.used.add((y + j) * this.m.size + x + i);
+    this.m.nodes.push({ id: `${this.m.id}:n${this.m.nodes.length}`, type, x, y });
+  }
+  /** A spot of more than one tile at the place nearest to a point where it can be fished. */
+  shoal(type: string, x: number, y: number) {
+    const { size } = NODES[type];
+    for (let r = 0; r < this.m.size; r++)
+      for (let j = y - r; j <= y + r; j++)
+        for (let i = x - r; i <= x + r; i++)
+          if (
+            Math.max(Math.abs(i - x), Math.abs(j - y)) === r &&
+            this.fishable(i, j, size) &&
+            !this.crowded(i, j, size)
+          )
+            return this.placeSpot(type, i, j);
+    throw new Error(`no shore for ${type} near ${x},${y}`);
+  }
+  /** Whether a square of water tiles has a free tile of shore beside it that can be walked to. */
+  private fishable(x: number, y: number, size: number) {
+    const { size: side, tiles } = this.m;
+    if (!this.reach) throw new Error('settle the map before placing fishing spots');
+    for (let j = y; j < y + size; j++)
+      for (let i = x; i < x + size; i++)
+        if (
+          i < 0 ||
+          j < 0 ||
+          i >= side ||
+          j >= side ||
+          tiles[j * side + i] !== T.WATER ||
+          this.used.has(j * side + i)
+        )
+          return false;
+    for (let j = y - 1; j <= y + size; j++)
+      for (let i = x - 1; i <= x + size; i++) {
+        const beside = (i === x - 1 || i === x + size) !== (j === y - 1 || j === y + size); // not a corner
+        if (beside && this.reach[j * side + i] && !this.covered(i, j)) return true;
+      }
+    return false;
+  }
+  /** Whether a node or station stands within `gap` tiles of a square. */
+  private crowded(x: number, y: number, size: number, gap = 1) {
+    const near = (o: { x: number; y: number }, width: number) =>
+      o.x < x + size + gap && o.x + width > x - gap && o.y < y + size + gap && o.y + width > y - gap;
+    return this.m.nodes.some(o => near(o, NODES[o.type].size)) || this.m.stations.some(o => near(o, 1));
+  }
+  private covered(x: number, y: number) {
+    return this.crowded(x, y, 1, 0);
+  }
   keep(x: number, y: number, r: number) {
     for (let j = -r; j <= r; j++) for (let i = -r; i <= r; i++) this.used.add((y + j) * this.m.size + x + i);
   }
@@ -407,6 +474,8 @@ function island() {
   b.mobs('wisp', 4, 39, 15, 4);
   m.spawns.push({ type: 'gnashclaw', x: 50, y: 39 });
   b.mobs('chicken', 5, 39, 43, 3);
+  b.spots('spot_1', 8, 22, 54, 9);
+  b.spots('spot_2', 6, 5, 30, 8);
   m.labels.push(
     { name: 'Camp', x: 32, y: 34 },
     { name: 'Copper crater', x: CRATER.x, y: CRATER.y + 1 },
@@ -503,6 +572,20 @@ function mainland() {
     ['seer', 63, 20],
   ] as const)
     m.spawns.push({ type, x, y });
+  // Fishing, last, so that the shared random numbers place everything before as they did.
+  b.settle();
+  b.spots('spot_2', 8, 4, 58, 9);
+  b.spots('spot_3', 8, 6, 44, 9);
+  b.spots('spot_4', 8, 12, 30, 9);
+  b.spots('spot_5', 8, 40, 8, 9);
+  for (const [tier, x, y] of [
+    [1, 70, 82],
+    [2, 91, 60],
+    [3, 91, 50],
+    [4, 89, 30],
+    [5, 60, 5],
+  ])
+    b.shoal(`shoal_${tier}`, x, y);
   m.labels.push(
     { name: 'Landing', x: 48, y: 76 },
     { name: 'Iron shelf', x: 76, y: 56 },

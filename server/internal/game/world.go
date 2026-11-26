@@ -100,6 +100,7 @@ func NewWorld(store Store, rnd func() float64, dev bool, bossPeriod int) *World 
 	}
 	w.addHerd()
 	w.glows = findGlowGroups(w.nodes)
+	w.spreadSpots()
 	w.scheduleNextWorldBoss(nil)
 	return w
 }

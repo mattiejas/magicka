@@ -40,9 +40,18 @@ func (w *World) gather(p *Player, n *Node) {
 		p.give(fmt.Sprintf("gem_%d", d.Tier), 1)
 	}
 	if !n.isGlowing(w.Tick) && !n.isRich(w.Tick) && w.rnd() < d.Deplete {
-		n.depletedUntil = w.Tick + Ticks(d.Respawn)
+		w.runOut(n)
 		w.stop(p)
 	}
+}
+
+// runOut ends a node for a while, or moves a fishing spot along the shore.
+func (w *World) runOut(n *Node) {
+	if n.Def.Moves {
+		w.moveSpot(n)
+		return
+	}
+	n.depletedUntil = w.Tick + Ticks(n.Def.Respawn)
 }
 
 func yieldOf(n *Node, tick int) int {
@@ -60,7 +69,8 @@ func (p *Player) gatherLevel(d *content.Node) int {
 	return p.level(d.Skill)
 }
 
-// cannotGather says what a player is missing, if anything. Each tier needs a tool of at least the tier before.
+// cannotGather says what a player is missing, if anything. Each tier needs a tool of at least the tier before,
+// where tools of that tier are made.
 func (p *Player) cannotGather(d *content.Node) string {
 	if p.gatherLevel(d) < d.Level {
 		return fmt.Sprintf("You need %s level %d for that.", d.Skill, d.Level)
@@ -69,7 +79,7 @@ func (p *Player) cannotGather(d *content.Node) string {
 		switch tier := p.bestTool(d.Tool); {
 		case tier < 0:
 			return "You are not carrying " + withArticle(d.Tool) + " you can use."
-		case tier < d.Tier-1:
+		case tier < d.Tier-1 && content.Items[toolID(d.Tool, d.Tier-1)] != nil:
 			return "You need a better " + d.Tool + " for that."
 		}
 	}
@@ -81,8 +91,11 @@ func (p *Player) cannotGather(d *content.Node) string {
 }
 
 func withArticle(tool string) string {
-	if tool == "axe" {
+	switch tool {
+	case "axe":
 		return "an axe"
+	case "rod":
+		return "a fishing rod"
 	}
 	return "a " + tool
 }

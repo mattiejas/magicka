@@ -67,6 +67,17 @@ const axe: Draw = (pixels, _, color) => {
   );
 };
 
+/** A thin rod with a reel, its line hanging from the tip to a float. */
+const rod: Draw = pixels => {
+  pixels
+    .diagonal((a, v) => a >= -20 && a <= 20 && v >= 0 && v <= 1 && WOOD[a < -12 ? 1 : v ? 2 : 3])
+    .diagonal((a, v) => a >= -18 && a <= -13 && v >= -1 && v <= 2 && LEATHER[(a + 60) % 3 ? 3 : 1])
+    .ball(8.5, 17.5, 2.2, STONE)
+    .line([21, 2], [21, 15], '#e8e4da')
+    .ball(21, 17, 1.6, ramp('#d84a3c'))
+    .dotsOf('#f4efe4', [21, 16], [20, 16]);
+};
+
 const bow: Draw = (pixels, _, color) => {
   pixels.line([4, 3], [20, 19], PAPER[3]);
   pixels.paint((x, y) => {
@@ -209,6 +220,7 @@ export const WEAPONS: Record<string, Draw> = {
   sword,
   pickaxe,
   axe,
+  rod,
   bow,
   staff: staffWith(ICE),
   arrow,

@@ -26,7 +26,7 @@ export interface Means {
   playerOptions: (name: string, id: string) => Option[];
 }
 
-const GATHER_VERBS = { rock: 'Mine', tree: 'Chop', plant: 'Pick' };
+const GATHER_VERBS = { rock: 'Mine', tree: 'Chop', plant: 'Pick', spot: 'Fish' };
 const NPC_NAMES: Record<string, string> = { trader: 'Stranded trader', genie: 'Genie' };
 const STATION_NAMES: Record<StationType, string> = {
   bank: 'Bank chest',

@@ -24,7 +24,7 @@ func NewChar() *Char {
 	for _, s := range content.Skills {
 		c.XP[s] = 0
 	}
-	for i, id := range []string{"worn_pickaxe", "worn_axe", "worn_sword"} {
+	for i, id := range []string{"worn_pickaxe", "worn_axe", "worn_rod", "worn_sword"} {
 		c.Inv[i] = &Stack{id, 1}
 	}
 	return c

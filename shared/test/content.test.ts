@@ -24,7 +24,8 @@ it('the island has height, and what is too steep is blocked in what both sides l
 it('nothing stands on a slope that would make it float or sink', () => {
   for (const map of Object.values(MAPS)) {
     const things = [
-      ...map.nodes.map(n => ({ ...n, size: NODES[n.type].size })),
+      // Fishing spots lie on the water, not the ground.
+      ...map.nodes.filter(n => NODES[n.type].kind !== 'spot').map(n => ({ ...n, size: NODES[n.type].size })),
       ...map.stations.map(s => ({ ...s, size: 1 })),
     ];
     for (const { x, y, size } of things) {

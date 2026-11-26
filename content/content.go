@@ -62,6 +62,7 @@ type Node struct {
 	Size                              int // width in tiles
 	XP, Respawn, Deplete              float64
 	Glows                             bool
+	Moves                             bool // to another place of its group, instead of running out
 }
 
 // HasGems reports whether gathering sometimes turns up a gem.
@@ -341,7 +342,7 @@ var (
 const InvSize = 24
 
 var Skills = []string{
-	"mining", "smithing", "woodcutting", "crafting", "cooking", "melee", "ranged", "magic", "defence", "vitality",
+	"mining", "smithing", "woodcutting", "fishing", "crafting", "cooking", "melee", "ranged", "magic", "defence", "vitality",
 }
 
 func tuple(b []byte, dst ...any) error {

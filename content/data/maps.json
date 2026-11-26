@@ -255,6 +255,90 @@
     "type": "berry_bush",
     "x": 25,
     "y": 38
+   },
+   {
+    "id": "island:n42",
+    "type": "spot_1",
+    "x": 20,
+    "y": 54
+   },
+   {
+    "id": "island:n43",
+    "type": "spot_1",
+    "x": 26,
+    "y": 58
+   },
+   {
+    "id": "island:n44",
+    "type": "spot_1",
+    "x": 22,
+    "y": 55
+   },
+   {
+    "id": "island:n45",
+    "type": "spot_1",
+    "x": 14,
+    "y": 51
+   },
+   {
+    "id": "island:n46",
+    "type": "spot_1",
+    "x": 16,
+    "y": 52
+   },
+   {
+    "id": "island:n47",
+    "type": "spot_1",
+    "x": 29,
+    "y": 59
+   },
+   {
+    "id": "island:n48",
+    "type": "spot_1",
+    "x": 24,
+    "y": 57
+   },
+   {
+    "id": "island:n49",
+    "type": "spot_1",
+    "x": 18,
+    "y": 53
+   },
+   {
+    "id": "island:n50",
+    "type": "spot_2",
+    "x": 3,
+    "y": 29
+   },
+   {
+    "id": "island:n51",
+    "type": "spot_2",
+    "x": 5,
+    "y": 35
+   },
+   {
+    "id": "island:n52",
+    "type": "spot_2",
+    "x": 5,
+    "y": 23
+   },
+   {
+    "id": "island:n53",
+    "type": "spot_2",
+    "x": 5,
+    "y": 33
+   },
+   {
+    "id": "island:n54",
+    "type": "spot_2",
+    "x": 4,
+    "y": 25
+   },
+   {
+    "id": "island:n55",
+    "type": "spot_2",
+    "x": 4,
+    "y": 31
    }
   ],
   "stations": [
@@ -1423,6 +1507,192 @@
     "type": "tree_5",
     "x": 18,
     "y": 22
+   },
+   {
+    "id": "mainland:n128",
+    "type": "spot_2",
+    "x": 2,
+    "y": 53
+   },
+   {
+    "id": "mainland:n129",
+    "type": "spot_2",
+    "x": 3,
+    "y": 59
+   },
+   {
+    "id": "mainland:n130",
+    "type": "spot_2",
+    "x": 2,
+    "y": 56
+   },
+   {
+    "id": "mainland:n131",
+    "type": "spot_2",
+    "x": 6,
+    "y": 65
+   },
+   {
+    "id": "mainland:n132",
+    "type": "spot_2",
+    "x": 4,
+    "y": 62
+   },
+   {
+    "id": "mainland:n133",
+    "type": "spot_2",
+    "x": 2,
+    "y": 50
+   },
+   {
+    "id": "mainland:n134",
+    "type": "spot_3",
+    "x": 4,
+    "y": 46
+   },
+   {
+    "id": "mainland:n135",
+    "type": "spot_3",
+    "x": 7,
+    "y": 39
+   },
+   {
+    "id": "mainland:n136",
+    "type": "spot_3",
+    "x": 3,
+    "y": 48
+   },
+   {
+    "id": "mainland:n137",
+    "type": "spot_3",
+    "x": 8,
+    "y": 37
+   },
+   {
+    "id": "mainland:n138",
+    "type": "spot_3",
+    "x": 6,
+    "y": 41
+   },
+   {
+    "id": "mainland:n139",
+    "type": "spot_3",
+    "x": 4,
+    "y": 44
+   },
+   {
+    "id": "mainland:n140",
+    "type": "spot_4",
+    "x": 13,
+    "y": 25
+   },
+   {
+    "id": "mainland:n141",
+    "type": "spot_4",
+    "x": 12,
+    "y": 28
+   },
+   {
+    "id": "mainland:n142",
+    "type": "spot_4",
+    "x": 11,
+    "y": 30
+   },
+   {
+    "id": "mainland:n143",
+    "type": "spot_4",
+    "x": 10,
+    "y": 32
+   },
+   {
+    "id": "mainland:n144",
+    "type": "spot_4",
+    "x": 9,
+    "y": 35
+   },
+   {
+    "id": "mainland:n145",
+    "type": "spot_4",
+    "x": 14,
+    "y": 23
+   },
+   {
+    "id": "mainland:n146",
+    "type": "spot_5",
+    "x": 42,
+    "y": 3
+   },
+   {
+    "id": "mainland:n147",
+    "type": "spot_5",
+    "x": 37,
+    "y": 6
+   },
+   {
+    "id": "mainland:n148",
+    "type": "spot_5",
+    "x": 31,
+    "y": 10
+   },
+   {
+    "id": "mainland:n149",
+    "type": "spot_5",
+    "x": 45,
+    "y": 2
+   },
+   {
+    "id": "mainland:n150",
+    "type": "spot_5",
+    "x": 33,
+    "y": 9
+   },
+   {
+    "id": "mainland:n151",
+    "type": "spot_5",
+    "x": 40,
+    "y": 4
+   },
+   {
+    "id": "mainland:n152",
+    "type": "spot_5",
+    "x": 35,
+    "y": 8
+   },
+   {
+    "id": "mainland:n153",
+    "type": "spot_5",
+    "x": 47,
+    "y": 2
+   },
+   {
+    "id": "mainland:n154",
+    "type": "shoal_1",
+    "x": 73,
+    "y": 85
+   },
+   {
+    "id": "mainland:n155",
+    "type": "shoal_2",
+    "x": 92,
+    "y": 59
+   },
+   {
+    "id": "mainland:n156",
+    "type": "shoal_3",
+    "x": 91,
+    "y": 50
+   },
+   {
+    "id": "mainland:n157",
+    "type": "shoal_4",
+    "x": 86,
+    "y": 28
+   },
+   {
+    "id": "mainland:n158",
+    "type": "shoal_5",
+    "x": 60,
+    "y": 3
    }
   ],
   "stations": [
