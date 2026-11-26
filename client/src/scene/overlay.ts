@@ -1,6 +1,7 @@
 // Text drawn over the world: names, health bars, damage numbers and chat.
 import { type Entity, MONSTERS, type TilePos } from '@driftwake/shared';
 import { centreOf, state } from '../net/state';
+import { DamageBar } from '../ui/damageBar';
 import { uiScale } from '../ui/scale';
 import { ChatLabels } from './chatLabels';
 import { DropLabels } from './dropLabels';
@@ -10,8 +11,7 @@ export type Project = (x: number, z: number, height: number) => { x: number; y: 
 
 interface Tag {
   element: HTMLElement;
-  bar: HTMLElement;
-  fill: HTMLElement;
+  health: DamageBar;
 }
 interface FloatingText {
   element: HTMLElement;
@@ -90,8 +90,8 @@ export class Overlay {
     const screen = this.project(x, z, this.heightOf(entity.id) + TAG_GAP);
     tag.element.style.display = screen.visible ? '' : 'none';
     tag.element.style.transform = `translate(${screen.x | 0}px,${screen.y | 0}px) translate(-50%,-100%)`;
-    tag.bar.style.visibility = isHurt(entity) ? '' : 'hidden';
-    tag.fill.style.width = `${(100 * entity.hp!) / entity.maxHp!}%`;
+    tag.health.track.style.visibility = isHurt(entity) ? '' : 'hidden';
+    tag.health.set(entity.hp! / entity.maxHp!);
   }
 
   /** Returns false once the text has faded out. */
@@ -127,11 +127,9 @@ const hasTag = (entity: Entity) =>
 function createTag(entity: Entity): Tag {
   const element = document.createElement('div');
   const name = document.createElement('span');
-  const bar = document.createElement('b');
-  const fill = document.createElement('i');
+  const health = new DamageBar(document.createElement('b'), 'width');
   element.className = 'tag';
   name.textContent = entity.kind === 'player' ? entity.name! : MONSTERS[entity.type!].name;
-  bar.append(fill);
-  element.append(name, bar);
-  return { element, bar, fill };
+  element.append(name, health.track);
+  return { element, health };
 }

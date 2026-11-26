@@ -9,6 +9,8 @@
   --warn: #dcab6b;
   --bad: #df8b80;
   --good: #9cc486;
+  /* The damage of the last hit on a health bar; darker than --bad, so it shows on a low bar too. */
+  --hit: #c2463c;
   /* The interface size the player chose, set by scale.ts. */
   --ui-scale: 1;
   font:
@@ -134,9 +136,7 @@ h2 {
   margin: 2px auto 0;
   border: 1px solid #222a30;
 }
-.tag i {
-  display: block;
-  height: 100%;
+.tag .fill {
   background: var(--good);
 }
 .dmg {
@@ -214,6 +214,25 @@ h2 {
 .bar.low > i {
   background: var(--bad);
 }
+/* A health bar that shows the damage of the last hit (damageBar.ts): a red trail behind the fill. */
+.damage {
+  position: relative;
+}
+.damage > i {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+}
+.damage.across > i {
+  top: 0;
+  height: auto;
+}
+.damage.up > i {
+  right: 0;
+}
+.damage > .trail {
+  background: var(--hit);
+}
 /* Sized so that the minimap and its buttons stay clear of the sidebar in a 720 pixel high window. */
 #map {
   right: 16px;
@@ -287,23 +306,17 @@ h2 {
   padding-top: 2px;
   border-top: 1px solid var(--line);
 }
-#health .fill {
-  position: relative;
+#health .track {
   flex: 1;
   width: 14px;
   margin-top: 4px;
   background: #1d2429;
   border: 1px solid var(--line);
 }
-#health .fill i {
-  position: absolute;
-  left: 0;
-  right: 0;
-  bottom: 0;
+#health .track .fill {
   background: var(--good);
-  transition: height 0.2s;
 }
-#health.low .fill i {
+#health.low .track .fill {
   background: var(--bad);
 }
 #health.low b {
@@ -520,7 +533,7 @@ h2 {
 #boss .bar {
   height: 10px;
 }
-#boss .bar i {
+#boss .bar .fill {
   background: #c98a6a;
 }
 #boss small {
@@ -667,6 +680,15 @@ h2 {
   * {
     /* biome-ignore lint/complexity/noImportantStyles: a user preference beats our styles */
     transition: none !important;
+  }
+  /* The damage of a hit still shows for HOLD_MS (damageBar.ts), then goes at once instead of shrinking. */
+  .damage > .trail {
+    /* biome-ignore lint/complexity/noImportantStyles: must beat the rule above */
+    transition-property: width, height !important;
+    /* biome-ignore lint/complexity/noImportantStyles: must beat the rule above */
+    transition-duration: 0s !important;
+    /* biome-ignore lint/complexity/noImportantStyles: must beat the rule above */
+    transition-delay: 0.4s !important;
   }
 }
 @media (max-width: 1000px) {
