@@ -1,6 +1,8 @@
 // Translates between the protobuf messages on the wire and the types the rest of the client uses.
 import { create, fromBinary, toBinary, toJsonString } from '@bufbuild/protobuf';
 import {
+  type BoatState,
+  type ChartUpdate,
   type ClientMsg,
   type Entity,
   type EntityKind,
@@ -17,11 +19,14 @@ import {
   type Stack,
   type StationType,
   type TilePos,
+  type Voyage,
 } from '@driftwake/shared';
 import {
   BossState,
   ClientMessageSchema,
+  type BoatView as PbBoatView,
   type BossView as PbBossView,
+  type Chart as PbChart,
   type Entity as PbEntity,
   type Event as PbEvent,
   InfoKind as PbInfo,
@@ -31,6 +36,7 @@ import {
   type Snapshot as PbSnapshot,
   type Stack as PbStack,
   type TradeView as PbTradeView,
+  type Voyage as PbVoyage,
   ServerMessageSchema,
   TradeAction,
 } from '../pb/driftwake/v1/game_pb';
@@ -86,7 +92,11 @@ const TRADE_ACTIONS = {
   accept: TradeAction.ACCEPT,
   decline: TradeAction.DECLINE,
 };
-const MAP_IDS: Partial<Record<PbMap, MapId>> = { [PbMap.MAINLAND]: 'mainland', [PbMap.MINE]: 'mine' };
+const MAP_IDS: Partial<Record<PbMap, MapId>> = {
+  [PbMap.MAINLAND]: 'mainland',
+  [PbMap.MINE]: 'mine',
+  [PbMap.SEA]: 'sea',
+};
 const mapId = (map: PbMap): MapId => MAP_IDS[map] ?? 'island';
 
 // --- client to server
@@ -108,7 +118,15 @@ function payload(msg: ClientMsg): { case: string; value: unknown } {
     case 'depositAll':
     case 'askFees':
     case 'takeOff':
+    case 'goAshore':
+    case 'board':
       return { case: msg.type, value: {} };
+    case 'setSail':
+      return { case: 'setSail', value: msg.sail };
+    case 'steer':
+      return { case: 'steer', value: { x: msg.x, y: msg.y } };
+    case 'helm':
+      return { case: 'helm', value: msg.turn };
     case 'move':
       return { case: 'move', value: { x: msg.x, y: msg.y } };
     case 'gather':
@@ -193,6 +211,11 @@ function bossView(boss: PbBossView): Entity['boss'] {
   };
 }
 
+function boatState({ away, x, y, heading, sail, aboard, trail }: PbBoatView): BoatState | undefined {
+  if (away) return undefined;
+  return { x, y, heading, sail, aboard, ...(trail.length && { trail: tilePairs(trail) }) };
+}
+
 /** Applies what changed to what is already known about an entity. Always returns a new object. */
 export function mergeEntity(known: Entity | undefined, delta: PbEntity): Entity {
   const isNew = delta.full || !known;
@@ -227,6 +250,8 @@ export function mergeEntity(known: Entity | undefined, delta: PbEntity): Entity 
   if (delta.look) entity.look = { cut: delta.look.cut, color: delta.look.color };
   if (delta.boss) entity.boss = bossView(delta.boss);
   entity.via = delta.via.length ? tilePairs(delta.via) : undefined;
+  if (delta.boat) entity.boat = boatState(delta.boat);
+  else if (entity.boat?.trail) entity.boat = { ...entity.boat, trail: undefined }; // a trail never carries over
   return entity;
 }
 
@@ -256,12 +281,28 @@ function selfState(self: PbSelf): SelfState {
     look: { cut: self.look?.cut ?? 0, color: self.look?.color ?? 0 },
     fire: self.fireReady ? { ready: self.fireReady, burns: self.fireBurns } : null,
     fightBack: self.fightBack,
+    boatAway: self.boatAway,
   };
 }
 
 function tradeView({ open, partner, mine, theirs, iAccepted, theyAccepted, readyAt }: PbTradeView) {
   if (!open) return null;
   return { partner, mine: mine.map(stack), theirs: theirs.map(stack), iAccepted, theyAccepted, readyAt };
+}
+
+function voyage(v: PbVoyage): Voyage {
+  return {
+    aboard: v.aboard,
+    speed: v.speed,
+    course: v.hasCourse ? [v.courseX, v.courseY] : null,
+    ahead: tilePairs(v.ahead),
+    shoreNear: v.shoreNear,
+    slowEnough: v.slowEnough,
+  };
+}
+
+function chart({ full, seen, runs, found, landed }: PbChart): ChartUpdate {
+  return { full, seen, runs, found, landed };
 }
 
 function gameEvent({ event }: PbEvent): GameEvent[] {
@@ -334,6 +375,10 @@ export function decode(data: ArrayBuffer): ServerMsg | null {
       return { type: 'trade', trade: tradeView(msg.value) };
     case 'feesTaken':
       return { type: 'fees', taken: Number(msg.value) };
+    case 'voyage':
+      return { type: 'voyage', voyage: voyage(msg.value) };
+    case 'chart':
+      return { type: 'chart', chart: chart(msg.value) };
     case 'boss': {
       const { alive, nextTicks, contribution, online, next } = msg.value;
       return { type: 'boss', alive, nextTicks, contribution, online, next };

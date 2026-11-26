@@ -82,12 +82,15 @@ func TestEverythingIsReachable(t *testing.T) {
 		check(t, m.Walkable(m.Spawn.X, m.Spawn.Y) && m.Walkable(m.Landing.X, m.Landing.Y), m.ID)
 		for _, l := range [][]content.Placed{m.Nodes, m.Stations, m.Spawns} {
 			for _, o := range l {
-				p := f.find(m, m.Spawn.X, m.Spawn.Y, tile(o.X, o.Y), 1)
-				e := Point{X: m.Spawn.X, Y: m.Spawn.Y}
-				if len(p) > 0 {
-					e = p[len(p)-1]
+				reached := false
+				for _, s := range walksFrom(m) {
+					e := s
+					if p := f.find(m, s.X, s.Y, tile(o.X, o.Y), 1); len(p) > 0 {
+						e = p[len(p)-1]
+					}
+					reached = reached || inReach(e.X, e.Y, tile(o.X, o.Y), 1)
 				}
-				check(t, inReach(e.X, e.Y, tile(o.X, o.Y), 1), m.ID, o)
+				check(t, reached, m.ID, o)
 			}
 		}
 	}
@@ -110,6 +113,10 @@ func TestDecodeRefusesMalformed(t *testing.T) {
 		{Msg: &pb.ClientMessage_EatSlot{EatSlot: 99}},
 		{Msg: &pb.ClientMessage_PickupAll{PickupAll: kindMonster}},
 		{Msg: &pb.ClientMessage_DropSlot{DropSlot: 24}},
+		{Msg: &pb.ClientMessage_SetSail{SetSail: 4}},
+		{Msg: &pb.ClientMessage_Steer{Steer: &pb.Tile{X: 256}}},
+		{Msg: &pb.ClientMessage_Helm{Helm: 2}},
+		{Msg: &pb.ClientMessage_Helm{Helm: -2}},
 		{Msg: &pb.ClientMessage_Look{Look: &pb.Look{Cut: 4}}},
 		{Msg: &pb.ClientMessage_Look{Look: &pb.Look{Color: 8}}},
 		{Msg: &pb.ClientMessage_Register{Register: &pb.Credentials{Name: "a b", Password: "long enough"}}},
@@ -135,3 +142,6 @@ func TestDecodeRefusesMalformed(t *testing.T) {
 	}
 	e.run(2)
 }
+
+// walksFrom is where walking on a map can start: the spawn, and on the sea a seed on each small island.
+func walksFrom(m *content.Map) []Point { return append([]Point{m.Spawn}, m.Seeds...) }

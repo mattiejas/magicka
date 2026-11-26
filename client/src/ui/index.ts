@@ -13,6 +13,7 @@ import { drawMinimap, minimapPanel } from './minimap';
 import { closePanel, closePanelWhenFar, isPanelId, openPanel, showTrade, updatePanel } from './panels';
 import { keepStationClearOfTop } from './panels/clearOfTop';
 import { warmPortraits } from './portrait';
+import { sailingPanel, updateSailing } from './sailing';
 import { initUiScale } from './scale';
 import { passwordChangeReply } from './settingsModal';
 import { sidebar, updateSidebar } from './sidebar';
@@ -52,6 +53,7 @@ function showGame() {
     minimapPanel(),
     sidebar(),
     chatBox(),
+    sailingPanel(),
   );
   keepStationClearOfTop();
 }
@@ -72,7 +74,10 @@ function handleMessage(msg: ServerMsg) {
       if (state.self) warmPortraits(state.self.name);
       if (takeJustRegistered()) openPanel('hair');
       return;
+    case 'voyage':
+      return updateSailing();
     case 'snapshot':
+      updateSailing();
       updateHealth();
       updateHint();
       updateBosses();

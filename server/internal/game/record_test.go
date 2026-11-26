@@ -67,6 +67,14 @@ func encodings() (names []string, encoded [][]byte) {
 	isNew("trader", view{id: entityID(kindNPC, 1), f: fields{x: 5, y: 6, typ: npcTrader, wants: "copper_ore"}})
 	isNew("genie", view{id: entityID(kindNPC, 2), f: fields{x: 5, y: 6, typ: npcGenie}})
 
+	sailor := entityID(kindPlayer, 8)
+	ashore := fields{x: 30, y: 40, name: "Sam", hp: 10, maxHP: 10, level: 1, boat: boatFields{true, 31.5, 41.25, 90, sailStopped, false}}
+	sailing := ashore
+	sailing.boat = boatFields{true, 32, 41.5, 45, sailHalf, true}
+	isNew("player with a moored boat", view{id: sailor, f: ashore})
+	changes("player sails", view{id: sailor, f: sailing, trail: []Vec{{31.5, 41.25}, {32, 41.5}}}, ashore)
+	changes("player's boat goes away", view{id: sailor, f: fields{x: 30, y: 40, name: "Sam", hp: 10, maxHP: 10, level: 1}}, sailing)
+
 	drop := entityID(kindDrop, 9)
 	lying := fields{x: 8, y: 9, typ: coin, qty: 40, until: 500, publicAt: 400}
 	later := lying

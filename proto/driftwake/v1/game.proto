@@ -6,7 +6,7 @@ option go_package = "driftwake/server/internal/pb;pb";
 enum Slot { SLOT_UNSPECIFIED = 0; SLOT_WEAPON = 1; SLOT_HEAD = 2; SLOT_BODY = 3; SLOT_LEGS = 4; SLOT_NECK = 5; SLOT_AMMO = 6; SLOT_CAPE = 7; }
 enum TradeAction { TRADE_ACTION_UNSPECIFIED = 0; TRADE_ACTION_OFFER = 1; TRADE_ACTION_TAKE_BACK = 2; TRADE_ACTION_ACCEPT = 3; TRADE_ACTION_DECLINE = 4; }
 enum ReportReason { REPORT_REASON_UNSPECIFIED = 0; REPORT_REASON_LANGUAGE = 1; REPORT_REASON_SCAM = 2; REPORT_REASON_CHEATING = 3; REPORT_REASON_OTHER = 4; }
-enum MapId { MAP_ID_UNSPECIFIED = 0; MAP_ID_ISLAND = 1; MAP_ID_MAINLAND = 2; MAP_ID_MINE = 3; }
+enum MapId { MAP_ID_UNSPECIFIED = 0; MAP_ID_ISLAND = 1; MAP_ID_MAINLAND = 2; MAP_ID_MINE = 3; MAP_ID_SEA = 4; }
 enum EntityKind { ENTITY_KIND_UNSPECIFIED = 0; ENTITY_KIND_PLAYER = 1; ENTITY_KIND_MONSTER = 2; ENTITY_KIND_NODE = 3; ENTITY_KIND_DROP = 4; ENTITY_KIND_GRAVE = 5; ENTITY_KIND_STATION = 6; ENTITY_KIND_NPC = 7; }
 enum BossState { BOSS_STATE_UNSPECIFIED = 0; BOSS_STATE_CHOOSE = 1; BOSS_STATE_WINDUP = 2; BOSS_STATE_EXECUTE = 3; }
 enum InfoKind { INFO_KIND_UNSPECIFIED = 0; INFO_KIND_UNIQUE = 1; INFO_KIND_BOSS = 2; INFO_KIND_LEVEL = 3; INFO_KIND_BAD = 4; }
@@ -29,6 +29,9 @@ message ClientMessage {
     uint32 pickup_all = 35;
     // Whether to attack whoever hits you while idle or skilling.
     bool fight_back = 36;
+    // Sailing. set_sail: a sail setting, from 0 backing to 3 full sail. steer: a tile for the helm to steer for.
+    // helm: -1 or 1 while steering by hand, 0 when let go. board: the player's own boat, moored where they are.
+    uint32 set_sail = 37; Tile steer = 38; sint32 helm = 39; Empty go_ashore = 40; Empty board = 41;
   }
 }
 message Empty {}
@@ -56,7 +59,25 @@ message ServerMessage {
     // Everything the reaper and graves have ever taken, from everyone.
     uint64 fees_taken = 11;
     TradeRequest trade_request = 12; TradeView trade = 13;
+    Voyage voyage = 14; Chart chart = 15;
   }
+}
+// Sent every tick to a player aboard their boat, and once with aboard unset when they leave it.
+message Voyage {
+  bool aboard = 1; float speed = 2;
+  // What the helm steers for, if anything.
+  bool has_course = 3; float course_x = 4; float course_y = 5;
+  // Where the boat will be over the next ticks if nothing changes, as x, y pairs.
+  repeated float ahead = 6;
+  // Land is close enough to go ashore, and whether the boat is slow enough for it.
+  bool shore_near = 7; bool slow_enough = 8;
+}
+// What a player has seen of the sea. With full, seen holds a bit for every tile, row by row; otherwise runs holds
+// only the tiles seen since, as pairs of the first tile's index and how many follow it. Places are always all of them.
+message Chart {
+  bool full = 1; bytes seen = 2; repeated uint32 runs = 3;
+  // Places sighted, whose outline is on the chart, and places gone ashore on, which are seen whole.
+  repeated string found = 4; repeated string landed = 5;
 }
 message Welcome { string token = 1; uint32 id = 2; }
 message TradeRequest { uint32 player = 1; string name = 2; }
@@ -98,6 +119,8 @@ message Self {
   uint32 fire_ready = 17; uint32 fire_burns = 18;
   // Attacks whoever hits the player while they are idle or skilling.
   bool fight_back = 19;
+  // The boat has left the dock: it is moored elsewhere, or its owner is aboard.
+  bool boat_away = 20;
 }
 // `entities` hold only what changed, except for entities the browser did not know yet.
 message Snapshot { uint32 tick = 1; MapId map = 2; bool reset = 3; repeated Entity entities = 4; repeated uint32 gone = 5; repeated Event events = 6; }
@@ -120,6 +143,18 @@ message Entity {
   optional uint32 until = 22;
   // Tick at which a drop becomes public; zero means never.
   optional uint32 public_at = 23;
+  // A player's boat, when it is on this map. Sent whole whenever anything about it changes.
+  BoatView boat = 24;
+}
+// Positions are in tiles, the heading in degrees clockwise from north.
+message BoatView {
+  // The boat is not on this map: its owner sailed it elsewhere, or is on another map.
+  bool away = 1;
+  float x = 2; float y = 3; float heading = 4; uint32 sail = 5;
+  // The owner is aboard; otherwise the boat is moored.
+  bool aboard = 6;
+  // Where it was at the start of this tick and after each part of its move, as x, y pairs. Never carries over.
+  repeated float trail = 7;
 }
 message Gear { string weapon = 1; string head = 2; string body = 3; string legs = 4; string cape = 5; }
 // Centres are where an attack is aimed, as x, y pairs. A boulder falls on one even when its square is clipped.

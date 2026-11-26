@@ -1,4 +1,4 @@
-import { amountOf, BOAT_PARTS, ITEMS, MAPS, QUESTS, type SelfState } from '@driftwake/shared';
+import { amountOf, BOAT_PARTS, ITEMS, QUESTS, type SelfState } from '@driftwake/shared';
 import { send } from '../../net/connection';
 import { button, h } from '../dom';
 import { icon } from '../icons';
@@ -42,9 +42,8 @@ export const dockPanel: Panel = {
   key: ({ map, boat, boatDone, quests }) =>
     JSON.stringify([map, boat, boatDone, quests, BOAT_PARTS.map(({ item }) => carried(item))]),
   render(self) {
-    const destination = self.map === 'island' ? MAPS.mainland : MAPS.island;
     const action = self.boatDone
-      ? button(`Sail to ${destination.name}`, sail)
+      ? button('Set sail', sail)
       : button('Add what I am carrying', () => send({ type: 'boat', op: 'build' }));
     return [
       ...questOffer(self),

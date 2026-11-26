@@ -13,7 +13,13 @@ export type ClientMsg =
   | { type: 'register' | 'login'; name: string; password: string }
   | { type: 'resume'; token: string }
   | { type: 'changePassword'; oldPassword: string; newPassword: string }
-  | { type: 'logout' | 'grave' | 'depositAll' | 'askFees' | 'takeOff' }
+  | { type: 'logout' | 'grave' | 'depositAll' | 'askFees' | 'takeOff' | 'goAshore' | 'board' }
+  /** A sail setting, from 0 backing to 3 full sail. */
+  | { type: 'setSail'; sail: number }
+  /** A tile for the helm to steer for. */
+  | { type: 'steer'; x: number; y: number }
+  /** -1 or 1 while steering by hand, 0 when let go. */
+  | { type: 'helm'; turn: -1 | 0 | 1 }
   /** Without an item: everything. */
   | { type: 'claim'; item?: string }
   | { type: 'shop'; op: 'buy' | 'sell'; item: string; qty: number }
@@ -64,6 +70,19 @@ export interface BossView {
   target?: string;
 }
 
+/** A player's boat on this map. Positions are in tiles, the heading in degrees clockwise from north. */
+export interface BoatState {
+  x: number;
+  y: number;
+  heading: number;
+  /** From 0 backing to 3 full sail. */
+  sail: number;
+  /** The owner is aboard; otherwise it is moored. */
+  aboard: boolean;
+  /** Where it was at the start of the latest tick and after each part of its move. */
+  trail?: TilePos[];
+}
+
 export type EntityKind = 'player' | 'monster' | 'node' | 'drop' | 'grave' | 'npc';
 /** Anything the server reports at a position. Nodes are only reported while they are depleted, glowing or rich. */
 export interface Entity {
@@ -97,6 +116,7 @@ export interface Entity {
   tool?: string;
   qty?: number;
   boss?: BossView;
+  boat?: BoatState;
 }
 
 export type GameEvent =
@@ -134,6 +154,32 @@ export interface SelfState {
   fire: { ready: number; burns: number } | null;
   /** Attacks whoever hits the player while they are idle or skilling. */
   fightBack: boolean;
+  /** The boat has left the dock: it is moored elsewhere, or its owner is aboard. */
+  boatAway: boolean;
+}
+
+/** Told every tick to a player aboard their boat. */
+export interface Voyage {
+  aboard: boolean;
+  speed: number;
+  course: TilePos | null;
+  /** Where the boat will be over the next ticks if nothing changes. */
+  ahead: TilePos[];
+  /** Land is close enough to go ashore, and the boat slow enough for it. */
+  shoreNear: boolean;
+  slowEnough: boolean;
+}
+
+/** What the player has seen of the sea, whole or as what was seen since. */
+export interface ChartUpdate {
+  full: boolean;
+  /** With full: a bit for every tile, row by row. */
+  seen: Uint8Array;
+  /** Otherwise: tiles seen since, as pairs of the first tile's index and how many follow it. */
+  runs: number[];
+  /** Places sighted, whose outline is known, and places gone ashore on, which are seen whole. */
+  found: string[];
+  landed: string[];
 }
 
 export type InfoKind = 'unique' | 'boss' | 'level' | 'bad';
@@ -164,6 +210,8 @@ export type ServerMsg =
   | { type: 'tradeRequest'; id: string; name: string }
   /** Null when the trade has ended. */
   | { type: 'trade'; trade: TradeView | null }
+  | { type: 'voyage'; voyage: Voyage }
+  | { type: 'chart'; chart: ChartUpdate }
   | {
       type: 'boss';
       alive: boolean;

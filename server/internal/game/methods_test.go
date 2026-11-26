@@ -157,9 +157,11 @@ func TestRelaxedSpotsAreOutOfReach(t *testing.T) {
 func TestEveryNodeCanBeReached(t *testing.T) {
 	e := setup(t)
 	for _, n := range e.w.nodes {
-		s := n.Map.Spawn
-		path := e.w.finder.find(n.Map, s.X, s.Y, n.rect(), 1)
-		check(t, len(path) > 0, n.Def.ID, n.Map.ID, n.X, n.Y)
+		reached := false
+		for _, s := range walksFrom(n.Map) {
+			reached = reached || inReach(s.X, s.Y, n.rect(), 1) || len(e.w.finder.find(n.Map, s.X, s.Y, n.rect(), 1)) > 0
+		}
+		check(t, reached, n.Def.ID, n.Map.ID, n.X, n.Y)
 	}
 }
 

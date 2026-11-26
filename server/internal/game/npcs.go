@@ -98,7 +98,7 @@ func (w *World) countPlay() {
 func (w *World) visitSomeone() {
 	var ready []*Player
 	for _, p := range w.order {
-		busy := p.conn == nil || p.trade != nil || w.Tick-p.lastCombat < fightMemory || w.Tick-p.lastInput > geniePatience
+		busy := p.conn == nil || p.trade != nil || p.aboard() || w.Tick-p.lastCombat < fightMemory || w.Tick-p.lastInput > geniePatience
 		if !busy && p.C.PlayTicks-p.C.GenieAt >= genieInterval {
 			ready = append(ready, p)
 		}

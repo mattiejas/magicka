@@ -1,5 +1,6 @@
 // Mouse and keyboard.
 import { MAPS, type TilePos, walkable } from '@driftwake/shared';
+import { boardOption, helmKeyDown, helmKeyUp, isAboard, letGo, steer } from './helm';
 import { send } from './net/connection';
 import { state } from './net/state';
 import type { Scene } from './scene/scene';
@@ -48,7 +49,11 @@ function bindClicks(canvas: HTMLCanvasElement, scene: Scene) {
     if (event.button !== LEFT_BUTTON) return;
     closePanel();
     const { hits, tile } = scene.pick(event.clientX, event.clientY);
-    const action = firstAction(hits);
+    if (isAboard()) {
+      if (tile) steer(tile);
+      return;
+    }
+    const action = firstAction(hits) ?? boardOption(tile);
     if (action) action[1]();
     else walkTo(scene, tile);
   });
@@ -58,7 +63,10 @@ function bindClicks(canvas: HTMLCanvasElement, scene: Scene) {
     const place = { x: event.clientX, y: event.clientY };
     const playerOptions = (name: string, id: string) => playerMenu(name, id, place);
     const items = optionsForAll(hits, { send, playerOptions });
-    if (tile) items.push(['Walk here', () => walkTo(scene, tile)]);
+    const board = boardOption(tile);
+    if (board) items.unshift(board);
+    if (tile && isAboard()) items.unshift(['Steer here', () => steer(tile)]);
+    else if (tile) items.push(['Walk here', () => walkTo(scene, tile)]);
     showMenu(event.clientX, event.clientY, items);
   });
 }
@@ -66,9 +74,9 @@ function bindClicks(canvas: HTMLCanvasElement, scene: Scene) {
 function bindHover(canvas: HTMLCanvasElement, scene: Scene) {
   canvas.addEventListener('mousemove', event => {
     const { hits, tile } = scene.pick(event.clientX, event.clientY);
-    const action = firstAction(hits);
+    const action = isAboard() ? null : (firstAction(hits) ?? boardOption(tile));
     scene.showHover(action ? null : tile);
-    canvas.style.cursor = action ? 'pointer' : 'default';
+    canvas.style.cursor = isAboard() ? 'crosshair' : action ? 'pointer' : 'default';
     showTooltip(action?.[0] ?? '', event.clientX, event.clientY);
   });
   canvas.addEventListener('mouseleave', () => {
@@ -113,6 +121,10 @@ function bindKeys(scene: Scene): (dt: number) => void {
   const held = new Set<string>();
   addEventListener('keydown', event => {
     if (typing()) return;
+    if (helmKeyDown(event)) {
+      event.preventDefault();
+      return;
+    }
     held.add(event.key);
     if (event.key === 'Alt') {
       revealLabels = true;
@@ -129,10 +141,12 @@ function bindKeys(scene: Scene): (dt: number) => void {
     }
   });
   addEventListener('keyup', event => {
+    helmKeyUp(event);
     held.delete(event.key);
     if (event.key === 'Alt') revealLabels = false;
   });
   addEventListener('blur', () => {
+    letGo();
     held.clear();
     revealLabels = false;
   });

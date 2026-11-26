@@ -75,7 +75,7 @@ describe('death poses', () => {
 
 const monster = (id: string, x: number, y: number): Entity => ({ id, kind: 'monster', type: 'wolf', x, y });
 const noEffects = { work() {} } as unknown as Effects;
-const flatWorld = { heightAt: () => 0, centreOf: () => null } as never;
+const flatWorld = { heightAt: () => 0, centreOf: () => null, inSight: () => true } as never;
 
 describe('EntityLayer', () => {
   let scene: THREE.Scene;
@@ -88,7 +88,14 @@ describe('EntityLayer', () => {
   });
 
   const track = (entity: Entity) => {
-    state.entities.set(entity.id, { entity, from: [entity.x, entity.y], path: [], movedAt: 0 });
+    state.entities.set(entity.id, {
+      entity,
+      from: [entity.x, entity.y],
+      path: [],
+      movedAt: 0,
+      sailedAt: 0,
+      headingFrom: 0,
+    });
   };
 
   it('keeps a monster that died where it fell, until it has faded', () => {

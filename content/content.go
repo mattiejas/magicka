@@ -7,6 +7,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"slices"
+	"strconv"
 )
 
 //go:embed data/*.json
@@ -212,6 +213,16 @@ type Label struct {
 	X, Y int
 }
 
+// Place is a named piece of land on the sea. One that leads to a map of its own lies at that map's place in the
+// sea, with the map's corner at X, Y; a small island has its middle there.
+type Place struct {
+	ID, Name, Map string
+	X, Y          int
+}
+
+// Mooring is where a boat lies beside a dock, and which way it points, in degrees clockwise from north.
+type Mooring struct{ X, Y, Heading float64 }
+
 type Map struct {
 	ID, Name string
 	Size     int
@@ -228,8 +239,49 @@ type Map struct {
 	Passage                 *Passage
 	Methods                 bool // whether methods beyond the basic one are found here
 	Labels                  []Label
+	Places                  []Place
+	PlaceRows               []string // of each tile the place it belongs to, as its index + 1 in base 36, or 0
+	Seeds                   []Point  // tiles from which, besides the spawn, the land that can be walked on is found
+	Mooring                 *Mooring
 	Blocked                 []bool `json:"-"`
-	Reach                   []bool `json:"-"` // tiles that can be walked to from the spawn
+	Reach                   []bool `json:"-"` // tiles that can be walked to from the spawn and the seeds
+	placeOf                 []int  // index into Places, or -1
+}
+
+// IsWater reports whether a tile is open water, which a boat can sail on. Off the map is land.
+func (m *Map) IsWater(x, y int) bool {
+	return x >= 0 && y >= 0 && x < m.Size && y < m.Size && m.Rows[y][x] == '0'
+}
+
+// PlaceAt is the place a tile belongs to, or nil.
+func (m *Map) PlaceAt(x, y int) *Place {
+	if x < 0 || y < 0 || x >= m.Size || y >= m.Size || m.placeOf == nil || m.placeOf[y*m.Size+x] < 0 {
+		return nil
+	}
+	return &m.Places[m.placeOf[y*m.Size+x]]
+}
+
+// PlaceByID finds one of the map's places.
+func (m *Map) PlaceByID(id string) *Place {
+	for i := range m.Places {
+		if m.Places[i].ID == id {
+			return &m.Places[i]
+		}
+	}
+	return nil
+}
+
+func (m *Map) readPlaces() {
+	if m.PlaceRows == nil {
+		return
+	}
+	m.placeOf = make([]int, m.Size*m.Size)
+	for y, row := range m.PlaceRows {
+		for x := range row {
+			n, _ := strconv.ParseInt(row[x:x+1], 36, 32)
+			m.placeOf[y*m.Size+x] = int(n) - 1
+		}
+	}
 }
 
 func (m *Map) Walkable(x, y int) bool {
@@ -247,14 +299,16 @@ func (m *Map) CanStep(x, y, dx, dy int) bool {
 // steps are the directions of a step, straight ones first.
 var steps = [...]Point{{0, -1}, {1, 0}, {0, 1}, {-1, 0}, {1, -1}, {1, 1}, {-1, 1}, {-1, -1}}
 
-// markReach finds the tiles that can be walked to from the spawn.
+// markReach finds the tiles that can be walked to from the spawn and the seeds.
 func (m *Map) markReach() {
 	m.Reach = make([]bool, m.Size*m.Size)
-	if !m.Walkable(m.Spawn.X, m.Spawn.Y) {
-		return
+	var queue []Point
+	for _, at := range append([]Point{m.Spawn}, m.Seeds...) {
+		if m.Walkable(at.X, at.Y) && !m.Reach[at.Y*m.Size+at.X] {
+			m.Reach[at.Y*m.Size+at.X] = true
+			queue = append(queue, at)
+		}
 	}
-	m.Reach[m.Spawn.Y*m.Size+m.Spawn.X] = true
-	queue := []Point{m.Spawn}
 	for len(queue) > 0 {
 		at := queue[0]
 		queue = queue[1:]
@@ -419,6 +473,7 @@ func init() {
 			m.block(s.X, s.Y, 1)
 		}
 		m.markReach()
+		m.readPlaces()
 	}
 }
 

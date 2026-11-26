@@ -15,16 +15,27 @@ import {
   poseMonster,
   posePlayer,
 } from '../models';
-import { centreOf, isMoving, positionOf, state, type Track, tickNow, walkDirection } from '../net/state';
+import {
+  boatAt,
+  centreOf,
+  isMoving,
+  positionOf,
+  state,
+  type Track,
+  tickNow,
+  walkDirection,
+} from '../net/state';
 import { DyingFigures } from './dyingFigures';
 import type { Effects } from './effects';
 import { aimOf, Telegraph, telegraphKey } from './telegraphs';
-import type { WorldView } from './worldView';
+import { WATER_LEVEL, type WorldView } from './worldView';
 
 /** How long an attack swing is shown. */
 const ATTACK_MS = 550;
 const TURN_SPEED = 14;
 const DEFAULT_HEIGHT = 1.6;
+/** How high a sailor stands above the water, on the bottom of the boat. */
+const DECK_HEIGHT = 0.05;
 
 interface Figure {
   model: Model;
@@ -128,11 +139,22 @@ export class EntityLayer {
     const figure = this.figureFor(entity);
     const { root } = figure.model;
     const [x, z] = centreOf(track);
-    root.position.set(x, world.heightAt(x, z) + floatHeight(entity, now), z);
+    const boat = entity.boat?.aboard ? boatAt(track) : null;
+    root.position.set(
+      x,
+      boat ? WATER_LEVEL + DECK_HEIGHT : world.heightAt(x, z) + floatHeight(entity, now),
+      z,
+    );
+    root.visible = entity.id === state.me || world.inSight(x, z);
     if (entity.kind !== 'player' && entity.kind !== 'monster') return;
 
     const moving = isMoving(track);
-    const wanted = moving ? walkingAngle(track) : targetAngle(entity, root.position, world);
+    // A sailor faces the bow. A heading is clockwise from north, a figure's facing from south.
+    const wanted = boat
+      ? Math.PI - (boat.heading * Math.PI) / 180
+      : moving
+        ? walkingAngle(track)
+        : targetAngle(entity, root.position, world);
     if (wanted !== null) figure.facing = turnTowards(figure.facing, wanted, dt);
     root.rotation.y = figure.facing;
 

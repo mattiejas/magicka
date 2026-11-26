@@ -1,11 +1,13 @@
 // Everything the client knows about the world. Only connection.ts writes to it.
 import {
+  type ChartUpdate,
   type Entity,
   MONSTERS,
   type SelfState,
   TICK_MS,
   type TilePos,
   type TradeView,
+  type Voyage,
 } from '@driftwake/shared';
 
 /** An entity together with the walk it is currently showing. */
@@ -14,6 +16,9 @@ export interface Track {
   from: TilePos;
   path: TilePos[];
   movedAt: number;
+  /** When the boat's latest trail arrived, and the heading it had before. */
+  sailedAt: number;
+  headingFrom: number;
 }
 
 export const state = {
@@ -28,6 +33,10 @@ export const state = {
   feesTaken: null as number | null,
   trade: null as TradeView | null,
   connected: false,
+  /** While aboard: the boat's speed, course and arc. */
+  voyage: null as Voyage | null,
+  /** What the player has seen of the sea, kept by charts.ts. */
+  chart: null as ChartUpdate | null,
 };
 
 export const myTrack = () => state.entities.get(state.me);
@@ -43,8 +52,33 @@ function walkProgress(track: Track) {
   return { start, end: track.path[step], fraction: Math.min(1, progress - step) };
 }
 
-/** Tile position, interpolated between ticks. */
+/** Where a boat is between ticks, along the points it passed in the latest one, and its heading in degrees. */
+export function boatAt(track: Track): { x: number; y: number; heading: number } | null {
+  const { boat } = track.entity;
+  if (!boat) return null;
+  const fraction = Math.min(1, (performance.now() - track.sailedAt) / TICK_MS);
+  const turned = ((((boat.heading - track.headingFrom) % 360) + 540) % 360) - 180;
+  const heading = track.headingFrom + turned * fraction;
+  const trail = boat.trail;
+  if (!trail || trail.length < 2) return { x: boat.x, y: boat.y, heading };
+  const along = fraction * (trail.length - 1);
+  const step = Math.min(trail.length - 2, Math.floor(along));
+  const [ax, ay] = trail[step];
+  const [bx, by] = trail[step + 1];
+  const u = along - step;
+  return { x: ax + (bx - ax) * u, y: ay + (by - ay) * u, heading };
+}
+
+/** How far towards the stern from the middle of the boat its sailor stands, at the helm. */
+const HELM_OFFSET = 0.75;
+
+/** Tile position, interpolated between ticks. A sailor is where their boat is. */
 export function positionOf(track: Track): TilePos {
+  const boat = track.entity.boat?.aboard && boatAt(track);
+  if (boat) {
+    const radians = (boat.heading * Math.PI) / 180;
+    return [boat.x - Math.sin(radians) * HELM_OFFSET - 0.5, boat.y + Math.cos(radians) * HELM_OFFSET - 0.5];
+  }
   if (!track.path.length) return [track.entity.x, track.entity.y];
   const { start, end, fraction } = walkProgress(track);
   return [start[0] + (end[0] - start[0]) * fraction, start[1] + (end[1] - start[1]) * fraction];
@@ -60,7 +94,9 @@ export function walkDirection(track: Track): TilePos | null {
 /** A little longer than a tick, so a steady walk does not flicker between snapshots. */
 const WALK_GRACE_MS = 40;
 export const isMoving = (track: Track) =>
-  track.path.length > 0 && performance.now() - track.movedAt < TICK_MS + WALK_GRACE_MS;
+  !track.entity.boat?.aboard &&
+  track.path.length > 0 &&
+  performance.now() - track.movedAt < TICK_MS + WALK_GRACE_MS;
 
 /** Width of an entity in tiles. */
 export const sizeOf = (entity: Entity) => (entity.kind === 'monster' ? MONSTERS[entity.type!].size : 1);

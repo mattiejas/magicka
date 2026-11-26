@@ -24,8 +24,9 @@ export function build(): Record<string, string> {
     Array.from({ length: size }, (_, y) =>
       Array.from(cells.subarray(y * size, (y + 1) * size), digit).join(''),
     );
-  const maps = Object.values(MAPS).map(({ tiles, heights, walls, blocked: _b, ...m }) => ({
+  const maps = Object.values(MAPS).map(({ tiles, heights, walls, blocked: _b, placeOf, ...m }) => ({
     ...m,
+    ...(placeOf.some(Boolean) && { placeRows: rowsOf(placeOf, m.size, n => n.toString(36)) }),
     rows: rowsOf(tiles, m.size),
     ...(heights.some(Boolean) && { heights: rowsOf(heights, m.size, n => n.toString(36)) }),
     ...(walls.some(Boolean) && { walls: rowsOf(walls, m.size) }),

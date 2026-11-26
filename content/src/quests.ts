@@ -43,7 +43,7 @@ export const QUESTS: Quest[] = [
     id: 'stranded',
     name: 'Stranded',
     offer: 'My ship broke on these rocks, as yours did. Help me build one boat, and you may have it.',
-    thanks: 'She floats! Take this for the crossing.',
+    thanks: 'She floats! Take this for the voyage.',
     steps: [
       { text: 'Mine copper ore in the crater north-east of camp.', need: { xp: 'mining' }, place: CRATER },
       {

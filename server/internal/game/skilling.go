@@ -195,7 +195,7 @@ func (w *World) buildBoat(p *Player) {
 	}
 	if done {
 		p.C.BoatDone = true
-		w.info(p, "Your boat is finished. You can sail to the mainland.", pb.InfoKind_INFO_KIND_LEVEL)
+		w.info(p, "Your boat is finished. Use the dock to set sail.", pb.InfoKind_INFO_KIND_LEVEL)
 	}
 	w.save(p)
 }

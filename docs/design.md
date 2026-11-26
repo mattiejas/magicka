@@ -52,6 +52,14 @@ Terms are defined in [GLOSSARY.md](../GLOSSARY.md). Numbers are starting points 
 - First dungeon: an old mine under the mithril shelf with mithril, cobalt and a golem boss. Dungeons are shared.
 - After 50: more bosses and dungeons, the economy, and a collection log. The cap stays at 50.
 
+## Sea
+
+- The finished boat sails on a sea map that holds the island and the mainland as they are, and small islands to find. Prototyped in #109.
+- Handling: sail settings backing, stopped, half and full sail aim at -0.8, 0, 1.6 and 3 tiles a tick, eased at +0.35 and -0.45 a tick; a turning radius of 3 tiles, at most 40° a tick. Click sets a course the helm steers for, with no pathfinding; A and D steer by hand. Land stops the boat; above 1.8 tiles a tick it is a hard grounding.
+- Going ashore anywhere, at no more than 0.6 tiles a tick and within 1.6 tiles of land. The boat stays moored where it was left; the dock brings it round.
+- A lookout sees 10 tiles. Each player's chart remembers what they saw; sighting a place puts its outline on it.
+- No wind, currents or crew for now.
+
 ## Safety before going public
 
 - Block and report players; mute, kick and ban with a log of moderator actions; offensive names refused.

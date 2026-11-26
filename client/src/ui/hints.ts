@@ -63,8 +63,8 @@ const ON_THE_MAINLAND: Hint[] = [
 ];
 const ON_THE_ISLAND: Hint[] = [
   {
-    applies: self => self.boatDone,
-    text: 'Your boat is ready. Speak to the shipwright to sail to the mainland.',
+    applies: self => self.boatDone && !self.boatAway,
+    text: 'Your boat is ready. Speak to the shipwright at the dock to set sail. The mainland lies to the north.',
   },
   {
     applies: self => !ownsTool(self, 'pickaxe') || !ownsTool(self, 'axe'),
@@ -111,7 +111,27 @@ function questHint({ quests, map }: SelfState): string | undefined {
   }
 }
 
-const HINTS: Record<MapId, Hint[]> = { island: ON_THE_ISLAND, mainland: ON_THE_MAINLAND, mine: [] };
+const AT_SEA: Hint[] = [
+  {
+    applies: () => !!state.voyage && myTrack()?.entity.boat?.sail === 1 && state.voyage.speed === 0,
+    text: 'Raise a sail with W, then click the sea to steer. The boat turns wide and carries way, so slow down early.',
+  },
+  {
+    applies: () => !!state.voyage?.shoreNear && !state.voyage.slowEnough,
+    text: 'Take in sail to go ashore: the boat must be nearly stopped beside the land.',
+  },
+  {
+    applies: () => !state.voyage && !!myTrack()?.entity.boat,
+    text: 'Click your boat to board it again.',
+  },
+];
+
+const HINTS: Record<MapId, Hint[]> = {
+  island: ON_THE_ISLAND,
+  mainland: ON_THE_MAINLAND,
+  mine: [],
+  sea: AT_SEA,
+};
 
 export function updateHint() {
   const { self } = state;

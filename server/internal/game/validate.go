@@ -42,6 +42,12 @@ func Decode(b []byte) (*pb.ClientMessage, bool) {
 		ok = len(m.ResumeToken) == 64
 	case *pb.ClientMessage_Move:
 		ok = m.Move.GetX() < 256 && m.Move.GetY() < 256
+	case *pb.ClientMessage_SetSail:
+		ok = m.SetSail <= sailFull
+	case *pb.ClientMessage_Steer:
+		ok = m.Steer.GetX() < 256 && m.Steer.GetY() < 256
+	case *pb.ClientMessage_Helm:
+		ok = m.Helm >= -1 && m.Helm <= 1
 	case *pb.ClientMessage_PickupAll:
 		ok = m.PickupAll&kindMask == kindDrop
 	case *pb.ClientMessage_Craft:

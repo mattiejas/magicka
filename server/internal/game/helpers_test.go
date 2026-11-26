@@ -61,6 +61,9 @@ func (c *client) SendRaw(b []byte) {
 	}
 	for _, o := range c.ents { // Full marks entities that are new this tick, and steps never carry over
 		o.Full, o.Via = false, nil
+		if o.Boat != nil {
+			o.Boat.Trail = nil
+		}
 	}
 	for _, id := range s.Gone {
 		if c.ents[id] == nil {
@@ -77,8 +80,8 @@ func (c *client) SendRaw(b []byte) {
 		if o == nil {
 			panic(fmt.Sprintf("delta for unknown entity %d", e.Id))
 		}
-		o.Gear, o.Look, o.Boss = orGear(e.Gear, o.Gear), orLook(e.Look, o.Look), orBoss(e.Boss, o.Boss)
-		e.Gear, e.Look, e.Boss = nil, nil, nil
+		o.Gear, o.Look, o.Boss, o.Boat = orGear(e.Gear, o.Gear), orLook(e.Look, o.Look), orBoss(e.Boss, o.Boss), orBoat(e.Boat, o.Boat)
+		e.Gear, e.Look, e.Boss, e.Boat = nil, nil, nil, nil
 		proto.Merge(o, e)
 	}
 }
@@ -91,6 +94,13 @@ func orGear(a, b *pb.Gear) *pb.Gear {
 }
 
 func orLook(a, b *pb.Look) *pb.Look {
+	if a != nil {
+		return a
+	}
+	return b
+}
+
+func orBoat(a, b *pb.BoatView) *pb.BoatView {
 	if a != nil {
 		return a
 	}

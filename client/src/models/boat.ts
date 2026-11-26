@@ -7,11 +7,21 @@ const WOOD = '#b08a5a';
 const COPPER = '#c98554';
 const PLANK_ROWS = 4;
 
-/** `progress` gives how much of a part is delivered, from 0 to 1. */
-export function boatGeo(progress: (part: string) => number): Geometry {
+/** The sail settings, from going astern to full sail, as the server numbers them. */
+export const SAIL_SETTINGS = ['Backing', 'Stopped', 'Half sail', 'Full sail'] as const;
+const [BACKING, STOPPED, HALF] = [0, 1, 2];
+
+/**
+ * `progress` gives how much of a part is delivered, from 0 to 1. With a sail setting, the boat is finished and
+ * shows it: no cloth when stopped, half of it at half sail, and a sail blown back when backing.
+ */
+export function boatGeo(progress: (part: string) => number, setting?: number): Geometry {
   const parts: Geometry[] = [keel(), ...hull(progress('hull'))];
   if (progress('fittings') >= 1) parts.push(...fittings());
-  if (progress('sail') > 0) parts.push(...sail(progress('sail')));
+  // Under way the wind fills the sail towards the bow, which is at -z; backed, towards the stern.
+  if (setting !== undefined)
+    parts.push(...sail(setting === HALF ? 0.5 : 1, setting === STOPPED, setting === BACKING ? 0.22 : -0.22));
+  else if (progress('sail') > 0) parts.push(...sail(progress('sail')));
   if (progress('wheel') >= 1) parts.push(...helm());
   return merge(parts);
 }
@@ -59,19 +69,19 @@ const fittings = () => [
   part(torus(0.1, 0.025), COPPER, [0, 0.35, -1.6]),
 ];
 
-/** The mast with a billowing sail that unrolls as cloth is delivered. */
-function sail(done: number): Geometry[] {
+/** The mast with a billowing sail that unrolls as cloth is delivered. A furled sail is only a roll on the yard. */
+function sail(done: number, furled = false, belly = 0.22): Geometry[] {
+  const spars = [
+    part(cyl(0.04, 0.06, 2.5), shade(WOOD, 0.8), [0, 1.2, -0.1]),
+    part(cyl(0.03, 0.03, 1.5), shade(WOOD, 0.8), [0, 2.25, -0.04], [0, 0, Math.PI / 2]),
+  ];
+  if (furled) return [...spars, part(cyl(0.07, 0.07, 1.3), '#ddd4bb', [0, 2.17, -0.04], [0, 0, Math.PI / 2])];
   const front = new THREE.PlaneGeometry(1.35, 1.4 * done, 12, 12);
-  billow(front, (x, y) => 0.22 * (1 - (x / 0.7) ** 2) * (1 - (y / (0.75 * done)) ** 2));
+  billow(front, (x, y) => belly * (1 - (x / 0.7) ** 2) * (1 - (y / (0.75 * done)) ** 2));
   const back = front.clone().rotateY(Math.PI);
   billow(back, (_x, _y, z) => -z - 0.012);
   const height = 2.2 - 0.7 * done;
-  return [
-    part(cyl(0.04, 0.06, 2.5), shade(WOOD, 0.8), [0, 1.2, -0.1]),
-    part(cyl(0.03, 0.03, 1.5), shade(WOOD, 0.8), [0, 2.25, -0.04], [0, 0, Math.PI / 2]),
-    part(front, '#e6dec6', [0, height, 0]),
-    part(back, '#d8cfb4', [0, height, 0]),
-  ];
+  return [...spars, part(front, '#e6dec6', [0, height, 0]), part(back, '#d8cfb4', [0, height, 0])];
 }
 
 function billow(cloth: THREE.BufferGeometry, depth: (x: number, y: number, z: number) => number) {

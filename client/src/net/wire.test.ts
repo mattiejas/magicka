@@ -1,11 +1,11 @@
-import { clearField, fromBinary } from '@bufbuild/protobuf';
+import { clearField, create, fromBinary, toBinary } from '@bufbuild/protobuf';
 import type { Entity } from '@driftwake/shared';
 import { describe, expect, it, vi } from 'vitest';
-import { EntitySchema, type Entity as PbEntity } from '../pb/driftwake/v1/game_pb';
+import { EntitySchema, type Entity as PbEntity, ServerMessageSchema } from '../pb/driftwake/v1/game_pb';
 import recorded from './entities.recorded.json';
 
 vi.stubGlobal('location', { search: '' }); // wire.ts reads it when it loads, to see whether to log messages
-const { clientId, mergeEntity } = await import('./wire');
+const { clientId, decode, mergeEntity } = await import('./wire');
 
 const received = (bytes: string): PbEntity => fromBinary(EntitySchema, Buffer.from(bytes, 'hex'));
 
@@ -120,6 +120,30 @@ describe('mergeEntity, with bytes recorded from the server', () => {
     expect(after('drop')).toEqual(drop);
     expect(after('drop', 'drop stays longer')).toEqual({ ...drop, until: 600 });
   });
+  it('follows boats, whose trail never carries over', () => {
+    const sam = { id: '65', kind: 'player', x: 30, y: 40, name: 'Sam', hp: 10, maxHp: 10, level: 1 };
+    const moored = { x: 31.5, y: 41.25, heading: 90, sail: 1, aboard: false };
+    const gear = [null, null, null, null, null];
+    const look = expect.any(Object);
+    expect(after('player with a moored boat')).toEqual({ ...sam, gear, look, boat: moored });
+    const sailing = { x: 32, y: 41.5, heading: 45, sail: 2, aboard: true };
+    expect(after('player with a moored boat', 'player sails')).toMatchObject({
+      boat: {
+        ...sailing,
+        trail: [
+          [31.5, 41.25],
+          [32, 41.5],
+        ],
+      },
+    });
+    // A later delta without a boat keeps the boat, and drops its trail.
+    expect(after('player with a moored boat', 'player sails', 'player stops')).toMatchObject({
+      boat: sailing,
+    });
+    expect(
+      after('player with a moored boat', 'player sails', "player's boat goes away")?.boat,
+    ).toBeUndefined();
+  });
   it('never changes the object it was given', () => {
     const known = Object.freeze(after('plain player'));
     expect(mergeEntity(known, message('player becomes busy'))).not.toBe(known);
@@ -134,5 +158,44 @@ describe('mergeEntity, with bytes recorded from the server', () => {
       return JSON.stringify(result) !== JSON.stringify(mergeEntity(known, without));
     });
     expect(matters).toBe(true);
+  });
+});
+
+describe('sailing messages', () => {
+  const sent = (msg: object) =>
+    decode(
+      toBinary(ServerMessageSchema, create(ServerMessageSchema, { msg } as never)).buffer as ArrayBuffer,
+    );
+  it('reads a voyage', () => {
+    const value = {
+      aboard: true,
+      speed: 1.5,
+      hasCourse: true,
+      courseX: 20,
+      courseY: 30,
+      ahead: [1, 2, 3, 4],
+      shoreNear: true,
+    };
+    expect(sent({ case: 'voyage', value })).toEqual({
+      type: 'voyage',
+      voyage: {
+        aboard: true,
+        speed: 1.5,
+        course: [20, 30],
+        ahead: [
+          [1, 2],
+          [3, 4],
+        ],
+        shoreNear: true,
+        slowEnough: false,
+      },
+    });
+    expect(sent({ case: 'voyage', value: { aboard: true } })).toMatchObject({
+      voyage: { course: null, ahead: [] },
+    });
+  });
+  it('reads a chart', () => {
+    const value = { full: true, seen: new Uint8Array([1, 128]), runs: [5, 2], found: ['island'], landed: [] };
+    expect(sent({ case: 'chart', value })).toEqual({ type: 'chart', chart: value });
   });
 });

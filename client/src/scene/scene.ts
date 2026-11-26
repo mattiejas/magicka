@@ -4,6 +4,7 @@ import * as THREE from 'three';
 import { centreOf, isMoving, myTrack, positionOf, state } from '../net/state';
 import { PROFILE, type Quality } from '../quality';
 import { onSettings, settings } from '../settings';
+import { Boats } from './boats';
 import { CameraRig } from './cameraRig';
 import { Effects, PROJECTILE_MS } from './effects';
 import { EntityLayer } from './entityLayer';
@@ -26,6 +27,7 @@ export class Scene {
   private world: WorldView | null = null;
   private effects = new Effects(this.scene, (x, z) => this.groundAt(x, z));
   private entities = new EntityLayer(this.scene, this.effects);
+  private boats = new Boats();
   private overlay: Overlay;
   private hover = new TileMarker('#f0ead8', 0.55, 0.025);
   private destination = new TileMarker('#8fd0c0', 0.8, 0.03);
@@ -36,7 +38,7 @@ export class Scene {
 
   constructor(canvas: HTMLCanvasElement, overlayRoot: HTMLElement) {
     this.renderer = createRenderer(canvas);
-    this.scene.add(this.sky, this.sun, this.sun.target);
+    this.scene.add(this.sky, this.sun, this.sun.target, this.boats.group);
     this.scene.add(this.hover.mesh, this.destination.mesh, this.ownTile.mesh);
     this.overlay = new Overlay(overlayRoot, this.project, id => this.entities.heightOf(id));
     this.applyQuality(this.quality);
@@ -100,7 +102,8 @@ export class Scene {
     return {
       x: ((point.x + 1) / 2) * innerWidth,
       y: ((1 - point.y) / 2) * innerHeight,
-      visible: point.z < 1,
+      // At sea nothing is told beyond the lookout, so neither are names over it.
+      visible: point.z < 1 && (this.world?.inSight(x, z) ?? true),
     };
   };
 
@@ -130,8 +133,11 @@ export class Scene {
   private update(dt: number, now: number) {
     const self = state.self!;
     const world = this.worldFor(self.map);
-    world.update(now, reportedNodes(), self, myTrack()?.entity);
+    const track = myTrack();
+    const [x, y] = track ? positionOf(track) : [0, 0];
+    world.update(now, reportedNodes(), self, track?.entity, [x + 0.5, y + 0.5], state.chart);
     this.entities.update(world, now, dt);
+    this.boats.update(now, (bx, by) => world.inSight(bx, by));
     this.followPlayer(dt);
     this.effects.update(now);
   }
@@ -144,6 +150,7 @@ export class Scene {
       this.world.dispose();
     }
     this.entities.clear();
+    this.boats.clear();
     this.world = new WorldView(MAPS[id], PROFILE[this.quality].groundDetail);
     this.scene.add(this.world.group);
     this.setMood(this.world.map.cave);
@@ -165,7 +172,8 @@ export class Scene {
       const tile: TilePos = [track.entity.x, track.entity.y];
       const [x, y] = positionOf(track);
       this.rig.follow(x + 0.5, y + 0.5, this.groundAt(x + 0.5, y + 0.5), dt);
-      this.ownTile.show(tile, this.groundAt);
+      if (track.entity.boat?.aboard) this.ownTile.hide();
+      else this.ownTile.show(tile, this.groundAt);
       if (this.destination.isAt(tile) && !isMoving(track)) this.destination.hide();
     }
     this.rig.update(dt, this.groundAt);
