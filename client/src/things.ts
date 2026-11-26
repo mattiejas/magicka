@@ -39,6 +39,8 @@ const STATION_NAMES: Record<StationType, string> = {
   mine: 'Old mine',
   dock: 'Shipwright',
 };
+/** Stations that are a person, so players talk to them rather than use them. */
+const PEOPLE = new Set<StationType>(['reaper', 'shop', 'dock']);
 
 export function nameOf(thing: Thing): string {
   if (thing.kind === 'node') return NODES[thing.type].name;
@@ -80,10 +82,15 @@ function mainDeed(thing: Thing): Deed | null {
     case 'node':
       return [gatherVerb(thing.id, thing.type), { type: 'gather', id: thing.id }];
     case 'station':
-      return [thing.type === 'mine' ? 'Enter' : 'Use', { type: 'station', id: thing.id }];
+      return [stationVerb(thing.type), { type: 'station', id: thing.id }];
     case 'entity':
       return entityDeed(thing.entity);
   }
+}
+
+function stationVerb(type: StationType): string {
+  if (type === 'mine') return 'Enter';
+  return PEOPLE.has(type) ? 'Talk to' : 'Use';
 }
 
 function gatherVerb(id: string, type: string): string {

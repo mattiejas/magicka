@@ -1,4 +1,4 @@
-import { type ClientMsg, type Entity, ITEMS, MONSTERS, NODES } from '@driftwake/shared';
+import { type ClientMsg, type Entity, ITEMS, MONSTERS, NODES, type StationType } from '@driftwake/shared';
 import { beforeEach, describe, expect, it } from 'vitest';
 import { state } from './net/state';
 import { mainAction, nameOf, type Option, optionsFor, type Thing } from './things';
@@ -80,6 +80,15 @@ describe('stations', () => {
   it('food is cooked at a cooking fire', () => {
     const fire: Thing = { kind: 'station', id: 's2', type: 'fire', map: 'island' };
     expectAction(fire, 'Use Cooking fire', { type: 'station', id: 's2' });
+  });
+
+  it.each<[StationType, string]>([
+    ['dock', 'Talk to Shipwright'],
+    ['reaper', 'Talk to Reaper'],
+    ['shop', 'Talk to Shopkeeper'],
+  ])('a person at a station is talked to: %s', (type, label) => {
+    const person: Thing = { kind: 'station', id: 's3', type, map: 'island' };
+    expectAction(person, label, { type: 'station', id: 's3' });
   });
 
   it('a mine is entered, and is the way out when in a cave', () => {
