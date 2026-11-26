@@ -11,6 +11,7 @@ func (w *World) Step() {
 	}
 	for _, p := range w.order {
 		w.actPlayer(p)
+		w.lookOut(p)
 	}
 	for _, m := range w.monsters {
 		w.actMonster(m)

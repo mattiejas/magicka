@@ -73,6 +73,7 @@ type Char struct {
 	// The fight back setting is off. Stored the other way round, so that every character starts with it on.
 	NoFightBack bool    `json:"noFightBack,omitempty"`
 	Afloat      *Afloat `json:"afloat,omitempty"`
+	Chart       *Chart  `json:"chart,omitempty"`
 }
 
 type actionType int
@@ -144,6 +145,11 @@ type Player struct {
 	helm       int   // -1 or 1 while steering by hand
 	trail      []Vec // where the boat went this tick
 	toldAboard bool  // the client was last told it is aboard
+
+	lookedFrom    Point // the tile the chart was last looked at from
+	newlySeen     []int // tiles of the sea seen since the client was last told
+	placesChanged bool  // places sighted or gone ashore on since then
+	chartTold     bool  // the client has the whole chart
 }
 
 func (p *Player) at() Point { return Point{X: p.C.X, Y: p.C.Y} }

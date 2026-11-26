@@ -95,7 +95,7 @@ func (w *World) Online() int {
 func (p *Player) attach(conn Conn) {
 	p.conn, p.leftAt = conn, connected
 	p.known, p.knownMap = map[uint32]int{}, ""
-	p.told = nil
+	p.told, p.chartTold = nil, false
 }
 
 // logOutIdle disconnects players who have not done anything for a long time.

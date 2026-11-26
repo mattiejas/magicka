@@ -132,6 +132,8 @@ func (w *World) goAshore(p *Player) {
 		return
 	}
 	p.C.Afloat = &Afloat{Map: mapID, X: moored.X, Y: moored.Y, Heading: b.Heading}
+	p.C.chart().land(place.ID)
+	p.placesChanged = true
 	w.arrive(p, mapID, at.X, at.Y)
 	w.tell(p, "You go ashore on "+place.Name+".")
 	w.save(p)

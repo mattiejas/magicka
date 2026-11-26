@@ -244,6 +244,7 @@ func (w *World) sendSnapshots() {
 		}
 		w.sendSelf(p)
 		w.sendVoyage(p)
+		w.sendChart(p)
 		p.conn.SendRaw(w.snapshotFor(p, visible[w.mapOf(p)], events))
 		if w.Tick%bossBarInterval == 0 {
 			w.sendBossStatus(p)
