@@ -1,18 +1,19 @@
 // Names above items on the ground: which to show, where they sit, and how they are drawn.
-import { type Entity, ITEMS, TICK_MS } from '@driftwake/shared';
+import { type Entity, ITEMS } from '@driftwake/shared';
 import { revealAllLabels } from '../input';
 import { send } from '../net/connection';
 import { myTrack, positionOf, state, tickNow } from '../net/state';
 import { settings } from '../settings';
 import { mainAction, optionsFor, type Thing } from '../things';
+import { takeIconUrl } from '../ui/icons/take';
 import { playerMenu } from '../ui/players';
 import { closeMenu, hideTooltip, showMenu, showTooltip } from '../ui/popups';
+import { pileName, type Timer, timerFor } from './dropTimer';
 import type { Project } from './overlay';
 
 const LABEL_HEIGHT = 0.55;
 /** Kinds of items named on one tile; the rest is only counted. */
 const MAX_LINES = 5;
-const HURRY_SECONDS = 15;
 const GAP = 2;
 
 interface Pile {
@@ -25,7 +26,8 @@ interface Pile {
 
 interface Line {
   name: string;
-  time: string;
+  /** Absent for the "and N more" row. */
+  timer?: Timer;
   className: string;
   /** Drop to take; absent for the "and N more" row. */
   id?: string;
@@ -155,36 +157,17 @@ function filterPiles(all: Pile[]): Pile[] {
 function linesFor(all: Pile[]): Line[] {
   const lines = all.slice(0, MAX_LINES).map(pile => {
     const { name, unique } = ITEMS[pile.item];
-    const { time, hurry } = timerFor(pile);
+    const timer = timerFor(!!unique, pile.until, pile.publicAt, tickNow());
     return {
-      name: pile.qty > 1 ? `${name} (${pile.qty.toLocaleString('en')})` : name,
-      time,
-      className: [unique && 'unique', hurry && 'hurry'].filter(Boolean).join(' '),
+      name: pileName(name, pile.qty),
+      timer,
+      className: [unique && 'unique', timer.hurry && 'hurry'].filter(Boolean).join(' '),
       id: pile.id,
     };
   });
   const hidden = all.length - lines.length;
-  return hidden ? [...lines, { name: `and ${hidden} more`, time: '', className: '' }] : lines;
+  return hidden ? [...lines, { name: `and ${hidden} more`, className: '' }] : lines;
 }
-
-function timerFor({ item, until, publicAt }: Pile): { time: string; hurry: boolean } {
-  const now = tickNow();
-  if (ITEMS[item].unique && publicAt === 0) {
-    const seconds = secondsLeft(until, now);
-    return { time: `to the reaper in ${formatTime(seconds)}`, hurry: seconds <= HURRY_SECONDS };
-  }
-  if (publicAt === 0) return { time: 'private', hurry: false };
-  if (publicAt > now) {
-    const seconds = secondsLeft(publicAt, now);
-    return { time: `public in ${formatTime(seconds)}`, hurry: seconds <= HURRY_SECONDS };
-  }
-  const seconds = secondsLeft(until, now);
-  return { time: formatTime(seconds), hurry: seconds <= HURRY_SECONDS };
-}
-
-const secondsLeft = (tick: number, now: number) => Math.max(0, Math.ceil(((tick - now) * TICK_MS) / 1000));
-const formatTime = (seconds: number) =>
-  `${Math.floor(seconds / 60)}:${String(seconds % 60).padStart(2, '0')}`;
 
 /** Nearest labels first; push later ones up in screen space until they are free. Ties break by tile. */
 function placeLabels(placements: Placement[]) {
@@ -217,10 +200,9 @@ function overlaps(a: Placement, b: Placement): boolean {
 
 function drawLine(line: Line): HTMLElement {
   const row = document.createElement('div');
-  const timer = document.createElement('i');
   row.className = line.className;
-  timer.textContent = line.time;
-  row.append(line.name, timer);
+  row.append(line.name);
+  if (line.timer) row.append(drawTimer(line.timer));
   if (!line.id) return row;
   row.classList.add('take');
   const thingOf = (): Thing | null => {
@@ -252,4 +234,19 @@ function drawLine(line: Line): HTMLElement {
   });
   row.addEventListener('mouseleave', () => hideTooltip());
   return row;
+}
+
+/** The icon of who may take the pile, then the time left. Hovering the icon says what it means. */
+function drawTimer({ icon, meaning, time }: Timer): HTMLElement {
+  const timer = document.createElement('i');
+  const image = document.createElement('img');
+  image.src = takeIconUrl(icon);
+  image.alt = meaning;
+  image.draggable = false;
+  image.addEventListener('mousemove', event => {
+    event.stopPropagation();
+    showTooltip(meaning, event.clientX, event.clientY);
+  });
+  timer.append(image, time);
+  return timer;
 }
