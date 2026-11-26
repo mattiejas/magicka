@@ -31,18 +31,19 @@ func pbStacks(list []*Stack) (out []*pb.Stack) {
 func (w *World) self(p *Player) *pb.Self {
 	c, l := p.C, p.look()
 	s := &pb.Self{
-		Id:       p.ID,
-		Name:     p.Name,
-		Map:      pbMap(c.Map),
-		Xp:       map[string]uint32{},
-		Boat:     map[string]uint32{},
-		BoatDone: c.BoatDone,
-		Bank:     pbStacks(c.Bank),
-		Blocked:  slices.Clone(c.Blocked), // which is changed in place
-		Quests:   map[string]uint32{},
-		Found:    map[string]uint32{},
-		Kills:    map[string]uint32{},
-		Look:     &pb.Look{Cut: uint32(l.Cut), Color: uint32(l.Color)},
+		Id:        p.ID,
+		Name:      p.Name,
+		Map:       pbMap(c.Map),
+		Xp:        map[string]uint32{},
+		Boat:      map[string]uint32{},
+		BoatDone:  c.BoatDone,
+		Bank:      pbStacks(c.Bank),
+		Blocked:   slices.Clone(c.Blocked), // which is changed in place
+		Quests:    map[string]uint32{},
+		Found:     map[string]uint32{},
+		Kills:     map[string]uint32{},
+		Look:      &pb.Look{Cut: uint32(l.Cut), Color: uint32(l.Color)},
+		FightBack: !c.NoFightBack,
 	}
 	ready, burns := p.onFire()
 	s.FireReady, s.FireBurns = uint32(ready), uint32(burns)
@@ -87,7 +88,7 @@ func (p *Player) isCurrent(s *pb.Self) bool {
 		reaper = c.Grave.Items
 	}
 	ready, burns := p.onFire()
-	return s.Map == pbMap(c.Map) && s.BoatDone == c.BoatDone &&
+	return s.Map == pbMap(c.Map) && s.BoatDone == c.BoatDone && s.FightBack == !c.NoFightBack &&
 		int(s.FireReady) == ready && int(s.FireBurns) == burns &&
 		int(s.Look.Cut) == l.Cut && int(s.Look.Color) == l.Color &&
 		sameCounts(s.Xp, c.XP) && sameCounts(s.Boat, c.Boat) && sameCounts(s.Quests, c.Quests) &&

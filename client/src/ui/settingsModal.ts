@@ -123,6 +123,26 @@ function scaleRow(): { row: HTMLElement; stop: () => void } {
   return { row, stop: onUiScale(showNote) };
 }
 
+/** Kept with the character on the server, unlike the toggles above, which this browser keeps. */
+function fightBackRow(): HTMLElement {
+  const checkbox = h('input', {
+    type: 'checkbox',
+    checked: state.self?.fightBack ?? true,
+    onchange: () => send({ type: 'fightBack', on: checkbox.checked }),
+  }) as HTMLInputElement;
+  return h(
+    'label',
+    { class: 'setting' },
+    h(
+      'span',
+      {},
+      'Fight back',
+      h('small', {}, 'When a monster hits you while you stand still or gather or make things, attack it.'),
+    ),
+    checkbox,
+  );
+}
+
 function passwordField(label: string, autocomplete: string): HTMLInputElement {
   return h('input', {
     type: 'password',
@@ -262,6 +282,7 @@ export function openSettings() {
         scale.row,
         qualityRow(),
         ...labelRows(),
+        fightBackRow(),
         ...TOGGLES.map(toggleRow),
         ...passwordSection(),
         ...blockedPlayers(),

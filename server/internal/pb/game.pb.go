@@ -459,6 +459,7 @@ type ClientMessage struct {
 	//	*ClientMessage_UseLamp
 	//	*ClientMessage_ChangePassword
 	//	*ClientMessage_TakeOff
+	//	*ClientMessage_FightBack
 	Msg           isClientMessage_Msg `protobuf_oneof:"msg"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
@@ -807,6 +808,15 @@ func (x *ClientMessage) GetTakeOff() *Empty {
 	return nil
 }
 
+func (x *ClientMessage) GetFightBack() bool {
+	if x != nil {
+		if x, ok := x.Msg.(*ClientMessage_FightBack); ok {
+			return x.FightBack
+		}
+	}
+	return false
+}
+
 type isClientMessage_Msg interface {
 	isClientMessage_Msg()
 }
@@ -950,6 +960,11 @@ type ClientMessage_TakeOff struct {
 	TakeOff *Empty `protobuf:"bytes,34,opt,name=take_off,json=takeOff,proto3,oneof"`
 }
 
+type ClientMessage_FightBack struct {
+	// Whether to attack whoever hits you while idle or skilling.
+	FightBack bool `protobuf:"varint,35,opt,name=fight_back,json=fightBack,proto3,oneof"`
+}
+
 func (*ClientMessage_Register) isClientMessage_Msg() {}
 
 func (*ClientMessage_Login) isClientMessage_Msg() {}
@@ -1017,6 +1032,8 @@ func (*ClientMessage_UseLamp) isClientMessage_Msg() {}
 func (*ClientMessage_ChangePassword) isClientMessage_Msg() {}
 
 func (*ClientMessage_TakeOff) isClientMessage_Msg() {}
+
+func (*ClientMessage_FightBack) isClientMessage_Msg() {}
 
 type Empty struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
@@ -2628,8 +2645,10 @@ type Self struct {
 	// How many times the player earned loot from each boss, by boss id.
 	Kills map[string]uint32 `protobuf:"bytes,16,rep,name=kills,proto3" json:"kills,omitempty" protobuf_key:"bytes,1,opt,name=key" protobuf_val:"varint,2,opt,name=value"`
 	// While food is on the fire with the intense method: the tick it is done, and the tick it burns. Zero means none.
-	FireReady     uint32 `protobuf:"varint,17,opt,name=fire_ready,json=fireReady,proto3" json:"fire_ready,omitempty"`
-	FireBurns     uint32 `protobuf:"varint,18,opt,name=fire_burns,json=fireBurns,proto3" json:"fire_burns,omitempty"`
+	FireReady uint32 `protobuf:"varint,17,opt,name=fire_ready,json=fireReady,proto3" json:"fire_ready,omitempty"`
+	FireBurns uint32 `protobuf:"varint,18,opt,name=fire_burns,json=fireBurns,proto3" json:"fire_burns,omitempty"`
+	// Attacks whoever hits the player while they are idle or skilling.
+	FightBack     bool `protobuf:"varint,19,opt,name=fight_back,json=fightBack,proto3" json:"fight_back,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -2788,6 +2807,13 @@ func (x *Self) GetFireBurns() uint32 {
 		return x.FireBurns
 	}
 	return 0
+}
+
+func (x *Self) GetFightBack() bool {
+	if x != nil {
+		return x.FightBack
+	}
+	return false
 }
 
 // `entities` hold only what changed, except for entities the browser did not know yet.
@@ -3509,8 +3535,7 @@ var File_driftwake_v1_game_proto protoreflect.FileDescriptor
 
 const file_driftwake_v1_game_proto_rawDesc = "" +
 	"\n" +
-	"\x17driftwake/v1/game.proto\x12\fdriftwake.v1\"\xf6\n" +
-	"\n" +
+	"\x17driftwake/v1/game.proto\x12\fdriftwake.v1\"\x97\v\n" +
 	"\rClientMessage\x127\n" +
 	"\bregister\x18\x01 \x01(\v2\x19.driftwake.v1.CredentialsH\x00R\bregister\x121\n" +
 	"\x05login\x18\x02 \x01(\v2\x19.driftwake.v1.CredentialsH\x00R\x05login\x12#\n" +
@@ -3550,7 +3575,9 @@ const file_driftwake_v1_game_proto_rawDesc = "" +
 	"\x0esell_to_trader\x18\x1f \x01(\rH\x00R\fsellToTrader\x12\x1b\n" +
 	"\buse_lamp\x18  \x01(\tH\x00R\auseLamp\x12G\n" +
 	"\x0fchange_password\x18! \x01(\v2\x1c.driftwake.v1.ChangePasswordH\x00R\x0echangePassword\x120\n" +
-	"\btake_off\x18\" \x01(\v2\x13.driftwake.v1.EmptyH\x00R\atakeOffB\x05\n" +
+	"\btake_off\x18\" \x01(\v2\x13.driftwake.v1.EmptyH\x00R\atakeOff\x12\x1f\n" +
+	"\n" +
+	"fight_back\x18# \x01(\bH\x00R\tfightBackB\x05\n" +
 	"\x03msg\"\a\n" +
 	"\x05Empty\"=\n" +
 	"\vCredentials\x12\x12\n" +
@@ -3652,7 +3679,7 @@ const file_driftwake_v1_game_proto_rawDesc = "" +
 	"\x05stack\x18\x02 \x01(\v2\x13.driftwake.v1.StackR\x05stack\"^\n" +
 	"\tEquipSlot\x12&\n" +
 	"\x04slot\x18\x01 \x01(\x0e2\x12.driftwake.v1.SlotR\x04slot\x12)\n" +
-	"\x05stack\x18\x02 \x01(\v2\x13.driftwake.v1.StackR\x05stack\"\xf8\a\n" +
+	"\x05stack\x18\x02 \x01(\v2\x13.driftwake.v1.StackR\x05stack\"\x97\b\n" +
 	"\x04Self\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\rR\x02id\x12\x12\n" +
 	"\x04name\x18\x02 \x01(\tR\x04name\x12%\n" +
@@ -3674,7 +3701,9 @@ const file_driftwake_v1_game_proto_rawDesc = "" +
 	"\n" +
 	"fire_ready\x18\x11 \x01(\rR\tfireReady\x12\x1d\n" +
 	"\n" +
-	"fire_burns\x18\x12 \x01(\rR\tfireBurns\x1a5\n" +
+	"fire_burns\x18\x12 \x01(\rR\tfireBurns\x12\x1d\n" +
+	"\n" +
+	"fight_back\x18\x13 \x01(\bR\tfightBack\x1a5\n" +
 	"\aXpEntry\x12\x10\n" +
 	"\x03key\x18\x01 \x01(\tR\x03key\x12\x14\n" +
 	"\x05value\x18\x02 \x01(\rR\x05value:\x028\x01\x1a7\n" +
@@ -3989,6 +4018,7 @@ func file_driftwake_v1_game_proto_init() {
 		(*ClientMessage_UseLamp)(nil),
 		(*ClientMessage_ChangePassword)(nil),
 		(*ClientMessage_TakeOff)(nil),
+		(*ClientMessage_FightBack)(nil),
 	}
 	file_driftwake_v1_game_proto_msgTypes[15].OneofWrappers = []any{
 		(*ServerMessage_Welcome)(nil),
