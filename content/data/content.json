@@ -5151,24 +5151,48 @@
      "text": "Mine copper ore in the crater north-east of camp.",
      "need": {
       "xp": "mining"
+     },
+     "place": {
+      "map": "island",
+      "x": 45,
+      "y": 20,
+      "r": 5
      }
     },
     {
      "text": "Chop 20 ash logs in the grove north-west of camp, and bring them to the shipwright.",
      "need": {
       "boat": "hull"
+     },
+     "place": {
+      "map": "island",
+      "x": 17,
+      "y": 26,
+      "r": 6
      }
     },
     {
      "text": "Smelt 8 copper bars at the furnace in camp, from two ore each, and bring them.",
      "need": {
       "boat": "fittings"
+     },
+     "place": {
+      "map": "island",
+      "x": 33,
+      "y": 30,
+      "r": 2
      }
     },
     {
      "text": "Pick 12 flax in the meadow south-west of camp, and bring it for the sail.",
      "need": {
       "boat": "sail"
+     },
+     "place": {
+      "map": "island",
+      "x": 26,
+      "y": 46,
+      "r": 5
      }
     },
     {
@@ -5181,6 +5205,12 @@
        "cobalt_sword",
        "adamantite_sword"
       ]
+     },
+     "place": {
+      "map": "island",
+      "x": 36,
+      "y": 31,
+      "r": 2
      }
     },
     {
@@ -5191,6 +5221,12 @@
        "feast",
        "ships_wheel"
       ]
+     },
+     "place": {
+      "map": "island",
+      "x": 35,
+      "y": 34,
+      "r": 2
      }
     },
     {
@@ -5199,12 +5235,24 @@
       "own": [
        "ships_wheel"
       ]
+     },
+     "place": {
+      "map": "island",
+      "x": 51,
+      "y": 40,
+      "r": 5
      }
     },
     {
      "text": "Bring the ship's wheel to the shipwright.",
      "need": {
       "boat": "wheel"
+     },
+     "place": {
+      "map": "island",
+      "x": 33,
+      "y": 57,
+      "r": 3
      }
     }
    ],

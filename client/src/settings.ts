@@ -13,6 +13,8 @@ export interface Settings {
   /** Shop value in coins at which a pile counts as valuable. */
   labelThreshold: number;
   uiScale: UiScale;
+  /** Marks on the minimap where the current quest step is done. */
+  questMarker: boolean;
 }
 
 const STORAGE_KEY = 'settings';
@@ -23,6 +25,7 @@ const DEFAULTS: Settings = {
   labelMode: 'all',
   labelThreshold: 100,
   uiScale: 1,
+  questMarker: true,
 };
 
 // Above `load`, which runs at once and would otherwise find it not yet defined.
@@ -66,6 +69,7 @@ function load(): Settings {
           ? Math.floor(threshold)
           : DEFAULTS.labelThreshold,
       uiScale: isUiScale(saved?.uiScale) ? saved.uiScale : DEFAULTS.uiScale,
+      questMarker: typeof saved?.questMarker === 'boolean' ? saved.questMarker : DEFAULTS.questMarker,
     };
   } catch {
     return { ...DEFAULTS };
