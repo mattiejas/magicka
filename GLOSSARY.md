@@ -121,3 +121,49 @@ _Avoid_: Corpse, tombstone
 **Reaper**:
 The figure in each town from whom a player can reclaim what their grave holds.
 _Avoid_: Death, banker
+
+## Sea
+
+**Sea**:
+The map on which boats sail, holding the island, the mainland and small islands, with water between them.
+_Avoid_: Ocean, overworld
+
+**Boat**:
+A player's own vessel, repaired once at the island's dock and then sailed by its owner.
+_Avoid_: Ship, ferry
+
+**Sail setting**:
+How much sail is set: backing, stopped, half sail or full sail. Each brings the boat to its own speed in the end, slowly, since a boat carries way.
+_Avoid_: Gear, throttle
+
+**Course**:
+A point on the sea the helm steers straight for, until the boat reaches it. There is no pathfinding at sea.
+_Avoid_: Waypoint, destination
+
+**Hard grounding**:
+Hitting land fast enough to run hard aground. Every hit stops the boat; backing gets it off.
+_Avoid_: Crash, collision
+
+**Going ashore**:
+Stepping off a slow boat onto land close beside it. The boat stays moored where it was left.
+_Avoid_: Landing, docking, disembarking
+
+**Moored**:
+Said of a boat its owner has gone ashore from, where it lies until they board it again. A boat that has never left lies at the dock.
+_Avoid_: Parked, anchored
+
+**Place**:
+A named piece of land on the sea: the island, the mainland or a small island.
+_Avoid_: Location, zone
+
+**Lookout**:
+How far a player sees on the sea: 10 tiles, from the boat or on foot.
+_Avoid_: Vision, sight range
+
+**Fog**:
+The parts of the sea a player has not yet seen.
+_Avoid_: Fog of war, darkness
+
+**Chart**:
+A player's own record of the sea: every tile they have seen, and the outline of every place they have sighted. What is on a place shows only where it was seen up close, or all over once they have gone ashore on it.
+_Avoid_: Map, minimap
