@@ -1,10 +1,12 @@
 // The minimap: a pre-drawn picture of the map with moving dots on top.
-import { type Entity, type GameMap, MAPS, MONSTERS, type TilePos } from '@driftwake/shared';
+import { type Entity, type GameMap, MAPS, MONSTERS, type QuestPlace, type TilePos } from '@driftwake/shared';
 import { send } from '../net/connection';
 import { myTrack, positionOf, state } from '../net/state';
 import { CAVE_COLOR, TILE_COLORS } from '../scene/palette';
+import { settings } from '../settings';
 import { byId, h } from './dom';
 import { menuButtons } from './menuButtons';
+import { pullInside, questPlace } from './questMarker';
 
 const CANVAS_SIZE = 416;
 /** Tiles shown from the centre to an edge. */
@@ -12,6 +14,11 @@ const RANGE = 26;
 const SCALE = CANVAS_SIZE / (RANGE * 2);
 /** Pixels per tile in the pre-drawn picture. */
 const PICTURE_SCALE = 4;
+/** How far in from the edge, in tiles, something out of range is drawn. */
+const EDGE = 2;
+/** One breath of the quest marker's pulse. */
+const PULSE_MS = 1600;
+const ARROW_SIZE = 14;
 
 const COLORS = {
   self: '#f5f0e4',
@@ -28,6 +35,8 @@ const COLORS = {
   spot: '#cfeef2',
   label: '#f5f0e4',
   labelEdge: 'rgba(34,42,48,.8)',
+  quest: '255,214,102',
+  questEdge: 'rgba(34,42,48,.9)',
 };
 
 let picture: { mapId: string; canvas: HTMLCanvasElement } | null = null;
@@ -62,6 +71,7 @@ export function drawMinimap() {
   for (const { entity, position } of visibleEntities()) drawEntity(context, entity, position, centre);
   for (const label of map.labels) drawLabel(context, label.name, [label.x, label.y], centre);
   if (self.map === 'mainland' && state.boss.alive) drawWorldBoss(context, map, centre);
+  if (settings().questMarker) drawQuestMarker(context, questPlace(self.quests, self.map, centre), centre);
 }
 
 const visibleEntities = () =>
@@ -142,11 +152,43 @@ function drawLabel(context: CanvasRenderingContext2D, text: string, position: Ti
 }
 
 /** Marks the world boss, at the edge when it is out of range. */
-function drawWorldBoss(context: CanvasRenderingContext2D, map: GameMap, [x, y]: TilePos) {
+function drawWorldBoss(context: CanvasRenderingContext2D, map: GameMap, centre: TilePos) {
   const boss = map.spawns.find(spawn => MONSTERS[spawn.type].boss?.world)!;
-  const dx = boss.x - x;
-  const dy = boss.y - y;
-  const distance = Math.max(Math.abs(dx), Math.abs(dy));
-  const pull = distance > RANGE - 2 ? (RANGE - 2) / distance : 1;
-  drawDot(context, toCanvas([x + dx * pull, y + dy * pull], [x, y]), COLORS.boss, 8);
+  const { at } = pullInside([boss.x, boss.y], centre, RANGE - EDGE);
+  drawDot(context, toCanvas(at, centre), COLORS.boss, 8);
+}
+
+/** A soft pulse over the place of the current quest step, or an arrow at the edge towards it. */
+function drawQuestMarker(context: CanvasRenderingContext2D, place: QuestPlace | undefined, centre: TilePos) {
+  if (!place) return;
+  const { at, inside } = pullInside([place.x, place.y], centre, RANGE - EDGE);
+  const [x, y] = toCanvas(at, centre);
+  if (!inside) return drawArrow(context, x, y, Math.atan2(place.y - centre[1], place.x - centre[0]));
+  const phase = (performance.now() % PULSE_MS) / PULSE_MS;
+  const radius = Math.max(place.r, 1) * SCALE;
+  context.beginPath();
+  context.arc(x, y, radius * (0.4 + 0.6 * phase), 0, Math.PI * 2);
+  context.fillStyle = `rgba(${COLORS.quest},${0.35 * (1 - phase)})`;
+  context.fill();
+  context.lineWidth = 3;
+  context.strokeStyle = `rgba(${COLORS.quest},${0.9 * (1 - phase)})`;
+  context.stroke();
+}
+
+function drawArrow(context: CanvasRenderingContext2D, x: number, y: number, angle: number) {
+  context.save();
+  context.translate(x, y);
+  context.rotate(angle);
+  context.beginPath();
+  context.moveTo(ARROW_SIZE, 0);
+  context.lineTo(-ARROW_SIZE * 0.7, -ARROW_SIZE * 0.75);
+  context.lineTo(-ARROW_SIZE * 0.3, 0);
+  context.lineTo(-ARROW_SIZE * 0.7, ARROW_SIZE * 0.75);
+  context.closePath();
+  context.lineWidth = 3;
+  context.strokeStyle = COLORS.questEdge;
+  context.stroke();
+  context.fillStyle = `rgb(${COLORS.quest})`;
+  context.fill();
+  context.restore();
 }

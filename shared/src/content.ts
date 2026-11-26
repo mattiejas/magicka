@@ -1,5 +1,6 @@
 // Game content, loaded from the generated data files. Edit content/src and run `npm run content`.
 import data from '../../content/data/content.json';
+import type { MapId } from './map';
 export const GAME_NAME = 'Driftwake'; // working title; rename here before any public launch
 export const SKILLS = [
   'mining',
@@ -115,12 +116,19 @@ export interface MonsterDef {
   /** Another monster whose model it shares. */
   looksLike?: string;
 }
+/** Where a step is done: within `r` tiles of a tile. */
+export interface QuestPlace {
+  map: MapId;
+  x: number;
+  y: number;
+  r: number;
+}
 /** What is needed for each step is up to the server. */
 export interface Quest {
   id: string;
   name: string;
   offer: string;
-  steps: { text: string }[];
+  steps: { text: string; place: QuestPlace }[];
   reward: [string, number][];
 }
 export interface BossAttack {

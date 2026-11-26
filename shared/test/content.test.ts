@@ -3,7 +3,7 @@ import { expect, it } from 'vitest';
 import { build, checkAttacks } from '../../content/build';
 import { MONSTERS as AUTHORED_MONSTERS } from '../../content/src/items';
 import { MAPS as AUTHORED } from '../../content/src/maps';
-import { groundHeight, MAPS, NODES } from '../src';
+import { groundHeight, MAPS, NODES, QUESTS, type QuestPlace } from '../src';
 
 it('generated data files are up to date (npm run content)', () => {
   for (const [n, s] of Object.entries(build()))
@@ -50,4 +50,30 @@ it('refuses an attack whose shape is missing or unknown', () => {
   expect(() => checkAttacks(boss('boulder', 'blob'))).toThrow();
   expect(() => checkAttacks(boss('quake'))).toThrow();
   expect(() => checkAttacks(boss('melee', 'square'))).toThrow();
+});
+it('each Stranded step marks the place where it is done', () => {
+  const [mine, hull, fittings, sail, sword, ration, gnashclaw, wheel] = QUESTS.find(
+    q => q.id === 'stranded',
+  )!.steps.map(step => step.place);
+  const near = (place: QuestPlace, x: number, y: number) => Math.hypot(place.x - x, place.y - y) <= place.r;
+  const island = MAPS.island;
+  const hasNode = (place: QuestPlace, type: string) =>
+    island.nodes.some(n => n.type === type && near(place, n.x, n.y));
+  const hasStation = (place: QuestPlace, type: string) =>
+    island.stations.some(s => s.type === type && near(place, s.x, s.y));
+  expect(hasNode(mine, 'rock_1')).toBe(true);
+  expect(hasNode(hull, 'tree_1')).toBe(true);
+  expect(hasStation(fittings, 'furnace')).toBe(true);
+  expect(hasNode(sail, 'plant_1')).toBe(true);
+  expect(hasStation(sword, 'anvil')).toBe(true);
+  expect(hasStation(ration, 'fire')).toBe(true);
+  expect(island.spawns.some(s => s.type === 'gnashclaw' && near(gnashclaw, s.x, s.y))).toBe(true);
+  expect(hasStation(wheel, 'dock')).toBe(true);
+  for (const place of [mine, hull, fittings, sail, sword, ration, gnashclaw, wheel]) {
+    expect(place.map).toBe('island');
+    const open = island.blocked.some(
+      (blocked, i) => !blocked && near(place, i % island.size, Math.floor(i / island.size)),
+    );
+    expect(open, `${place.x},${place.y} can be reached`).toBe(true);
+  }
 });

@@ -12,6 +12,11 @@ type Toggle = { [K in keyof Settings]: Settings[K] extends boolean ? K : never }
 
 const TOGGLES: { setting: Toggle; label: string; description: string }[] = [
   {
+    setting: 'questMarker',
+    label: 'Quest marker',
+    description: 'Marks on the minimap where to go for the current quest step.',
+  },
+  {
     setting: 'showFps',
     label: 'FPS counter',
     description: 'Shows how many frames are drawn each second.',
