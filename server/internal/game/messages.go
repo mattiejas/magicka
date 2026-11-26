@@ -51,6 +51,40 @@ func (w *World) emitDeath(m *content.Map, x, y int, id uint32) {
 	w.emit(m, x, y, &pb.Event{Event: &pb.Event_Death{Death: id}})
 }
 
+func (w *World) emitLevelUp(p *Player, skill string, level int) {
+	up := &pb.LevelUp{Player: p.ID, Skill: skill, Level: uint32(level)}
+	w.emit(w.mapOf(p), p.C.X, p.C.Y, &pb.Event{Event: &pb.Event_LevelUp{LevelUp: up}})
+}
+
+// openedNamed is how many things a level line names; the skills tab lists them all.
+const openedNamed = 3
+
+// opened says what the levels after before, up to now, open, or nothing if they open nothing.
+func opened(skill string, before, now int) string {
+	var texts []string
+	for _, u := range content.Unlocks[skill] {
+		if u.Level > before && u.Level <= now {
+			texts = append(texts, u.Text)
+		}
+	}
+	if len(texts) == 0 {
+		return ""
+	}
+	line := ""
+	if more := len(texts) - openedNamed; more > 0 {
+		texts, line = texts[:openedNamed], " The skills tab shows "+strconv.Itoa(more)+" more."
+	}
+	return " You can " + listed(texts) + "." + line
+}
+
+// listed joins words as a sentence does: "a, b and c".
+func listed(words []string) string {
+	if len(words) == 1 {
+		return words[0]
+	}
+	return strings.Join(words[:len(words)-1], ", ") + " and " + words[len(words)-1]
+}
+
 // open shows the window of a station, or of the player's grave.
 func (w *World) open(p *Player, window string) {
 	w.send(p, &pb.ServerMessage{Msg: &pb.ServerMessage_OpenStation{OpenStation: window}})
@@ -80,7 +114,8 @@ func (w *World) addXP(p *Player, skill string, amount float64) {
 		return
 	}
 	title := strings.ToUpper(skill[:1]) + skill[1:]
-	w.info(p, title+" is now level "+strconv.Itoa(now)+".", pb.InfoKind_INFO_KIND_LEVEL)
+	w.info(p, title+" is now level "+strconv.Itoa(now)+"."+opened(skill, before, now), pb.InfoKind_INFO_KIND_LEVEL)
+	w.emitLevelUp(p, skill, now)
 	if now == MaxLevel {
 		w.broadcast(infoMsg(p.Name+" has mastered "+skill+".", pb.InfoKind_INFO_KIND_LEVEL))
 		w.grantCapes(p)

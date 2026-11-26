@@ -99,7 +99,9 @@ export interface Entity {
 export type GameEvent =
   | { type: 'hit'; from: string; to: string; damage: number; style: string }
   | { type: 'impact'; boss: string; attack: string; tiles: TilePos[]; centres: TilePos[] }
-  | { type: 'death'; id: string };
+  | { type: 'death'; id: string }
+  /** Several levels at once come as one, at the last of them. */
+  | { type: 'levelUp'; player: string; skill: Skill; level: number };
 
 /** The player's own character, which only they can see in full. */
 export interface SelfState {
