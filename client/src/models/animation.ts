@@ -294,7 +294,8 @@ const ACTIONS: Record<string, ActionPose> = {
 };
 
 /** Without a `blend`, the pose is taken on at once. */
-export function posePlayer(model: Model, pose: Pose, blend?: PoseBlend) {
+export function posePlayer(model: Model, wanted: Pose, blend?: PoseBlend) {
+  const pose = blend?.hold(wanted) ?? wanted;
   const base = pose.moving ? walking(pose) : standing(pose);
   const joints = { ...base, ...ACTIONS[pose.action ?? '']?.(pose, base) };
   blend?.apply(joints, pose);

@@ -73,6 +73,20 @@ describe('blending between poses', () => {
     expect(shown(walking(0), pose(60, { action: 'melee' }), blow)).toEqual(unblended(blow));
   });
 
+  it('holds a blow that is still running when the walk starts again', () => {
+    const blow = (ms: number) => pose(ms, { action: 'melee', hit: 1 - ms / ATTACK_MS });
+    const walkingOn = (ms: number) => pose(ms, { moving: true, hit: 1 - ms / ATTACK_MS });
+    const movingBlow = (ms: number) => ({ ...blow(ms), moving: true });
+    const at = 250 + BLOW_BLEND_MS;
+    expect(shown(walking(-100), blow(0), blow(250), walkingOn(at))).toEqual(unblended(movingBlow(at)));
+  });
+
+  it('lets go of a blow once it is over', () => {
+    const after = walking(ATTACK_MS + BLEND_MS);
+    const steps = [walking(-100), pose(0, { action: 'melee', hit: 1 }), walking(ATTACK_MS)];
+    expect(shown(...steps, after)).toEqual(unblended(after));
+  });
+
   it('carries on when the model is rebuilt', () => {
     const blend = new PoseBlend();
     posePlayer(playerModel('Someone', SWORD), walking(0), blend);
