@@ -1,0 +1,340 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Sailing prototype</title>
+<!--
+  PROTOTYPE, throwaway. Issue #109: is sailing fun enough to carry Driftwake?
+  Open this file in a browser; nothing to install. The rules are in the <script id="sailing"> module,
+  written as a pure step per tick so they could move to server/internal/game. The rest is a thin page.
+-->
+<style>
+  :root { --bg:#14191d; --panel:#1f262c; --line:#334049; --text:#e8e2d6; --mute:#93a0a8; --accent:#6fc1b1; --warn:#e0a640; }
+  * { box-sizing:border-box; }
+  body { margin:0; background:var(--bg); color:var(--text); font:14px/1.45 system-ui, sans-serif; }
+  header { padding:16px 20px 8px; max-width:1240px; margin:auto; }
+  h1 { margin:0 0 4px; font-size:20px; }
+  header p { margin:0; color:var(--mute); max-width:860px; }
+  main { display:grid; grid-template-columns:minmax(0,1fr) 340px; gap:16px; padding:12px 20px 24px; max-width:1240px; margin:auto; }
+  @media (max-width:900px) { main { grid-template-columns:1fr; } }
+  .sea { position:relative; }
+  canvas { width:100%; aspect-ratio:1; display:block; background:#0b2a36; border-radius:6px; cursor:crosshair; }
+  .panel { background:var(--panel); border:1px solid var(--line); border-radius:6px; padding:12px 14px; margin-bottom:12px; }
+  .panel h2 { font-size:13px; margin:0 0 8px; color:var(--mute); text-transform:uppercase; letter-spacing:.06em; }
+  dl { display:grid; grid-template-columns:auto 1fr; gap:3px 12px; margin:0; }
+  dt { color:var(--mute); } dd { margin:0; }
+  .changed { color:var(--accent); }
+  button { background:#2b353d; color:var(--text); border:1px solid var(--line); border-radius:4px; padding:6px 10px; font:inherit; cursor:pointer; }
+  button:hover { border-color:var(--accent); }
+  button.on { border-color:var(--accent); color:var(--accent); }
+  .row { display:flex; flex-wrap:wrap; gap:6px; margin:6px 0; }
+  .tabs { display:flex; gap:4px; flex-wrap:wrap; margin-bottom:8px; }
+  .log { max-height:150px; overflow:auto; color:var(--mute); font-size:13px; }
+  .log div:first-child { color:var(--text); }
+  kbd { background:#2b353d; border:1px solid var(--line); border-radius:3px; padding:0 4px; font-size:12px; }
+  .ask li { margin-bottom:4px; color:var(--mute); }
+</style>
+</head>
+<body>
+<header>
+  <h1>Sailing prototype (throwaway, issue #109)</h1>
+  <p>Is steering a boat over open water fun for ten minutes, and still fine on the hundredth trip? And does it work when the
+  server only moves the boat every 600 ms, as Driftwake moves everything else? Steer by hand for speed (an intense method), or click
+  the sea to let the boat sail itself, slower (a relaxed method). Find the islands; each found one goes on your chart.</p>
+</header>
+<main>
+  <div class="sea">
+    <canvas id="sea" width="900" height="900"></canvas>
+    <div class="row" style="margin-top:8px">
+      <span style="color:var(--mute)">Steer <kbd>←</kbd><kbd>→</kbd> or <kbd>A</kbd><kbd>D</kbd> · sail <kbd>↑</kbd><kbd>↓</kbd> or <kbd>W</kbd><kbd>S</kbd> · click the sea to sail there by itself · <kbd>Space</kbd> lands on an island beside you</span>
+    </div>
+  </div>
+  <aside>
+    <div class="panel">
+      <h2>Try a scenario</h2>
+      <div class="tabs" id="tabs"></div>
+      <p id="scenario-text" style="margin:0 0 6px"></p>
+      <div class="row" id="scenario-steps"></div>
+    </div>
+    <div class="panel">
+      <h2>Your boat</h2>
+      <dl id="state"></dl>
+    </div>
+    <div class="panel">
+      <h2>Chart</h2>
+      <div id="chart" class="row"></div>
+    </div>
+    <div class="panel">
+      <h2>How it is run</h2>
+      <div class="row">
+        <button id="tick600" class="on">Tick 600 ms, like the game</button>
+        <button id="tick100">Tick 100 ms</button>
+      </div>
+      <div class="row">
+        <button id="smooth" class="on">Glide between ticks</button>
+        <button id="jumpy">Jump each tick</button>
+      </div>
+    </div>
+    <div class="panel">
+      <h2>Log</h2>
+      <div class="log" id="log"></div>
+    </div>
+    <div class="panel ask">
+      <h2>After playing, tell us</h2>
+      <ol>
+        <li>Was steering fun for ten minutes? What got dull first?</li>
+        <li>The hundredth trip (scenario 3): relaxing, or a chore to skip?</li>
+        <li>At 600 ms, did turning feel late? Compare with 100 ms.</li>
+        <li>Would sailing with a crew of friends make it better?</li>
+      </ol>
+    </div>
+  </aside>
+</main>
+
+<script id="sailing">
+// The rules of sailing, one tick at a time. Pure: no DOM, no clock. Randomness comes from the seed in the state.
+const Sailing = (() => {
+  const SIZE = 160;                 // tiles across the sea
+  const TURN_PER_TICK = 15;         // degrees a helmsman turns in one tick
+  const AUTO_TURN = 10;             // degrees the boat turns by itself
+  const TOP_SPEED = 3.2;            // tiles per tick at full sail on a beam reach; walking is 2
+  const SAIL_SHARE = [0, 0.55, 1];  // furled, half, full
+  const AUTO_SHARE = 0.6;           // sailing by itself is slower than steering well
+  const NO_GO = 40;                 // degrees off the wind the boat cannot sail
+  const SEEN = 14;                  // tiles a lookout can see
+  const LAND_REACH = 2.5;           // tiles from the shore at which the boat can land
+  const WIND_SHIFT_SECONDS = 30;   // the wind turns a little every half minute
+  const TICK_SECONDS = 0.6;
+
+  function mulberry(seed) {
+    let t = seed >>> 0;
+    return () => { t = (t + 0x6d2b79f5) >>> 0; let r = Math.imul(t ^ (t >>> 15), 1 | t);
+      r = (r + Math.imul(r ^ (r >>> 7), 61 | r)) ^ r; return ((r ^ (r >>> 14)) >>> 0) / 4294967296; };
+  }
+  const rad = d => (d * Math.PI) / 180;
+  const norm = d => ((d % 360) + 540) % 360 - 180;          // -180..180
+  const bearing = (x, y, tx, ty) => (Math.atan2(tx - x, -(ty - y)) * 180) / Math.PI; // 0 = north
+  const ISLANDS = [
+    { id: 'home', name: 'Driftwake Isle', x: 80, y: 128, r: 9, gift: null },
+    { id: 'gull', name: 'Gull Rock', x: 104, y: 104, r: 3, gift: 'a gull feather and 40 coins' },
+    { id: 'reed', name: 'Reed Atoll', x: 40, y: 96, r: 5, gift: 'moonreed, found nowhere else' },
+    { id: 'wreck', name: "Wreckers' Bar", x: 126, y: 64, r: 4, gift: 'salvage: copper fittings' },
+    { id: 'pine', name: 'Pine Holm', x: 52, y: 44, r: 6, gift: 'pine logs from an old stand' },
+    { id: 'aldermere', name: 'Aldermere', x: 90, y: 6, r: 22, gift: null },
+    { id: 'shoal', name: 'Silver Shoal', x: 140, y: 128, r: 2, gift: 'a shoal of salmon to fish' },
+  ];
+  /** A current that drifts the boat: a slow eastward stream in the middle of the sea, and a gyre round Reed Atoll. */
+  function current(x, y) {
+    let cx = 0, cy = 0;
+    if (y > 60 && y < 90) { cx += 0.5; }
+    const dx = x - 40, dy = y - 96, d = Math.hypot(dx, dy);
+    if (d > 6 && d < 22) { cx += (-dy / d) * 0.35; cy += (dx / d) * 0.35; }
+    return [cx, cy];
+  }
+  /** Share of top speed by the angle between where the boat points and where the wind comes from. */
+  function pointOfSail(off) {
+    const a = Math.abs(off);
+    if (a < NO_GO) return { name: 'In irons: too close to the wind', share: 0.08 };
+    if (a < 60) return { name: 'Close hauled', share: 0.6 };
+    if (a < 110) return { name: 'Beam reach, fastest', share: 1 };
+    if (a < 150) return { name: 'Broad reach', share: 0.85 };
+    return { name: 'Running before the wind', share: 0.65 };
+  }
+
+  function start({ seed = 7, wind = 200, chart = [], x = 80, y = 116, heading = 0 } = {}) {
+    return { tick: 0, time: 0, seed, x, y, heading, sail: 2, speed: 0, wind, course: null, chart: [...chart],
+      seen: [...chart], landed: [], inputs: 0, log: ['You push off from Driftwake Isle.'] };
+  }
+
+  /** One tick, or `share` of one when ticks are shorter. `input` is what the player asked for since the last tick: { turn: -1|0|1, sail: -1|0|1, course: {x,y}|null|undefined, land: bool }. */
+  function step(s, input = {}, share = 1) {
+    const n = { ...s, tick: s.tick + 1, time: s.time + share * TICK_SECONDS, log: s.log.slice(0, 40), chart: [...s.chart], seen: [...s.seen], landed: [...s.landed] };
+    const rnd = mulberry(s.seed * 1000 + s.tick);
+    const said = t => n.log.unshift(t);
+    if (input.turn || input.sail || input.course !== undefined || input.land) n.inputs++;
+    if (input.course !== undefined) n.course = input.course;
+    if (input.turn) { n.course = null; n.heading = norm(n.heading + input.turn * TURN_PER_TICK * share); }
+    if (input.sail) n.sail = Math.max(0, Math.min(2, n.sail + input.sail));
+
+    let sailShare = SAIL_SHARE[n.sail];
+    if (n.course) {
+      const want = bearing(n.x, n.y, n.course.x, n.course.y);
+      const fromWind = norm(want - n.wind);
+      // Upwind of the boat: tack at the edge of the no-go zone, on the side nearer the course.
+      const aim = Math.abs(fromWind) < NO_GO + 5 ? norm(n.wind + Math.sign(fromWind || 1) * (NO_GO + 5)) : want;
+      n.heading = norm(n.heading + Math.max(-AUTO_TURN * share, Math.min(AUTO_TURN * share, norm(aim - n.heading))));
+      sailShare = Math.min(sailShare, SAIL_SHARE[1]) * AUTO_SHARE / SAIL_SHARE[1];
+      if (Math.hypot(n.course.x - n.x, n.course.y - n.y) < 3) { n.course = null; said('You arrive where you were heading.'); }
+    }
+    const pos = pointOfSail(norm(n.heading - n.wind));
+    // Speed eases towards what wind and sail allow, so a turn bleeds speed rather than stopping dead.
+    n.speed = n.speed + (TOP_SPEED * pos.share * sailShare - n.speed) * 0.5 * share;
+    const [cx, cy] = current(n.x, n.y);
+    let nx = n.x + (Math.sin(rad(n.heading)) * n.speed + cx) * share;
+    let ny = n.y + (-Math.cos(rad(n.heading)) * n.speed + cy) * share;
+    nx = Math.max(1, Math.min(SIZE - 1, nx)); ny = Math.max(1, Math.min(SIZE - 1, ny));
+    const hit = ISLANDS.find(i => Math.hypot(nx - i.x, ny - i.y) < i.r);
+    if (hit) { nx = n.x; ny = n.y; n.speed = 0; n.course = null; said(`You run aground on ${hit.name}. Turn away.`); }
+    n.x = nx; n.y = ny;
+
+    for (const i of ISLANDS) {
+      const d = Math.hypot(n.x - i.x, n.y - i.y) - i.r;
+      if (d < SEEN && !n.seen.includes(i.id)) { n.seen.push(i.id); said(`Land ho! ${i.name}.`); }
+      if (d < LAND_REACH + 1 && !n.chart.includes(i.id)) { n.chart.push(i.id); said(`${i.name} is now on your chart.`); }
+    }
+    if (input.land) {
+      const near = ISLANDS.find(i => Math.hypot(n.x - i.x, n.y - i.y) - i.r < LAND_REACH);
+      if (!near) said('There is no shore beside you.');
+      else if (n.speed > 1) said('You are going too fast to land. Lower the sail.');
+      else if (!near.gift) said(`You land on ${near.name}. Nothing new here.`);
+      else if (n.landed.includes(near.id)) said(`You have already searched ${near.name}.`);
+      else { n.landed.push(near.id); said(`You land on ${near.name} and find ${near.gift}.`); }
+    }
+    if (Math.floor(n.time / WIND_SHIFT_SECONDS) > Math.floor(s.time / WIND_SHIFT_SECONDS)) {
+      n.wind = norm(n.wind + (rnd() - 0.5) * 50);
+      said(`The wind turns. It now comes from ${compass(n.wind)}.`);
+    }
+    return n;
+  }
+  function compass(deg) {
+    return ['the north', 'the north-east', 'the east', 'the south-east', 'the south', 'the south-west', 'the west', 'the north-west'][
+      Math.round(((deg + 360) % 360) / 45) % 8];
+  }
+  return { SIZE, ISLANDS, SEEN, start, step, current, pointOfSail, compass, norm };
+})();
+</script>
+
+<script>
+// The page: draws the sea, turns keys and clicks into input for the next tick, and glides between ticks.
+const S = Sailing;
+const canvas = document.getElementById('sea'), ctx = canvas.getContext('2d');
+let tickMs = 600, smooth = true;
+let state, prev, lastTickAt = performance.now(), pending = {}, held = { turn: 0 }, prevShown = {};
+
+const SCENARIOS = [
+  { name: '1. First voyage', text: 'Your boat is done. Nothing is charted. Find two islands by hand and land on one (lower the sail, then Space). Watch the wind arrow.',
+    setup: () => S.start({ seed: 7, wind: 200 }), steps: [] },
+  { name: '2. Into the wind', text: 'Pine Holm lies almost straight upwind. You cannot sail into the wind: zigzag across it, or click Pine Holm and watch the boat tack by itself.',
+    setup: () => S.start({ seed: 3, wind: 330, x: 70, y: 80, heading: 90, chart: ['home', 'pine'] }),
+    steps: [['Let the boat sail to Pine Holm', () => (pending.course = { x: 52, y: 52 })]] },
+  { name: '3. The hundredth trip', text: 'Everything is charted. You have made this crossing many times. Pick a destination on the chart and let the boat take you. Is the ride pleasant, or would you rather skip it?',
+    setup: () => S.start({ seed: 11, wind: 250, chart: S.ISLANDS.map(i => i.id) }),
+    steps: [['Sail to Aldermere', () => (pending.course = { x: 90, y: 30 })], ["Sail to Wreckers' Bar", () => (pending.course = { x: 120, y: 70 })]] },
+];
+let scenario = 0;
+
+function load(i) {
+  scenario = i; state = S.start(); state = SCENARIOS[i].setup(); prev = state; pending = {}; prevShown = {};
+  document.getElementById('scenario-text').textContent = SCENARIOS[i].text;
+  const steps = document.getElementById('scenario-steps'); steps.replaceChildren();
+  for (const [label, act] of SCENARIOS[i].steps) steps.append(button(label, act));
+  document.querySelectorAll('#tabs button').forEach((b, j) => b.classList.toggle('on', j === i));
+  render();
+}
+function button(label, onclick) { const b = document.createElement('button'); b.textContent = label; b.onclick = onclick; return b; }
+document.getElementById('tabs').append(...SCENARIOS.map((s, i) => button(s.name, () => load(i))));
+
+addEventListener('keydown', e => {
+  const k = e.key.toLowerCase();
+  if (k === 'arrowleft' || k === 'a') held.turn = -1;
+  else if (k === 'arrowright' || k === 'd') held.turn = 1;
+  else if (k === 'arrowup' || k === 'w') pending.sail = 1;
+  else if (k === 'arrowdown' || k === 's') pending.sail = -1;
+  else if (k === ' ') pending.land = true;
+  else return;
+  e.preventDefault();
+});
+addEventListener('keyup', e => { const k = e.key.toLowerCase(); if (['arrowleft', 'a', 'arrowright', 'd'].includes(k)) held.turn = 0; });
+canvas.addEventListener('click', e => {
+  const r = canvas.getBoundingClientRect();
+  pending.course = { x: ((e.clientX - r.left) / r.width) * S.SIZE, y: ((e.clientY - r.top) / r.height) * S.SIZE };
+});
+const pick = (onId, offId, on) => { document.getElementById(onId).classList.add('on'); document.getElementById(offId).classList.remove('on'); on(); };
+const setTick = ms => { tickMs = ms; clearInterval(timer); timer = setInterval(tick, tickMs); };
+document.getElementById('tick600').onclick = () => pick('tick600', 'tick100', () => setTick(600));
+document.getElementById('tick100').onclick = () => pick('tick100', 'tick600', () => setTick(100));
+document.getElementById('smooth').onclick = () => pick('smooth', 'jumpy', () => (smooth = true));
+document.getElementById('jumpy').onclick = () => pick('jumpy', 'smooth', () => (smooth = false));
+
+function tick() {
+    const input = { ...pending, turn: held.turn };
+  pending = {};
+  prev = state;
+  state = S.step(state, input, tickMs / 600);
+  lastTickAt = performance.now();
+  render();
+}
+
+function render() {
+  const pos = S.pointOfSail(S.norm(state.heading - state.wind));
+  const minutes = state.time / 60;
+  const shown = {
+    'Heading': `${Math.round((state.heading + 360) % 360)}°`,
+    'Sail': ['Furled', 'Half', 'Full'][state.sail],
+    'Point of sail': pos.name,
+    'Speed': `${state.speed.toFixed(1)} tiles a tick (walking is 2)`,
+    'Wind from': S.compass(state.wind),
+    'Steering': state.course ? 'By itself, slower' : 'By hand',
+    'Time at sea': `${Math.floor(minutes)}:${String(Math.round((minutes % 1) * 60)).padStart(2, '0')}`,
+    'Inputs a minute': minutes > 0.1 ? Math.round(state.inputs / minutes) : '–',
+    'Islands charted': `${state.chart.length} of ${S.ISLANDS.length}`,
+  };
+  const dl = document.getElementById('state'); dl.replaceChildren();
+  for (const [k, v] of Object.entries(shown)) {
+    const dt = document.createElement('dt'); dt.textContent = k;
+    const dd = document.createElement('dd'); dd.textContent = v;
+    if (prevShown[k] !== undefined && prevShown[k] !== v && !['Time at sea', 'Speed', 'Inputs a minute'].includes(k)) dd.className = 'changed';
+    dl.append(dt, dd);
+  }
+  prevShown = shown;
+  const chart = document.getElementById('chart'); chart.replaceChildren();
+  const charted = S.ISLANDS.filter(i => state.chart.includes(i.id));
+  if (!charted.length) chart.textContent = 'Nothing charted yet.';
+  for (const i of charted) chart.append(button(`Sail to ${i.name}`, () => (pending.course = { x: i.x, y: i.y + i.r + 3 })));
+  document.getElementById('log').replaceChildren(...state.log.slice(0, 12).map(t => Object.assign(document.createElement('div'), { textContent: t })));
+}
+
+function draw(now) {
+  const t = smooth ? Math.min(1, (now - lastTickAt) / tickMs) : 1;
+  const x = prev.x + (state.x - prev.x) * t, y = prev.y + (state.y - prev.y) * t;
+  const heading = prev.heading + S.norm(state.heading - prev.heading) * t;
+  const px = canvas.width / S.SIZE;
+  ctx.fillStyle = '#0b2a36'; ctx.fillRect(0, 0, canvas.width, canvas.height);
+  // Currents, as faint streaks.
+  ctx.strokeStyle = 'rgba(160,210,220,0.18)'; ctx.lineWidth = 1;
+  for (let gy = 4; gy < S.SIZE; gy += 8) for (let gx = 4; gx < S.SIZE; gx += 8) {
+    const [cx, cy] = S.current(gx, gy); if (!cx && !cy) continue;
+    ctx.beginPath(); ctx.moveTo(gx * px, gy * px); ctx.lineTo((gx + cx * 6) * px, (gy + cy * 6) * px); ctx.stroke();
+  }
+  // Islands: charted ones in full, seen ones as outlines, the rest hidden.
+  for (const i of S.ISLANDS) {
+    const seen = state.seen.includes(i.id), charted = state.chart.includes(i.id);
+    if (!seen) continue;
+    ctx.beginPath(); ctx.arc(i.x * px, i.y * px, i.r * px, 0, 7);
+    ctx.fillStyle = charted ? '#d8c48f' : 'rgba(216,196,143,0.25)'; ctx.fill();
+    if (charted) { ctx.fillStyle = '#e8e2d6'; ctx.font = '15px system-ui'; ctx.textAlign = 'center'; ctx.fillText(i.name, i.x * px, (i.y - i.r - 1.5) * px); }
+  }
+  // Fog beyond what has been sailed near: only the lookout's circle is clear.
+  ctx.save(); ctx.fillStyle = 'rgba(5,14,18,0.55)'; ctx.beginPath(); ctx.rect(0, 0, canvas.width, canvas.height);
+  ctx.moveTo((x + S.SEEN) * px, y * px); ctx.arc(x * px, y * px, S.SEEN * px, 0, Math.PI * 2, true); ctx.fill(); ctx.restore();
+  // Course.
+  if (state.course) { ctx.setLineDash([6, 6]); ctx.strokeStyle = 'rgba(111,193,177,0.7)'; ctx.beginPath(); ctx.moveTo(x * px, y * px);
+    ctx.lineTo(state.course.x * px, state.course.y * px); ctx.stroke(); ctx.setLineDash([]); }
+  // The boat.
+  ctx.save(); ctx.translate(x * px, y * px); ctx.rotate((heading * Math.PI) / 180);
+  ctx.fillStyle = '#8d6a4c'; ctx.beginPath(); ctx.moveTo(0, -12); ctx.lineTo(7, 8); ctx.lineTo(-7, 8); ctx.closePath(); ctx.fill();
+  if (state.sail) { ctx.fillStyle = '#efe6d0'; ctx.fillRect(-1, -8, 9 * (state.sail / 2) + 2, 12); }
+  ctx.restore();
+  // Wind arrow, in the corner, pointing where the wind blows to.
+  ctx.save(); ctx.translate(canvas.width - 50, 50); ctx.rotate(((state.wind + 180) * Math.PI) / 180);
+  ctx.strokeStyle = '#e0a640'; ctx.lineWidth = 3; ctx.beginPath(); ctx.moveTo(0, 24); ctx.lineTo(0, -24); ctx.lineTo(-8, -12); ctx.moveTo(0, -24); ctx.lineTo(8, -12); ctx.stroke();
+  ctx.restore(); ctx.fillStyle = '#e0a640'; ctx.font = '12px system-ui'; ctx.textAlign = 'center'; ctx.fillText('wind', canvas.width - 50, 92);
+  requestAnimationFrame(draw);
+}
+let timer = setInterval(tick, tickMs);
+load(0);
+requestAnimationFrame(draw);
+</script>
+</body>
+</html>
