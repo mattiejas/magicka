@@ -303,7 +303,7 @@ export function posePlayer(model: Model, pose: Pose, blend?: PoseBlend) {
   holdTool(model.parts, pose);
 }
 
-function applyJoints(parts: Model['parts'], j: PlayerJoints) {
+export function applyJoints(parts: Model['parts'], j: PlayerJoints) {
   const hip = HIP + j.drop;
   parts.upper.rotation.set(j.lean, j.twist, 0);
   parts.upper.position.y = parts.hips.position.y = hip;
@@ -321,7 +321,7 @@ function applyJoints(parts: Model['parts'], j: PlayerJoints) {
 }
 
 /** Hangs straight down whatever the body does, and trails behind while walking. */
-function hangCape({ cape }: Model['parts'], { lean, capeTrail }: PlayerJoints) {
+export function hangCape({ cape }: Model['parts'], { lean, capeTrail }: PlayerJoints) {
   if (cape) cape.rotation.x = capeTrail - Math.min(0.3, lean);
 }
 

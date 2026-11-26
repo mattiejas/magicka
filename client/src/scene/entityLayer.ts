@@ -1,9 +1,10 @@
 // Models of players, monsters, dropped items and graves, kept in step with the state.
-import type { Entity } from '@driftwake/shared';
+import { type Entity, MONSTERS } from '@driftwake/shared';
 import type * as THREE from 'three';
 import {
   dropModel,
   graveModel,
+  hasDeathPose,
   type Model,
   modelKey,
   monsterModel,
@@ -15,6 +16,7 @@ import {
   posePlayer,
 } from '../models';
 import { centreOf, isMoving, positionOf, state, type Track, tickNow, walkDirection } from '../net/state';
+import { DyingFigures } from './dyingFigures';
 import type { Effects } from './effects';
 import { aimOf, Telegraph, telegraphKey } from './telegraphs';
 import type { WorldView } from './worldView';
@@ -28,19 +30,45 @@ interface Figure {
   model: Model;
   facing: number;
   blend: PoseBlend;
+  boss: boolean;
 }
 
 export class EntityLayer {
   private figures = new Map<string, Figure>();
   private telegraphs = new Map<string, Telegraph>();
   private attackedAt = new Map<string, number>();
+  private dying: DyingFigures;
 
   constructor(
     private scene: THREE.Scene,
     private effects: Effects,
-  ) {}
+  ) {
+    this.dying = new DyingFigures(scene);
+  }
 
-  heightOf = (id: string, fallback = DEFAULT_HEIGHT) => this.figures.get(id)?.model.height ?? fallback;
+  heightOf = (id: string, fallback = DEFAULT_HEIGHT) =>
+    this.figures.get(id)?.model.height ?? this.dying.heightOf(id) ?? fallback;
+
+  /** Where the figure of an entity stands, even one that just died, in world units. */
+  centreOf(id: string): [number, number] | null {
+    const figure = this.figures.get(id);
+    if (figure) return [figure.model.root.position.x, figure.model.root.position.z];
+    return this.dying.centreOf(id);
+  }
+
+  /**
+   * The figure stays behind as a dying copy. The snapshot that tells of the death has already been
+   * applied, so the entity may be gone from the state, or a player already in town; their next
+   * figure is built from scratch.
+   */
+  die(id: string, now = performance.now()) {
+    const figure = this.figures.get(id);
+    if (!figure || !hasDeathPose(figure.model.kind)) return;
+    this.figures.delete(id);
+    this.attackedAt.delete(id);
+    this.removeTelegraph(id);
+    this.dying.add(id, figure.model, figure.facing, figure.boss, now);
+  }
 
   noteAttack(id: string) {
     this.attackedAt.set(id, performance.now());
@@ -49,6 +77,7 @@ export class EntityLayer {
   clear() {
     for (const id of [...this.figures.keys()]) this.remove(id);
     for (const id of [...this.telegraphs.keys()]) this.removeTelegraph(id);
+    this.dying.clear();
   }
 
   update(world: WorldView, now: number, dt: number) {
@@ -57,6 +86,10 @@ export class EntityLayer {
       if (track.entity.kind !== 'node') this.updateFigure(track, world, now, dt);
     for (const id of [...this.telegraphs.keys()])
       if (!state.entities.get(id)?.entity.boss) this.removeTelegraph(id);
+    this.dying.update(now, id => {
+      const root = this.figures.get(id)?.model.root;
+      return root ? [root.position.x, root.position.z] : null;
+    });
   }
 
   private remove(id: string) {
@@ -84,7 +117,7 @@ export class EntityLayer {
       this.scene.add(existing.model.root);
       return existing;
     }
-    const figure = { model: buildModel(entity), facing: 0, blend: new PoseBlend() };
+    const figure = { model: buildModel(entity), facing: 0, blend: new PoseBlend(), boss: isBoss(entity) };
     this.figures.set(entity.id, figure);
     this.scene.add(figure.model.root);
     return figure;
@@ -149,6 +182,8 @@ export class EntityLayer {
     this.telegraphs.delete(id);
   }
 }
+
+const isBoss = ({ kind, type }: Entity) => kind === 'monster' && !!MONSTERS[type!]?.boss;
 
 function floatHeight({ kind, type }: Entity, now: number): number {
   if (kind === 'drop') return 0.04 + Math.sin(now / 500) * 0.04;

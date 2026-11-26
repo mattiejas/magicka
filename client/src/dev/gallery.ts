@@ -1,5 +1,6 @@
 // Dev-only page at /gallery.html for looking at models. Query parameters:
 //   set   one of the sets below
+//   death how far through the death pose the last column of the death set is, 0 to 1
 //   t     milliseconds into the animation
 //   name  whose face and hair to show    color  hair colour    ry  how far heads are turned
 import { HAIRCUTS, ITEMS, MONSTERS, NODES } from '@driftwake/shared';
@@ -14,6 +15,7 @@ import {
   PoseBlend,
   playerModel,
   poseBoss,
+  poseDeath,
   poseMonster,
   posePlayer,
   stationGeo,
@@ -64,6 +66,24 @@ function changing(gear: Gear, before: Shown, after: Shown, sinceMs: number) {
   posePlayer(model, poseOf({ ...before, time: time - sinceMs }), blend);
   posePlayer(model, poseOf(after), blend);
   return model.root;
+}
+
+/** One of each kind of death, beside its shape in the monsters set. Bosses die their own way. */
+const DYING: { id: string | null; boss?: boolean }[] = [
+  { id: null },
+  ...['wolf', 'chicken', 'wisp', 'spitter', 'golem', 'gnashclaw'].map(id => ({ id })),
+  ...['gnashclaw', 'deepstone', 'colossus'].map(id => ({ id, boss: true })),
+];
+const DEATH_STEPS = [0, 0.2, 0.4, 0.6, 0.8, Number(query.get('death') ?? 1)];
+
+/** A player or monster `progress` of the way through dying, standing where its holder is. */
+function dying(id: string | null, progress: number, boss = false) {
+  const model = id ? monsterModel(id) : playerModel(name, SWORD);
+  if (!id) posePlayer(model, STILL);
+  const holder = new THREE.Group();
+  holder.add(model.root);
+  poseDeath(model, progress, boss);
+  return holder;
 }
 
 const ATTACK_MS = 550;
@@ -223,6 +243,15 @@ const SETS: Record<string, GallerySet> = {
           poseBoss(model, { state, attack, tiles: [], centres: [], start, end }, progress);
           return { object: model.root, turn: 0.2 };
         }),
+      ),
+  },
+  // Each row is one kind of death, from the moment of death on the left to lying still on the right.
+  death: {
+    columns: DEATH_STEPS.length,
+    gap: 3.2,
+    exhibits: () =>
+      DYING.flatMap(({ id, boss }) =>
+        DEATH_STEPS.map(progress => ({ object: dying(id, progress, boss), turn: 0.9 })),
       ),
   },
   capes: {

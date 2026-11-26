@@ -1,5 +1,6 @@
 export { poseBoss, poseMonster, posePlayer, STRIKE_AT, workCycleMs } from './animation';
 export { boatGeo } from './boat';
+export { hasDeathPose, poseDeath } from './death';
 export { dropModel, graveModel } from './ground';
 export { heldGeo } from './held';
 export { type Model, mesh } from './model';
