@@ -141,7 +141,7 @@ A point on the sea the helm steers straight for, until the boat reaches it. Ther
 _Avoid_: Waypoint, destination
 
 **Hard grounding**:
-Hitting land fast enough to run hard aground. Every hit stops the boat; backing gets it off.
+Hitting land fast enough to run hard aground. Every hit stops the boat; under sail it turns off the shore towards its course, and backing gets it off.
 _Avoid_: Crash, collision
 
 **Going ashore**:

@@ -83,7 +83,7 @@ func (w *World) sail(p *Player) {
 	w.keepAboard(p)
 	switch {
 	case s.hard:
-		w.info(p, "Crunch! You run hard aground on "+w.landName(s.land)+". Back the sail to get free.", pb.InfoKind_INFO_KIND_BAD)
+		w.info(p, "Crunch! You run hard aground on "+w.landName(s.land)+". Steer for open water, or back the sail, to get free.", pb.InfoKind_INFO_KIND_BAD)
 	case s.nudged:
 		w.tell(p, "You nudge the shore of "+w.landName(s.land)+".")
 	case s.reached:

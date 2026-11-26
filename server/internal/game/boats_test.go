@@ -200,7 +200,22 @@ func TestTheShipsHandsTellWhereTheBoatRanAground(t *testing.T) {
 	e.run(1)
 	found := false
 	for _, m := range e.c[1].msgs {
-		found = found || m.GetInfo().GetText() == "Crunch! You run hard aground on Pine Holm. Back the sail to get free."
+		found = found || m.GetInfo().GetText() == "Crunch! You run hard aground on Pine Holm. Steer for open water, or back the sail, to get free."
 	}
 	check(t, found, "no word of running aground")
+}
+
+func TestSteeringIntoTheMainlandAndOutAgain(t *testing.T) {
+	e := setup(t)
+	mainland := coastOf("mainland")
+	inland := Point{X: mainland.X + 40, Y: mainland.Y + 40}
+	start := offShore(t, inland, -1)
+	start.X -= 12
+	p := e.sailor(1, start)
+	p.boat.Heading = 90
+	e.do(p, setSailMsg(sailFull), 1)
+	e.do(p, steerMsg(uint32(inland.X), uint32(inland.Y)), 30)
+	check(t, p.boat.Touching, "never reached the mainland's shore")
+	e.do(p, steerMsg(uint32(start.X-10), uint32(start.Y)), 30)
+	check(t, !p.boat.Touching && p.boat.At.X < start.X, "stuck on the shore at", p.boat.At)
 }

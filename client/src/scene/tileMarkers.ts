@@ -1,4 +1,4 @@
-// Outlined squares on the ground: the hovered tile, the destination, and the tile the server has you on.
+// Bracketed corners on the ground: the hovered tile, the destination or course, and the tile the server has you on.
 import type { TilePos } from '@driftwake/shared';
 import * as THREE from 'three';
 
@@ -42,13 +42,28 @@ export class TileMarker {
   }
 }
 
+/** Half a tile, less a sliver so neighbouring markers do not touch. */
+const EDGE = 0.47;
+const ARM = 0.15;
+const THICKNESS = 0.03;
+
+/** A bracket in each corner of the tile. */
 function outlineGeometry(): THREE.BufferGeometry {
-  const outer = 0.48;
-  const inner = 0.41;
-  const shape = new THREE.Shape();
-  shape.moveTo(-outer, -outer).lineTo(outer, -outer).lineTo(outer, outer).lineTo(-outer, outer);
-  const hole = new THREE.Path();
-  hole.moveTo(-inner, -inner).lineTo(-inner, inner).lineTo(inner, inner).lineTo(inner, -inner);
-  shape.holes.push(hole);
-  return new THREE.ShapeGeometry(shape).rotateX(-Math.PI / 2);
+  const corners = [
+    [1, 1],
+    [-1, 1],
+    [-1, -1],
+    [1, -1],
+  ].map(([sx, sz]) => {
+    const at = (x: number, z: number) => new THREE.Vector2(sx * x, sz * z);
+    return new THREE.Shape([
+      at(EDGE, EDGE),
+      at(EDGE - ARM, EDGE),
+      at(EDGE - ARM, EDGE - THICKNESS),
+      at(EDGE - THICKNESS, EDGE - THICKNESS),
+      at(EDGE - THICKNESS, EDGE - ARM),
+      at(EDGE, EDGE - ARM),
+    ]);
+  });
+  return new THREE.ShapeGeometry(corners).rotateX(-Math.PI / 2);
 }
