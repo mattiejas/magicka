@@ -117,6 +117,7 @@ function payload(msg: ClientMsg): { case: string; value: unknown } {
       return { case: 'station', value: wireId(PbKind.STATION, STATION_IDS.indexOf(msg.id)) };
     case 'attack':
     case 'pickup':
+    case 'pickupAll':
       return { case: msg.type, value: Number(msg.id) };
     case 'craft':
       return { case: 'craft', value: { recipe: msg.recipe, qty: msg.qty, intense: msg.intense ?? false } };

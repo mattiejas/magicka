@@ -1,7 +1,15 @@
 import { type ClientMsg, type Entity, ITEMS, MONSTERS, NODES } from '@driftwake/shared';
 import { beforeEach, describe, expect, it } from 'vitest';
 import { state } from './net/state';
-import { mainAction, nameOf, type Option, optionsFor, type Thing } from './things';
+import {
+  clickAction,
+  mainAction,
+  nameOf,
+  type Option,
+  optionsFor,
+  optionsForAll,
+  type Thing,
+} from './things';
 
 let sent: ClientMsg[];
 const means = {
@@ -120,5 +128,44 @@ describe('entities', () => {
     expect(mainAction(player, means)).toBeNull();
     expect(optionsFor(player, means).map(([label]) => label)).toEqual(['Trade with Wren 7']);
     expect(sent).toEqual([]);
+  });
+});
+
+describe('piles', () => {
+  const [ore, coin] = ['copper_ore', 'coin'];
+  /** Lays a drop on the ground as the browser knows it. */
+  const lay = (id: string, type: string, x: number, publicAt = 0): Thing => {
+    const drop: Entity = { id, kind: 'drop', type, x, y: 0, qty: 1, publicAt };
+    state.entities.set(id, { entity: drop, from: [x, 0], path: [], movedAt: 0 });
+    return { kind: 'entity', entity: drop };
+  };
+  const labels = (options: Option[]) => options.map(([label]) => label);
+
+  it('a tile with more than one item offers to take all, first', () => {
+    const things = [lay('1', ore, 0), lay('2', coin, 0)];
+    const options = optionsForAll(things, means);
+    expect(labels(options)).toEqual(['Take all', `Take ${ITEMS[ore].name}`, `Take ${ITEMS[coin].name}`]);
+    options[0][1]();
+    expect(sent).toEqual([{ type: 'pickupAll', id: '1' }]);
+  });
+
+  it('a single item has no take all', () => {
+    lay('2', coin, 5);
+    expect(labels(optionsForAll([lay('1', ore, 0)], means))).toEqual([`Take ${ITEMS[ore].name}`]);
+  });
+
+  it('the label of one item in a pile offers to take all too', () => {
+    const [first] = [lay('1', ore, 0), lay('2', coin, 0)];
+    expect(labels(optionsForAll([first], means))).toEqual(['Take all', `Take ${ITEMS[ore].name}`]);
+  });
+
+  it("clicking a pile of the player's own takes it all", () => {
+    const [first] = [lay('1', ore, 0), lay('2', coin, 0, state.tick + 100)];
+    expect(clickAction(first, means)![0]).toBe('Take all');
+  });
+
+  it('clicking a pile with a public item takes only that item', () => {
+    const [first] = [lay('1', ore, 0), lay('2', coin, 0, state.tick - 1)];
+    expect(clickAction(first, means)![0]).toBe(`Take ${ITEMS[ore].name}`);
   });
 });
