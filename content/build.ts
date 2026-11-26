@@ -5,6 +5,7 @@ import * as c from './src/items';
 import { BOSS_SHAPES } from './src/items';
 import { MAPS } from './src/maps';
 import { QUESTS } from './src/quests';
+import { unlocks } from './src/unlocks';
 /** Throws for an attack whose shape is missing or unknown, so that none silently hits nobody. */
 export function checkAttacks(monsters: c.MonsterDef[]) {
   for (const m of monsters)
@@ -89,6 +90,7 @@ export function build(): Record<string, string> {
       methods: c.METHODS,
       cooking: c.COOKING,
       quests: QUESTS,
+      unlocks: unlocks(),
     }),
     'maps.json': line(maps),
     'vectors.json': line(vectors),

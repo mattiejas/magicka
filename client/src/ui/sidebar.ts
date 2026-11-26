@@ -1,6 +1,7 @@
 // Inventory, equipment and skills.
 import {
   ITEMS,
+  levelForXp,
   MAX_LEVEL,
   QUESTS,
   type SelfState,
@@ -19,6 +20,7 @@ import { skillIcon } from './icons/skills';
 import { clickAction, type ItemAction, menuActions, quickDropAction } from './itemActions';
 import { itemSlot, level } from './items';
 import { currentPanel, openPanel } from './panels';
+import { unlockList } from './unlocks';
 
 const TABS = ['inventory', 'equipment', 'skills', 'quests', 'log'] as const;
 type Tab = (typeof TABS)[number];
@@ -37,6 +39,7 @@ export function sidebar(): HTMLElement {
 
 function selectTab(tab: Tab) {
   currentTab = tab;
+  openSkill = null;
   updateSidebar();
 }
 
@@ -50,7 +53,11 @@ interface TabContent {
 const CONTENT: Record<Tab, TabContent> = {
   inventory: { render: inventory, shows: self => self.inv.length, update: updateInventory },
   equipment: { render: equipment, shows: self => self.equip },
-  skills: { render: skills, shows: self => self.xp },
+  // A skill's list shows its level only, so that gaining XP leaves it, and where it is scrolled to, alone.
+  skills: {
+    render: skills,
+    shows: self => (openSkill ? [openSkill, levelForXp(self.xp[openSkill])] : self.xp),
+  },
   quests: { render: quests, shows: self => [self.quests, self.boatDone] },
   log: { render: collectionLog, shows: self => [self.found, self.kills] },
 };
@@ -160,8 +167,32 @@ function quests(self: SelfState): Node[] {
 }
 
 // --- skills
+/** The skill whose list of what it opens is showing, instead of all skills. */
+let openSkill: Skill | null = null;
+
+function showSkill(skill: Skill | null) {
+  openSkill = skill;
+  updateSidebar();
+  document.querySelector('#side .unlocks .next')?.scrollIntoView({ block: 'nearest' });
+}
+
 function skills(self: SelfState): Node[] {
+  if (openSkill) return skillUnlocks(openSkill);
   return [h('div', { class: 'skills' }, ...SKILLS.map(skill => skillRow(skill, self.xp[skill])))];
+}
+
+function skillUnlocks(skill: Skill): Node[] {
+  const current = level(skill);
+  return [
+    h(
+      'div',
+      { class: 'skill-head' },
+      button('‹ Skills', () => showSkill(null), { class: 'back' }),
+      h('span', { class: 'skill-name', html: `${skillIcon(skill, 'skill-icon')}${skill}` }),
+      h('b', { class: 'num' }, `Level ${current}`),
+    ),
+    unlockList(skill, current),
+  ];
 }
 
 function skillRow(skill: Skill, xp: number): HTMLElement {
@@ -169,9 +200,15 @@ function skillRow(skill: Skill, xp: number): HTMLElement {
   const isMax = current >= MAX_LEVEL;
   const from = xpForLevel(current);
   const to = xpForLevel(current + 1);
+  const progress = isMax ? `${xp} xp` : `${xp} xp, ${to - xp} to level ${current + 1}`;
   return h(
-    'div',
-    { class: 'skill', title: isMax ? `${xp} xp` : `${xp} xp, ${to - xp} to level ${current + 1}` },
+    'button',
+    {
+      type: 'button',
+      class: 'skill',
+      title: `${progress}. Click to see what each level opens.`,
+      onclick: () => showSkill(skill),
+    },
     h('span', { class: 'skill-name', html: `${skillIcon(skill, 'skill-icon')}${skill}` }),
     h('b', { class: 'num' }, String(current)),
     bar(isMax ? 1 : (xp - from) / (to - from)),
