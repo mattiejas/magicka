@@ -90,3 +90,13 @@ func (w *World) hurt(p *Player, from uint32, damage int, style string) {
 		w.die(p)
 	}
 }
+
+// givesWay is what a player hit by a monster stops doing to fight back: nothing, or skilling.
+// Whatever else they chose, such as walking or another target, goes on.
+var givesWay = map[actionType]bool{actNone: true, actGather: true, actCraft: true}
+
+// fightsBack reports whether a player turns on a monster that hits them. Bosses never call it: their
+// attacks land on marked ground, which has to be dodged.
+func (w *World) fightsBack(p *Player) bool {
+	return !p.C.NoFightBack && givesWay[p.act.typ] && !p.isEating(w.Tick) && p.trade == nil
+}

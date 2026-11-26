@@ -35,6 +35,7 @@ func newGatherer(t *testing.T, kind, m string, level int, chaseGlow bool) *gathe
 		}
 	}
 	setLevel(g.p, level)
+	g.p.C.NoFightBack = true // this measures skilling, beside monsters that may attack
 	tool := g.nodes[0].Def.Tool
 	tier := 0
 	for i := 1; i <= 5; i++ {

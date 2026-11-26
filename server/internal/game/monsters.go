@@ -66,8 +66,8 @@ func (w *World) monsterAttack(m *Monster, p *Player) {
 	chance := HitChance(d.Level, d.Acc, float64(p.level("defence")), s.armour, StyleModifier(d.Style, s.style))
 	hits := w.rnd() < chance
 	w.addXP(p, "defence", defenceXP+defenceXPLevel*float64(d.Level))
-	if p.act.typ == actNone && p.nextAct < w.Tick && p.trade == nil { // an idle player fights back
-		p.act = action{typ: actAttack, id: m.ID}
+	if w.fightsBack(p) {
+		p.begin(action{typ: actAttack, id: m.ID})
 	}
 	damage := 0
 	if hits {

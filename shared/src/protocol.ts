@@ -33,6 +33,7 @@ export type ClientMsg =
   | { type: 'tradeStep'; action: 'accept' | 'decline' }
   | { type: 'tradeStep'; action: 'offer' | 'takeBack'; item: string; qty: number }
   | { type: 'block'; name: string; on: boolean }
+  | { type: 'fightBack'; on: boolean }
   | { type: 'report'; name: string; reason: ReportReason }
   | { type: 'boat'; op: 'build' | 'sail' }
   | { type: 'look'; look: Look }
@@ -129,6 +130,8 @@ export interface SelfState {
   look: Look;
   /** Food on the fire with the intense method: the tick it is done, and the tick it burns. */
   fire: { ready: number; burns: number } | null;
+  /** Attacks whoever hits the player while they are idle or skilling. */
+  fightBack: boolean;
 }
 
 export type InfoKind = 'unique' | 'boss' | 'level' | 'bad';

@@ -153,6 +153,8 @@ function payload(msg: ClientMsg): { case: string; value: unknown } {
     }
     case 'block':
       return { case: 'block', value: { name: msg.name, on: msg.on } };
+    case 'fightBack':
+      return { case: 'fightBack', value: msg.on };
     case 'report':
       return { case: 'report', value: { name: msg.name, reason: REPORT_REASONS.indexOf(msg.reason) + 1 } };
     case 'boat':
@@ -253,6 +255,7 @@ function selfState(self: PbSelf): SelfState {
     kills: { ...self.kills },
     look: { cut: self.look?.cut ?? 0, color: self.look?.color ?? 0 },
     fire: self.fireReady ? { ready: self.fireReady, burns: self.fireBurns } : null,
+    fightBack: self.fightBack,
   };
 }
 
