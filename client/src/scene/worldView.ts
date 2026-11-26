@@ -1,6 +1,7 @@
 // The fixed part of a map: ground, water, resource nodes, stations and the player's boat.
 import {
   BOAT_PARTS,
+  type ChartUpdate,
   type Entity,
   type GameMap,
   groundHeight,
@@ -20,6 +21,7 @@ import { groundDetail } from './groundDetail';
 import { paving } from './paving';
 import { type FixedPick, pickBox } from './picking';
 import { Ripples } from './ripples';
+import { fogMaterial, isSeenClose, LOOKOUT, SeaFog } from './seaFog';
 import { terrain } from './terrain';
 
 const HIDDEN = new THREE.Matrix4().makeScale(0, 0, 0);
@@ -39,6 +41,8 @@ interface NodeInstance {
   index: number;
   placement: THREE.Matrix4;
   isDepleted: boolean;
+  /** In fog, or not yet seen up close. */
+  isHidden: boolean;
 }
 
 export class WorldView {
@@ -52,6 +56,8 @@ export class WorldView {
   private ripples = new Ripples();
   private boat: THREE.Mesh | null = null;
   private boatKey = '';
+  private fog: SeaFog;
+  private centre: [number, number] = [0, 0];
 
   constructor(
     readonly map: GameMap,
@@ -73,10 +79,18 @@ export class WorldView {
       this.fallingTrees.group,
       this.ripples.group,
     );
+    this.fog = new SeaFog(map);
+    if (this.fog.active) this.group.traverse(object => fogMaterials(object).forEach(fogMaterial));
   }
 
   dispose() {
     this.group.traverse(object => (object as THREE.Mesh).geometry?.dispose());
+    this.fog.dispose();
+  }
+
+  /** Whether a point is in sight: anywhere but at sea, where only within the lookout. */
+  inSight(x: number, z: number): boolean {
+    return !this.fog.active || Math.hypot(x - this.centre[0], z - this.centre[1]) <= LOOKOUT + 0.5;
   }
 
   /** The height of the ground at a point, in world units. */
@@ -89,11 +103,25 @@ export class WorldView {
   }
 
   isDepleted(nodeId: string): boolean {
-    return this.nodes.get(nodeId)?.isDepleted ?? false;
+    const node = this.nodes.get(nodeId);
+    return !!node && (node.isDepleted || node.isHidden);
   }
 
-  /** `reported` are the nodes that are depleted, glowing or rich. */
-  update(now: number, reported: Entity[], self: SelfState, me?: Entity) {
+  /**
+   * `reported` are the nodes that are depleted, glowing or rich. `centre` is where the player is, from which the
+   * lookout sees; `chart` what they have seen of the sea.
+   */
+  update(
+    now: number,
+    reported: Entity[],
+    self: SelfState,
+    me: Entity | undefined,
+    centre: [number, number],
+    chart: ChartUpdate | null,
+  ) {
+    this.centre = centre;
+    this.fog.update(chart, centre);
+    if (this.fog.active) this.hideUnseen(chart);
     this.water.position.y = WATER_LEVEL + Math.sin(now / 1600) * 0.03;
     const glowing = new Set(reported.filter(node => node.glowing).map(node => node.id));
     const rich = new Set(reported.filter(node => node.rich).map(node => node.id));
@@ -116,11 +144,22 @@ export class WorldView {
     this.updateBoat(self);
   }
 
+  /** At sea, what stands on a place shows only where it was seen up close, or once the player went ashore on it. */
+  private hideUnseen(chart: ChartUpdate | null) {
+    const { size } = this.map;
+    for (const node of this.nodes.values()) {
+      const hidden = !chart || !isSeenClose(this.map, chart, node.node.y * size + node.node.x);
+      if (hidden === node.isHidden) continue;
+      node.isHidden = hidden;
+      showNode(node);
+    }
+  }
+
   /** The fishing spots that are where they are drawn. */
   private spotsHere(): Set<string> {
     const here = new Set<string>();
-    for (const [id, { node, isDepleted }] of this.nodes)
-      if (!isDepleted && NODES[node.type].kind === 'spot') here.add(id);
+    for (const [id, { node, isDepleted, isHidden }] of this.nodes)
+      if (!isDepleted && !isHidden && NODES[node.type].kind === 'spot') here.add(id);
     return here;
   }
 
@@ -137,7 +176,15 @@ export class WorldView {
         const placement = nodePlacement(this.map, node, random);
         whole.setMatrixAt(index, placement);
         depleted.setMatrixAt(index, HIDDEN);
-        this.nodes.set(node.id, { node, whole, depleted, index, placement, isDepleted: false });
+        this.nodes.set(node.id, {
+          node,
+          whole,
+          depleted,
+          index,
+          placement,
+          isDepleted: false,
+          isHidden: false,
+        });
         const base = placement.elements[13];
         const box = pickBox(node.x, node.y, NODES[type].size, shape.height, base);
         this.picks.push({ kind: 'node', id: node.id, type, box });
@@ -211,7 +258,19 @@ const isNear = (node: MapNode, me: Entity) =>
 function setDepleted(node: NodeInstance, isDepleted: boolean) {
   if (isDepleted === node.isDepleted) return;
   node.isDepleted = isDepleted;
-  node.whole.setMatrixAt(node.index, isDepleted ? HIDDEN : node.placement);
-  node.depleted.setMatrixAt(node.index, isDepleted ? node.placement : HIDDEN);
+  showNode(node);
+}
+
+/** Draws a node whole, depleted, or not at all. */
+function showNode(node: NodeInstance) {
+  const { isDepleted, isHidden, placement } = node;
+  node.whole.setMatrixAt(node.index, isHidden || isDepleted ? HIDDEN : placement);
+  node.depleted.setMatrixAt(node.index, isHidden || !isDepleted ? HIDDEN : placement);
   node.whole.instanceMatrix.needsUpdate = node.depleted.instanceMatrix.needsUpdate = true;
+}
+
+function fogMaterials(object: THREE.Object3D): THREE.Material[] {
+  const { material } = object as THREE.Mesh;
+  if (!material) return [];
+  return Array.isArray(material) ? material : [material];
 }

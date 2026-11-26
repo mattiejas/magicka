@@ -145,6 +145,7 @@ export class EntityLayer {
       boat ? WATER_LEVEL + DECK_HEIGHT : world.heightAt(x, z) + floatHeight(entity, now),
       z,
     );
+    root.visible = entity.id === state.me || world.inSight(x, z);
     if (entity.kind !== 'player' && entity.kind !== 'monster') return;
 
     const moving = isMoving(track);

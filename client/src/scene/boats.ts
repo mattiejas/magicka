@@ -44,11 +44,12 @@ export class Boats {
     this.group.add(this.arc, this.course);
   }
 
-  update(now: number) {
+  /** `inSight` tells whether a point can be seen, which at sea is only within the lookout. */
+  update(now: number, inSight: (x: number, y: number) => boolean) {
     const shown = new Set<string>();
     for (const track of state.entities.values()) {
       const at = boatAt(track);
-      if (!at) continue;
+      if (!at || !inSight(at.x, at.y)) continue;
       const { id, boat } = track.entity;
       shown.add(id);
       const mesh = this.meshFor(id);

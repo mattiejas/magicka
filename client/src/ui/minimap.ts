@@ -5,6 +5,7 @@ import { send } from '../net/connection';
 import { myTrack, positionOf, state } from '../net/state';
 import { CAVE_COLOR, TILE_COLORS } from '../scene/palette';
 import { settings } from '../settings';
+import { chartTile, drawChart } from './chartMap';
 import { byId, h } from './dom';
 import { menuButtons } from './menuButtons';
 import { pullInside, questPlace } from './questMarker';
@@ -54,12 +55,15 @@ export const minimapPanel = () =>
 function walkToClick(event: MouseEvent) {
   const me = myTrack()?.entity;
   if (!me) return;
+  if (state.self?.map === 'sea') {
+    const tile = chartTile(event);
+    if (isAboard()) steer(tile);
+    return;
+  }
   const box = (event.target as HTMLElement).getBoundingClientRect();
   const x = Math.round(me.x + ((event.clientX - box.left) / box.width - 0.5) * RANGE * 2);
   const y = Math.round(me.y + ((event.clientY - box.top) / box.height - 0.5) * RANGE * 2);
-  if (x < 0 || y < 0) return;
-  if (isAboard()) steer([x, y]);
-  else send({ type: 'move', x, y });
+  if (x >= 0 && y >= 0) send({ type: 'move', x, y });
 }
 
 export function drawMinimap() {
@@ -68,6 +72,7 @@ export function drawMinimap() {
   const canvas = byId('mm') as HTMLCanvasElement | null;
   if (!self || !track || !canvas) return;
   const context = canvas.getContext('2d')!;
+  if (self.map === 'sea') return drawChart(context);
   const centre = positionOf(track);
   const map = MAPS[self.map];
   drawPicture(context, map, centre);

@@ -102,7 +102,8 @@ export class Scene {
     return {
       x: ((point.x + 1) / 2) * innerWidth,
       y: ((1 - point.y) / 2) * innerHeight,
-      visible: point.z < 1,
+      // At sea nothing is told beyond the lookout, so neither are names over it.
+      visible: point.z < 1 && (this.world?.inSight(x, z) ?? true),
     };
   };
 
@@ -132,9 +133,11 @@ export class Scene {
   private update(dt: number, now: number) {
     const self = state.self!;
     const world = this.worldFor(self.map);
-    world.update(now, reportedNodes(), self, myTrack()?.entity);
+    const track = myTrack();
+    const [x, y] = track ? positionOf(track) : [0, 0];
+    world.update(now, reportedNodes(), self, track?.entity, [x + 0.5, y + 0.5], state.chart);
     this.entities.update(world, now, dt);
-    this.boats.update(now);
+    this.boats.update(now, (bx, by) => world.inSight(bx, by));
     this.followPlayer(dt);
     this.effects.update(now);
   }
