@@ -8,8 +8,8 @@
   PROTOTYPE, throwaway. Issue #109: does sailing between islands make exploring Driftwake fun?
   Open this file in a browser; nothing to install. The rules are in the <script id="sailing"> module,
   written as a pure step per tick so they could move to server/internal/game. The rest is a thin page.
-  Second cut: no wind, sails or currents. Click a tile and the boat sails there along a tile path,
-  the way walking works in the game, only faster and on water.
+  Third cut: no wind or currents. You set the sail (back, stop, half, full) and click where to steer;
+  the boat carries way, turns in an arc and can run aground, so you plan ahead and back off.
 -->
 <style>
   :root { --bg:#14191d; --panel:#1f262c; --line:#334049; --text:#e8e2d6; --mute:#93a0a8; --accent:#6fc1b1; }
@@ -29,6 +29,9 @@
   dt { color:var(--mute); } dd { margin:0; }
   button { background:#2b353d; color:var(--text); border:1px solid var(--line); border-radius:4px; padding:6px 10px; font:inherit; cursor:pointer; }
   button:hover { border-color:var(--accent); }
+  button.on { border-color:var(--accent); color:var(--accent); }
+  button:disabled { opacity:.45; cursor:default; }
+  kbd { background:#2b353d; border:1px solid var(--line); border-radius:3px; padding:0 4px; font-size:12px; }
   .row { display:flex; flex-wrap:wrap; gap:6px; margin:6px 0; align-items:center; }
   .hint { color:var(--mute); }
   .log { max-height:170px; overflow:auto; color:var(--mute); font-size:13px; }
@@ -42,20 +45,27 @@
 <body>
 <header>
   <h1>Sailing prototype (throwaway, issue #109)</h1>
-  <p>Click any tile and your boat sails there, steering round the land it knows about. Click an island to sail to its shore and
-  go ashore. The sea starts in fog; sail out to find the islands and see what each one holds.</p>
+  <p>Set your sail, then click where to steer. The boat gathers speed slowly, turns in an arc and carries way when you stop, so
+  plan your turns and take in sail before the shore. Back the sail to go astern. Come in slowly beside land to go ashore.
+  The sea starts in fog; sail out to find the islands and see what each one holds.</p>
 </header>
 <main>
   <div>
     <canvas id="sea" width="832" height="832"></canvas>
-    <div class="row"><span class="hint" id="hover">Click a tile to sail there.</span></div>
+    <div class="row">
+      <span class="hint">Sail:</span>
+      <span id="sails" class="row" style="margin:0"></span>
+      <button id="ashore-btn">Go ashore <kbd>Space</kbd></button>
+    </div>
+    <div class="row"><span class="hint">Click to steer for a spot · <kbd>W</kbd><kbd>S</kbd> or <kbd>↑</kbd><kbd>↓</kbd> raise and lower the sail · <kbd>A</kbd><kbd>D</kbd> or <kbd>←</kbd><kbd>→</kbd> steer by hand · <kbd>1</kbd>–<kbd>4</kbd> back, stop, half, full</span></div>
+    <div class="row"><span class="hint" id="hover"></span></div>
   </div>
   <aside>
     <div class="panel" id="ashore"></div>
     <div class="panel">
       <h2>Chart</h2>
       <canvas id="chart" width="384" height="384"></canvas>
-      <div class="row"><span class="hint">Only what you have seen. Click it to set a far course.</span></div>
+      <div class="row"><span class="hint">Only what you have seen. Click it to steer for a far spot.</span></div>
     </div>
     <div class="panel">
       <h2>Voyage</h2>
@@ -70,9 +80,9 @@
       <h2>After playing, tell us</h2>
       <ol>
         <li>Did you want to see what was behind the fog? What made you pick a direction?</li>
+        <li>Did handling the boat (turning wide, taking in sail, backing off) feel good or fiddly?</li>
         <li>Which island did you most want to go back to, and why?</li>
         <li>Were the crossings too long, too short, or right?</li>
-        <li>Did you miss steering the boat yourself?</li>
       </ol>
     </div>
   </aside>
@@ -82,7 +92,6 @@
 // The rules of sailing, one tick at a time. Pure: no DOM, no clock.
 const Sailing = (() => {
   const SIZE = 192;        // tiles across the sea
-  const SPEED = 3;         // tiles a tick under sail; walking is 2
   const SEEN = 10;         // tiles a lookout can see
   const DEEP = 0, SHALLOW = 1, SAND = 2, GRASS = 3, FOREST = 4, ROCK = 5;
   const sailable = t => t <= SHALLOW;
@@ -143,50 +152,33 @@ const Sailing = (() => {
   const tileAt = (x, y) => (x < 0 || y < 0 || x >= SIZE || y >= SIZE ? ROCK : TILES[y * SIZE + x]);
   const islandAt = (x, y) => (x < 0 || y < 0 || x >= SIZE || y >= SIZE ? null : ISLANDS[OWNER[y * SIZE + x]] || null);
 
-  // Straight steps first, so they win ties, as in server/internal/game/path.go.
-  const DIRS = [[0, -1], [1, 0], [0, 1], [-1, 0], [1, -1], [1, 1], [-1, 1], [-1, -1]];
+  const SAILS = ['Backing', 'Stopped', 'Half sail', 'Full sail']; // sail setting 0..3
+  const SAIL_SPEED = [-0.8, 0, 1.6, 3];  // tiles a tick each setting gets to in the end; walking is 2
+  const SPEED_UP = 0.35, SLOW_DOWN = 0.45; // tiles a tick gained or lost each tick: the boat carries way
+  const TURN_RADIUS = 3;   // tiles; the boat turns in an arc, faster the faster it goes
+  const MAX_TURN = 40;     // degrees a tick at most
+  const REACHED = 1.5;     // tiles from the mark at which the helm lets go
+  const SHORE_REACH = 1.6; // tiles from land at which you can go ashore
+  const ASHORE_SPEED = 0.6; // and only this slow
+  const HARD = 1.8;        // hitting land faster than this is a hard grounding
+  const rad = d => (d * Math.PI) / 180;
+  const norm = d => ((d % 360) + 540) % 360 - 180; // -180..180
+  const bearing = (x, y, tx, ty) => (Math.atan2(tx - x, -(ty - y)) * 180) / Math.PI; // 0 = north
+  const landAt = (x, y) => !sailable(tileAt(Math.floor(x), Math.floor(y)));
 
-  /** A* over water the boat knows of. Unseen tiles are taken to be open sea. Diagonals may not cut a known corner. */
-  function plan(known, sx, sy, gx, gy) {
-    const N = SIZE, open = known => (x, y) => x >= 0 && y >= 0 && x < N && y < N && (!known[y * N + x] || sailable(TILES[y * N + x]));
-    const ok = open(known);
-    const g = new Float32Array(N * N).fill(Infinity), from = new Int32Array(N * N).fill(-1), closed = new Uint8Array(N * N);
-    const heap = [];
-    const push = (f, c) => { heap.push([f, c]); for (let i = heap.length - 1; i > 0;) { const q = (i - 1) >> 1; if (heap[q][0] <= heap[i][0]) break; [heap[q], heap[i]] = [heap[i], heap[q]]; i = q; } };
-    const pop = () => { const top = heap[0], last = heap.pop(); if (heap.length) { heap[0] = last; for (let i = 0; ;) { let s = i; const l = 2 * i + 1, r = l + 1;
-      if (l < heap.length && heap[l][0] < heap[s][0]) s = l; if (r < heap.length && heap[r][0] < heap[s][0]) s = r; if (s === i) break; [heap[s], heap[i]] = [heap[i], heap[s]]; i = s; } } return top[1]; };
-    const h = (x, y) => Math.max(Math.abs(x - gx), Math.abs(y - gy));
-    const start = sy * N + sx; g[start] = 0; push(h(sx, sy), start);
-    let best = start, bestH = h(sx, sy);
-    while (heap.length) {
-      const c = pop(); if (closed[c]) continue; closed[c] = 1;
-      const x = c % N, y = (c / N) | 0, hh = h(x, y);
-      if (hh < bestH) { best = c; bestH = hh; }
-      if (hh === 0) break;
-      for (const [dx, dy] of DIRS) {
-        const nx = x + dx, ny = y + dy;
-        if (!ok(nx, ny) || (dx && dy && (!ok(x + dx, y) || !ok(x, y + dy)))) continue;
-        const n = ny * N + nx, ng = g[c] + (dx && dy ? 1.001 : 1);
-        if (ng < g[n]) { g[n] = ng; from[n] = c; push(ng + h(nx, ny), n); }
-      }
+  /** The nearest land tile within reach of a point, or null. */
+  function landNear(x, y, reach) {
+    let best = null, bd = reach;
+    for (let ty = Math.floor(y - reach); ty <= y + reach; ty++) for (let tx = Math.floor(x - reach); tx <= x + reach; tx++) {
+      if (sailable(tileAt(tx, ty))) continue;
+      const d = Math.hypot(Math.max(tx - x, 0, x - tx - 1), Math.max(ty - y, 0, y - ty - 1)); // to the tile's nearest edge
+      if (d <= bd) { bd = d; best = [tx, ty]; }
     }
-    const path = []; for (let c = best; c !== start && c !== -1; c = from[c]) path.push([c % N, (c / N) | 0]);
-    return path.reverse();
-  }
-
-  /** The water tile nearest a clicked land tile, looking outwards from it: where the boat moors to go ashore. */
-  function shoreFor(x, y) {
-    const seen = new Set([y * SIZE + x]), queue = [[x, y]];
-    for (let i = 0; i < queue.length && i < 20000; i++) {
-      const [cx, cy] = queue[i];
-      if (sailable(tileAt(cx, cy))) return [cx, cy];
-      for (const [dx, dy] of DIRS) { const nx = cx + dx, ny = cy + dy, k = ny * SIZE + nx;
-        if (nx >= 0 && ny >= 0 && nx < SIZE && ny < SIZE && !seen.has(k)) { seen.add(k); queue.push([nx, ny]); } }
-    }
-    return null;
+    return best;
   }
 
   function reveal(n, x, y) {
+    x = Math.floor(x); y = Math.floor(y);
     for (let dy = -SEEN; dy <= SEEN; dy++) for (let dx = -SEEN; dx <= SEEN; dx++) {
       const tx = x + dx, ty = y + dy; if (tx < 0 || ty < 0 || tx >= SIZE || ty >= SIZE || dx * dx + dy * dy > SEEN * SEEN) continue;
       const c = ty * SIZE + tx; if (n.known[c] === 1) continue; n.known[c] = 1;
@@ -201,101 +193,158 @@ const Sailing = (() => {
 
   function start() {
     const home = ISLANDS[0]; let y = home.y; while (!sailable(tileAt(home.x, y))) y++;
-    const s = { tick: 0, x: home.x, y: y + 1, trail: [], known: new Uint8Array(SIZE * SIZE), found: [], landed: [], ashore: null,
-      goal: null, landing: null, path: [], tiles: 0, log: ['You push off from Driftwake Isle.'] };
+    const s = { tick: 0, x: home.x + 0.5, y: y + 1.5, heading: 180, speed: 0, sail: 1, course: null, touching: false, trail: [],
+      known: new Uint8Array(SIZE * SIZE), found: [], landed: [], ashore: null, sailed: 0, hard: 0,
+      log: ['You push off from Driftwake Isle. Set a sail and click where to steer.'] };
     reveal(s, s.x, s.y);
     return s;
   }
 
-  /** One tick. `input.target` is the tile the player clicked since the last tick, if any. */
-  function step(s, input = {}) {
-    const n = { ...s, tick: s.tick + 1, trail: [[s.x, s.y]], known: s.known.slice(), found: [...s.found], landed: [...s.landed], log: s.log.slice(0, 40) };
+  /**
+   * One tick. `input` is what the player asked for since the last tick:
+   * { course: [x, y] to steer for, turn: -1|1 to steer by hand, sail: 0..3 to set, raise: ±1 to change the sail by one, ashore: true }.
+   */
+  function step(s, input = {}, dry = false) {
+    const n = { ...s, tick: s.tick + 1, trail: [[s.x, s.y, s.heading]], known: dry ? s.known : s.known.slice(), found: [...s.found], landed: [...s.landed], log: s.log.slice(0, 40) };
     const said = t => n.log.unshift(t);
-    if (input.target) { n.goal = input.target; n.landing = null; n.ashore = null; }
-    // A clicked tile that is (or turns out, once out of the fog, to be) land means: sail to that island's shore.
-    const aimAtShore = () => {
-      if (!n.goal || n.landing || !n.known[n.goal[1] * SIZE + n.goal[0]]) return;
-      const isl = islandAt(n.goal[0], n.goal[1]); if (!isl) return;
-      n.goal = shoreFor(n.goal[0], n.goal[1]); n.landing = placeOf(isl).id;
-    };
-    aimAtShore();
-    if (n.goal && !n.ashore) {
-      // Plan afresh each tick: new land may have come out of the fog.
-      n.path = plan(n.known, n.x, n.y, n.goal[0], n.goal[1]);
-      for (let i = 0; i < SPEED && n.path.length; i++) {
-        const [x, y] = n.path.shift();
-        if (!sailable(tileAt(x, y))) break; // land the lookout had not seen yet; next tick plans round it
-        n.x = x; n.y = y; n.tiles++; n.trail.push([x, y]); reveal(n, x, y);
-        if (!n.landing) { const was = n.goal; aimAtShore(); if (n.goal !== was) break; }
+    if (input.course) n.course = input.course;
+    if (input.turn) n.course = null;
+    if (input.sail !== undefined) n.sail = input.sail;
+    if (input.raise) n.sail = Math.max(0, Math.min(3, n.sail + input.raise));
+    if (n.ashore && (n.sail !== 1 || input.course)) { n.ashore = null; said('You push off.'); }
+
+    // Speed eases towards what the sail gives: the boat carries way and does not stop dead.
+    const want = n.ashore ? 0 : SAIL_SPEED[n.sail];
+    n.speed += Math.max(-SLOW_DOWN, Math.min(SPEED_UP, want - n.speed));
+    if (Math.abs(n.speed) < 0.05 && want === 0) n.speed = 0;
+
+    // Turning: the rudder only bites when the boat moves, so a slow boat turns slowly. Same arc either way.
+    const rate = Math.min(MAX_TURN, (Math.abs(n.speed) / TURN_RADIUS) * (180 / Math.PI));
+    let turn = 0;
+    if (input.turn) turn = input.turn * rate;
+    else if (n.course) {
+      const off = norm(bearing(n.x, n.y, n.course[0], n.course[1]) - n.heading);
+      turn = Math.max(-rate, Math.min(rate, off));
+    }
+
+    // Move in small steps along the arc, so the boat cannot skip over a thin spit of land.
+    const STEPS = 6;
+    for (let i = 0; i < STEPS && n.speed; i++) {
+      n.heading = norm(n.heading + turn / STEPS);
+      const nx = n.x + (Math.sin(rad(n.heading)) * n.speed) / STEPS, ny = n.y - (Math.cos(rad(n.heading)) * n.speed) / STEPS;
+      if (landAt(nx, ny)) {
+        const isl = islandAt(Math.floor(nx), Math.floor(ny)), where = isl ? placeOf(isl).name : 'the edge of the world';
+        if (Math.abs(n.speed) > HARD) { n.hard++; said(`Crunch! You run hard aground on ${where}. Back the sail to get free.`); }
+        else if (!s.touching) said(`You nudge the shore of ${where}.`);
+        n.speed = 0; n.course = null; n.touching = true;
+        break;
       }
-      if (n.x === n.goal[0] && n.y === n.goal[1]) {
-        if (n.landing) {
-          const place = ISLANDS.find(i => i.id === n.landing);
-          n.ashore = place.id; outline(n, place, 1);
-          if (!n.landed.includes(place.id)) { n.landed.push(place.id); said(`You go ashore on ${place.name} for the first time.`); }
-          else said(`You go ashore on ${place.name}.`);
-        } else said('You drop anchor.');
-        n.goal = null; n.landing = null; n.path = [];
-      } else if (!n.path.length && n.trail.length === 1) {
-        said('You cannot find a way there.'); n.goal = null; n.landing = null;
+      n.sailed += Math.hypot(nx - n.x, ny - n.y); n.x = nx; n.y = ny; n.touching = false;
+      n.trail.push([n.x, n.y, n.heading]);
+      if (!dry) reveal(n, n.x, n.y);
+    }
+    if (n.course && Math.hypot(n.course[0] - n.x, n.course[1] - n.y) < REACHED) { n.course = null; said('You reach your mark. The helm holds straight on.'); }
+
+    if (input.ashore) {
+      const near = landNear(n.x, n.y, SHORE_REACH), isl = near && islandAt(near[0], near[1]);
+      if (!isl) said('There is no shore close enough.');
+      else if (Math.abs(n.speed) > ASHORE_SPEED) said('You are going too fast to step ashore. Stop first.');
+      else {
+        const place = placeOf(isl);
+        n.ashore = place.id; n.sail = 1; n.speed = 0; n.course = null; outline(n, place, 1);
+        if (!n.landed.includes(place.id)) { n.landed.push(place.id); said(`You go ashore on ${place.name} for the first time.`); }
+        else said(`You go ashore on ${place.name}.`);
       }
     }
     return n;
   }
-  return { SIZE, SPEED, SEEN, ISLANDS, PLACES, DEEP, SHALLOW, SAND, GRASS, FOREST, ROCK, tileAt, islandAt, placeOf, plan, shoreFor, start, step };
+  /** Where the boat would go over the next ticks if nothing changed: for drawing the turning arc. */
+  function ahead(s, ticks) {
+    let t = s; const pts = [];
+    for (let i = 0; i < ticks; i++) {
+      t = step(t, {}, true);
+      pts.push(...t.trail.slice(1));
+      if (!t.speed) break;
+    }
+    return pts;
+  }
+  return { SIZE, SEEN, ISLANDS, PLACES, SAILS, SAIL_SPEED, SHORE_REACH, ASHORE_SPEED, DEEP, SHALLOW, SAND, GRASS, FOREST, ROCK,
+    tileAt, islandAt, placeOf, landNear, start, step, ahead };
 })();
 </script>
 
 <script>
-// The page: draws the sea around the boat, turns clicks into the next tick's input, and glides between ticks.
+// The page: draws the sea around the boat, turns clicks and keys into the next tick's input, and glides between ticks.
 const S = Sailing;
 const TICK_MS = 600, VIEW = 26; // tiles across the view
 const sea = document.getElementById('sea'), ctx = sea.getContext('2d');
 const chart = document.getElementById('chart'), cctx = chart.getContext('2d');
-let state, prev, lastTickAt = performance.now(), pending = {}, hover = null, cam = [0, 0], startedAt = performance.now();
+let state, prev, lastTickAt = performance.now(), pending = {}, held = 0, hover = null, cam = [0, 0], startedAt = performance.now(), arc = [];
 const COLORS = { [S.DEEP]: '#0d3a4c', [S.SHALLOW]: '#17607a', [S.SAND]: '#d6c08a', [S.GRASS]: '#5f8a4a', [S.FOREST]: '#355c33', [S.ROCK]: '#7b7468' };
 
-function restart() { state = S.start(); prev = state; pending = {}; startedAt = performance.now(); render(); }
+function restart() { state = S.start(); prev = state; pending = {}; startedAt = performance.now(); arc = []; render(); }
 document.getElementById('restart').onclick = restart;
 document.getElementById('reveal').onclick = () => { state = { ...state, known: new Uint8Array(S.SIZE * S.SIZE).fill(1), found: S.PLACES.map(p => p.id) }; render(); };
+const sailButtons = S.SAILS.map((label, i) => Object.assign(document.createElement('button'), { textContent: label, onclick: () => (pending.sail = i) }));
+document.getElementById('sails').append(...sailButtons);
+document.getElementById('ashore-btn').onclick = () => (pending.ashore = true);
 
-function seaTile(e) {
+function seaPoint(e) {
   const r = sea.getBoundingClientRect(), px = r.width / VIEW;
-  return [Math.floor(cam[0] - VIEW / 2 + (e.clientX - r.left) / px), Math.floor(cam[1] - VIEW / 2 + (e.clientY - r.top) / px)];
+  return [cam[0] - VIEW / 2 + (e.clientX - r.left) / px, cam[1] - VIEW / 2 + (e.clientY - r.top) / px];
 }
-function chartTile(e) { const r = chart.getBoundingClientRect(); return [Math.floor(((e.clientX - r.left) / r.width) * S.SIZE), Math.floor(((e.clientY - r.top) / r.height) * S.SIZE)]; }
+function chartPoint(e) { const r = chart.getBoundingClientRect(); return [((e.clientX - r.left) / r.width) * S.SIZE, ((e.clientY - r.top) / r.height) * S.SIZE]; }
 const inSea = ([x, y]) => x >= 0 && y >= 0 && x < S.SIZE && y < S.SIZE;
-sea.addEventListener('click', e => { const t = seaTile(e); if (inSea(t)) pending.target = t; });
-chart.addEventListener('click', e => { const t = chartTile(e); if (inSea(t)) pending.target = t; });
-sea.addEventListener('mousemove', e => (hover = seaTile(e)));
+sea.addEventListener('click', e => { const p = seaPoint(e); if (inSea(p)) pending.course = p; });
+chart.addEventListener('click', e => { const p = chartPoint(e); if (inSea(p)) pending.course = p; });
+sea.addEventListener('mousemove', e => (hover = seaPoint(e).map(Math.floor)));
 sea.addEventListener('mouseleave', () => (hover = null));
+addEventListener('keydown', e => {
+  const k = e.key.toLowerCase();
+  if (k === 'arrowleft' || k === 'a') held = -1;
+  else if (k === 'arrowright' || k === 'd') held = 1;
+  else if (k === 'arrowup' || k === 'w') pending.raise = 1;
+  else if (k === 'arrowdown' || k === 's') pending.raise = -1;
+  else if ('1234'.includes(k) && k.length === 1) pending.sail = Number(k) - 1;
+  else if (k === ' ') pending.ashore = true;
+  else return;
+  e.preventDefault();
+});
+addEventListener('keyup', e => { if (['arrowleft', 'a', 'arrowright', 'd'].includes(e.key.toLowerCase())) held = 0; });
 
 function describe([x, y]) {
   if (!inSea([x, y])) return 'The edge of the world.';
-  if (!state.known[y * S.SIZE + x]) return 'Fog. Sail there to find out.';
+  if (!state.known[y * S.SIZE + x]) return 'Fog.';
   const isl = S.islandAt(x, y);
-  if (isl) return `${S.placeOf(isl).name}. Click to sail to its shore and go ashore.`;
+  if (isl) return `${S.placeOf(isl).name}. Come in slowly beside it to go ashore.`;
   return S.tileAt(x, y) === S.SHALLOW ? 'Shallow water.' : 'Open sea.';
 }
 
 function tick() {
-  const input = pending; pending = {};
+  const input = { ...pending, turn: held || undefined }; pending = {};
   prev = state; state = S.step(state, input); lastTickAt = performance.now();
+  arc = S.ahead(state, 4);
   render();
 }
 
 function render() {
   const secs = Math.round((performance.now() - startedAt) / 1000);
+  const near = S.landNear(state.x, state.y, S.SHORE_REACH);
   const shown = {
+    'Sail': S.SAILS[state.sail],
+    'Speed': `${state.speed.toFixed(1)} tiles a tick${state.speed < 0 ? ', astern' : ''} (walking is 2)`,
     'Places found': `${state.found.length} of ${S.PLACES.length}`,
     'Gone ashore on': `${state.landed.length} of ${S.PLACES.length}`,
     'Sea charted': `${Math.round((state.known.reduce((a, b) => a + (b ? 1 : 0), 0) / state.known.length) * 100)}%`,
-    'Tiles sailed': state.tiles,
+    'Hard groundings': state.hard,
     'Time': `${Math.floor(secs / 60)}:${String(secs % 60).padStart(2, '0')}`,
-    'Speed': `${S.SPEED} tiles a tick (walking is 2)`,
   };
   const dl = document.getElementById('state'); dl.replaceChildren();
   for (const [k, v] of Object.entries(shown)) dl.append(Object.assign(document.createElement('dt'), { textContent: k }), Object.assign(document.createElement('dd'), { textContent: v }));
+  sailButtons.forEach((b, i) => b.classList.toggle('on', i === state.sail));
+  const btn = document.getElementById('ashore-btn');
+  btn.disabled = !near || !!state.ashore || Math.abs(state.speed) > S.ASHORE_SPEED;
+  btn.title = !near ? 'No shore close enough' : Math.abs(state.speed) > S.ASHORE_SPEED ? 'Too fast: stop first' : '';
   const ashore = document.getElementById('ashore'); ashore.replaceChildren();
   if (state.ashore) {
     const p = S.ISLANDS.find(i => i.id === state.ashore);
@@ -303,71 +352,79 @@ function render() {
     ashore.append(Object.assign(document.createElement('h3'), { textContent: `Ashore on ${p.name}` }),
       Object.assign(document.createElement('div'), { textContent: p.blurb, className: 'hint' }),
       Object.assign(document.createElement('ul'), { innerHTML: things.map(([g, label]) => `<li>${g} ${label}</li>`).join('') }),
-      Object.assign(document.createElement('div'), { textContent: 'Click the sea to set sail again.', className: 'hint' }));
+      Object.assign(document.createElement('div'), { textContent: 'Set a sail or click the sea to push off.', className: 'hint' }));
   }
   document.getElementById('log').replaceChildren(...state.log.slice(0, 14).map(t => Object.assign(document.createElement('div'), { textContent: t })));
 }
 
-/** Where the boat is between ticks: along the tiles it sailed this tick, not cutting straight across. */
+/** Where the boat is between ticks: along the arc it sailed this tick. */
 function glide(t) {
-  const tr = state.trail.length ? state.trail : [[state.x, state.y]];
-  if (tr.length === 1) return { x: tr[0][0], y: tr[0][1], dir: null };
+  const tr = state.trail.length > 1 ? state.trail : [[state.x, state.y, state.heading]];
+  if (tr.length === 1) return { x: tr[0][0], y: tr[0][1], heading: tr[0][2] };
   const f = t * (tr.length - 1), i = Math.min(tr.length - 2, Math.floor(f)), u = f - i;
-  const [ax, ay] = tr[i], [bx, by] = tr[i + 1];
-  return { x: ax + (bx - ax) * u, y: ay + (by - ay) * u, dir: Math.atan2(bx - ax, -(by - ay)) };
+  const [ax, ay, ah] = tr[i], [bx, by, bh] = tr[i + 1];
+  const dh = ((((bh - ah) % 360) + 540) % 360) - 180;
+  return { x: ax + (bx - ax) * u, y: ay + (by - ay) * u, heading: ah + dh * u };
 }
-let heading = Math.PI;
 
 function draw(now) {
   const g = glide(Math.min(1, (now - lastTickAt) / TICK_MS));
-  if (g.dir !== null) heading += ((((g.dir - heading) % (2 * Math.PI)) + 3 * Math.PI) % (2 * Math.PI) - Math.PI) * 0.2;
-  cam = [g.x + 0.5, g.y + 0.5];
+  cam = [g.x, g.y];
   const px = sea.width / VIEW, ox = cam[0] - VIEW / 2, oy = cam[1] - VIEW / 2;
+  const P = (x, y) => [(x - ox) * px, (y - oy) * px];
   ctx.fillStyle = '#050e12'; ctx.fillRect(0, 0, sea.width, sea.height);
   const x0 = Math.floor(ox), y0 = Math.floor(oy);
   for (let y = y0; y <= y0 + VIEW + 1; y++) for (let x = x0; x <= x0 + VIEW + 1; x++) {
     if (!inSea([x, y]) || !state.known[y * S.SIZE + x]) continue; // 2 is land seen from afar; drawn the same
-    const sx = (x - ox) * px, sy = (y - oy) * px, t = S.tileAt(x, y);
+    const [sx, sy] = P(x, y), t = S.tileAt(x, y);
     ctx.fillStyle = COLORS[t]; ctx.fillRect(sx, sy, px + 0.5, px + 0.5);
     if (t <= S.SHALLOW && (x + y) % 2 === 0) { ctx.fillStyle = 'rgba(255,255,255,0.025)'; ctx.fillRect(sx, sy, px, px); }
     // Remembered tiles beyond the lookout's sight are dimmer than what you see now.
-    if (Math.hypot(x - g.x, y - g.y) > S.SEEN) { ctx.fillStyle = 'rgba(5,14,18,0.35)'; ctx.fillRect(sx, sy, px + 0.5, px + 0.5); }
+    if (Math.hypot(x + 0.5 - g.x, y + 0.5 - g.y) > S.SEEN) { ctx.fillStyle = 'rgba(5,14,18,0.35)'; ctx.fillRect(sx, sy, px + 0.5, px + 0.5); }
   }
   // Things on islands, and the island names.
   ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-  for (const isl of S.ISLANDS) {
-    for (const [glyph, , dx, dy] of isl.things) {
-      const tx = Math.round(isl.x + dx), ty = Math.round(isl.y + dy);
-      if (state.known[ty * S.SIZE + tx] !== 1) continue; // only once seen up close
-      ctx.font = `${px * 0.8}px system-ui`; ctx.fillText(glyph, (tx - ox + 0.5) * px, (ty - oy + 0.5) * px);
-    }
+  for (const isl of S.ISLANDS) for (const [glyph, , dx, dy] of isl.things) {
+    const tx = Math.round(isl.x + dx), ty = Math.round(isl.y + dy);
+    if (state.known[ty * S.SIZE + tx] !== 1) continue; // only once seen up close
+    ctx.font = `${px * 0.8}px system-ui`; ctx.fillText(glyph, ...P(tx + 0.5, ty + 0.5));
   }
   for (const p of S.PLACES) {
     const ty = Math.round(p.y - p.ry - 1.5);
     if (!state.found.includes(p.id) || Math.abs(p.x - cam[0]) > VIEW || Math.abs(ty - cam[1]) > VIEW) continue;
-    ctx.font = '600 16px system-ui'; ctx.fillStyle = 'rgba(0,0,0,0.5)'; ctx.fillText(p.name, (p.x - ox + 0.5) * px + 1, (ty - oy + 0.5) * px + 1);
-    ctx.fillStyle = '#f3ecdc'; ctx.fillText(p.name, (p.x - ox + 0.5) * px, (ty - oy + 0.5) * px);
+    const [lx, ly] = P(p.x + 0.5, ty + 0.5);
+    ctx.font = '600 16px system-ui'; ctx.fillStyle = 'rgba(0,0,0,0.5)'; ctx.fillText(p.name, lx + 1, ly + 1);
+    ctx.fillStyle = '#f3ecdc'; ctx.fillText(p.name, lx, ly);
   }
-  // The planned path and its end.
-  if (state.goal) {
-    ctx.fillStyle = 'rgba(111,193,177,0.55)';
-    for (const [x, y] of state.path) { ctx.beginPath(); ctx.arc((x - ox + 0.5) * px, (y - oy + 0.5) * px, 2.5, 0, 7); ctx.fill(); }
-    const [gx, gy] = state.goal; ctx.strokeStyle = '#6fc1b1'; ctx.lineWidth = 2; ctx.strokeRect((gx - ox) * px + 2, (gy - oy) * px + 2, px - 4, px - 4);
+  // Where the boat will be over the next few ticks if nothing changes: its turning arc and how far it carries.
+  if (arc.length) {
+    ctx.strokeStyle = 'rgba(243,236,220,0.35)'; ctx.setLineDash([4, 6]); ctx.lineWidth = 2; ctx.beginPath();
+    ctx.moveTo(...P(g.x, g.y)); ctx.lineTo(...P(state.x, state.y)); for (const [x, y] of arc) ctx.lineTo(...P(x, y)); ctx.stroke(); ctx.setLineDash([]);
   }
-  if (pending.target) { const [gx, gy] = pending.target; ctx.strokeStyle = '#f3ecdc'; ctx.lineWidth = 2; ctx.strokeRect((gx - ox) * px + 2, (gy - oy) * px + 2, px - 4, px - 4); }
-  if (hover) { ctx.strokeStyle = 'rgba(243,236,220,0.4)'; ctx.lineWidth = 1; ctx.strokeRect((hover[0] - ox) * px, (hover[1] - oy) * px, px, px); }
-  // The boat.
-  ctx.save(); ctx.translate((g.x - ox + 0.5) * px, (g.y - oy + 0.5) * px); ctx.rotate(heading);
-  ctx.fillStyle = '#8d6a4c'; ctx.beginPath(); ctx.moveTo(0, -px * 0.55); ctx.quadraticCurveTo(px * 0.4, 0, px * 0.25, px * 0.45);
-  ctx.lineTo(-px * 0.25, px * 0.45); ctx.quadraticCurveTo(-px * 0.4, 0, 0, -px * 0.55); ctx.fill();
-  ctx.fillStyle = '#efe6d0'; ctx.fillRect(-px * 0.3, -px * 0.12, px * 0.6, px * 0.18);
+  if (state.course) {
+    const [cx, cy] = P(...state.course); ctx.strokeStyle = '#6fc1b1'; ctx.lineWidth = 2;
+    ctx.beginPath(); ctx.arc(cx, cy, px * 0.4, 0, 7); ctx.moveTo(cx - 6, cy); ctx.lineTo(cx + 6, cy); ctx.moveTo(cx, cy - 6); ctx.lineTo(cx, cy + 6); ctx.stroke();
+  }
+  if (pending.course) { const [cx, cy] = P(...pending.course); ctx.strokeStyle = '#f3ecdc'; ctx.beginPath(); ctx.arc(cx, cy, px * 0.4, 0, 7); ctx.stroke(); }
+  if (hover) { ctx.strokeStyle = 'rgba(243,236,220,0.3)'; ctx.lineWidth = 1; ctx.strokeRect(...P(...hover), px, px); }
+  // The boat, with its sail: none when stopped, a backed sail when going astern.
+  ctx.save(); ctx.translate(...P(g.x, g.y)); ctx.rotate((g.heading * Math.PI) / 180);
+  ctx.fillStyle = '#8d6a4c'; ctx.beginPath(); ctx.moveTo(0, -px * 0.7); ctx.quadraticCurveTo(px * 0.45, -px * 0.1, px * 0.3, px * 0.55);
+  ctx.lineTo(-px * 0.3, px * 0.55); ctx.quadraticCurveTo(-px * 0.45, -px * 0.1, 0, -px * 0.7); ctx.fill();
+  const belly = [px * 0.2, 0, -px * 0.12, -px * 0.25][state.sail];
+  if (state.sail !== 1) {
+    ctx.strokeStyle = state.sail === 0 ? '#e0a640' : '#efe6d0'; ctx.lineWidth = 3;
+    ctx.beginPath(); ctx.moveTo(-px * 0.42, 0); ctx.quadraticCurveTo(0, belly * 2, px * 0.42, 0); ctx.stroke();
+  }
+  ctx.fillStyle = '#3d2d20'; ctx.beginPath(); ctx.arc(0, 0, 2.5, 0, 7); ctx.fill();
   ctx.restore();
   drawChart(g);
-  document.getElementById('hover').textContent = hover ? describe(hover) : 'Click a tile to sail there.';
+  document.getElementById('hover').textContent = hover ? describe(hover) : '';
   requestAnimationFrame(draw);
 }
 
 let chartImage = null, chartKnown = null;
+const chartTmp = Object.assign(document.createElement('canvas'), { width: S.SIZE, height: S.SIZE });
 function drawChart(g) {
   if (chartKnown !== state.known) { // known is copied each tick, so a new array means the chart may have grown
     chartKnown = state.known;
@@ -376,11 +433,10 @@ function drawChart(g) {
       const c = state.known[i] ? COLORS[S.tileAt(i % S.SIZE, (i / S.SIZE) | 0)] : '#050e12';
       chartImage.data.set([parseInt(c.slice(1, 3), 16), parseInt(c.slice(3, 5), 16), parseInt(c.slice(5, 7), 16), 255], i * 4);
     }
+    chartTmp.getContext('2d').putImageData(chartImage, 0, 0);
   }
   const k = chart.width / S.SIZE;
-  const tmp = drawChart.tmp || (drawChart.tmp = Object.assign(document.createElement('canvas'), { width: S.SIZE, height: S.SIZE }));
-  tmp.getContext('2d').putImageData(chartImage, 0, 0);
-  cctx.imageSmoothingEnabled = false; cctx.drawImage(tmp, 0, 0, chart.width, chart.height);
+  cctx.imageSmoothingEnabled = false; cctx.drawImage(chartTmp, 0, 0, chart.width, chart.height);
   cctx.textAlign = 'center'; cctx.font = '11px system-ui';
   for (const p of S.PLACES) if (state.found.includes(p.id)) {
     cctx.fillStyle = 'rgba(0,0,0,0.55)'; cctx.fillText(p.name, p.x * k + 1, (p.y - p.ry - 3) * k + 1);
@@ -388,8 +444,8 @@ function drawChart(g) {
   }
   cctx.strokeStyle = 'rgba(243,236,220,0.5)'; cctx.lineWidth = 1;
   cctx.strokeRect((cam[0] - VIEW / 2) * k, (cam[1] - VIEW / 2) * k, VIEW * k, VIEW * k);
-  if (state.goal) { cctx.fillStyle = '#6fc1b1'; cctx.fillRect(state.goal[0] * k - 2, state.goal[1] * k - 2, 4, 4); }
-  cctx.fillStyle = '#ffd36b'; cctx.beginPath(); cctx.arc((g.x + 0.5) * k, (g.y + 0.5) * k, 3, 0, 7); cctx.fill();
+  if (state.course) { cctx.fillStyle = '#6fc1b1'; cctx.fillRect(state.course[0] * k - 2, state.course[1] * k - 2, 4, 4); }
+  cctx.fillStyle = '#ffd36b'; cctx.beginPath(); cctx.arc(g.x * k, g.y * k, 3, 0, 7); cctx.fill();
 }
 
 setInterval(tick, TICK_MS);
