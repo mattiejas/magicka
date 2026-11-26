@@ -71,6 +71,8 @@ describe('nodes', () => {
         from: [0, 0],
         path: [],
         movedAt: 0,
+        sailedAt: 0,
+        headingFrom: 0,
       });
     report({ glowing: true });
     expect(mainAction(thing, means)![0]).toBe(`Mine glowing ${label}`);
@@ -145,7 +147,7 @@ describe('piles', () => {
   /** Lays a drop on the ground as the browser knows it. */
   const lay = (id: string, type: string, x: number, publicAt = 0): Thing => {
     const drop: Entity = { id, kind: 'drop', type, x, y: 0, qty: 1, publicAt };
-    state.entities.set(id, { entity: drop, from: [x, 0], path: [], movedAt: 0 });
+    state.entities.set(id, { entity: drop, from: [x, 0], path: [], movedAt: 0, sailedAt: 0, headingFrom: 0 });
     return { kind: 'entity', entity: drop };
   };
   const labels = (options: Option[]) => options.map(([label]) => label);

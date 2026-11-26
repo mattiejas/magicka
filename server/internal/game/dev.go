@@ -33,6 +33,11 @@ func (w *World) devCommand(p *Player, line string) {
 		if start := map[string]func(){"vein": w.startVein, "trader": w.startTrader, "stampede": w.startStampede}[first]; start != nil {
 			start()
 		}
+	case "boat": // finished, without the parts
+		for _, b := range content.BoatParts {
+			p.C.Boat[b.ID] = b.Qty
+		}
+		p.C.BoatDone = true
 	case "genie":
 		w.sendGenie(p)
 	case "boss":

@@ -88,7 +88,14 @@ describe('EntityLayer', () => {
   });
 
   const track = (entity: Entity) => {
-    state.entities.set(entity.id, { entity, from: [entity.x, entity.y], path: [], movedAt: 0 });
+    state.entities.set(entity.id, {
+      entity,
+      from: [entity.x, entity.y],
+      path: [],
+      movedAt: 0,
+      sailedAt: 0,
+      headingFrom: 0,
+    });
   };
 
   it('keeps a monster that died where it fell, until it has faded', () => {

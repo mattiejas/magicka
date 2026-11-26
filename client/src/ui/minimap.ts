@@ -1,5 +1,6 @@
 // The minimap: a pre-drawn picture of the map with moving dots on top.
 import { type Entity, type GameMap, MAPS, MONSTERS, type QuestPlace, type TilePos } from '@driftwake/shared';
+import { isAboard, steer } from '../helm';
 import { send } from '../net/connection';
 import { myTrack, positionOf, state } from '../net/state';
 import { CAVE_COLOR, TILE_COLORS } from '../scene/palette';
@@ -56,7 +57,9 @@ function walkToClick(event: MouseEvent) {
   const box = (event.target as HTMLElement).getBoundingClientRect();
   const x = Math.round(me.x + ((event.clientX - box.left) / box.width - 0.5) * RANGE * 2);
   const y = Math.round(me.y + ((event.clientY - box.top) / box.height - 0.5) * RANGE * 2);
-  if (x >= 0 && y >= 0) send({ type: 'move', x, y });
+  if (x < 0 || y < 0) return;
+  if (isAboard()) steer([x, y]);
+  else send({ type: 'move', x, y });
 }
 
 export function drawMinimap() {

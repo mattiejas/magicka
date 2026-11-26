@@ -1106,3 +1106,24 @@ button.skill:hover:not(:disabled) {
   align-items: center;
   gap: 6px;
 }
+
+#sailing {
+  left: 50%;
+  bottom: 16px;
+  transform: translateX(-50%);
+  display: grid;
+  gap: 6px;
+  padding: 8px 12px;
+}
+#sailing .sails,
+#sailing .row {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+#sailing .row {
+  justify-content: space-between;
+}
+#sailing small {
+  color: var(--mute);
+}

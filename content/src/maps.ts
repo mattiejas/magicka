@@ -700,47 +700,47 @@ function mine() {
   return b.done();
 }
 /** Where the corners of the island and the mainland lie in the sea, with about 60 tiles of water between them. */
-export const COASTS = { mainland: { x: 72, y: 8 }, island: { x: 88, y: 164 } } as const;
+export const COASTS = { mainland: { x: 80, y: 16 }, island: { x: 96, y: 172 } } as const;
 /**
  * The sea: the island and the mainland as they are, and small islands to find, each with something worth the
  * voyage. The further from home, the higher the tier.
  */
 function sea(island: GameMap, mainland: GameMap) {
   const NOTHING = 0.001;
-  const b = new Builder('sea', 'The sea', 240, 11, NOTHING, NOTHING, true),
+  const b = new Builder('sea', 'The sea', 256, 11, NOTHING, NOTHING, true),
     m = b.m;
   m.town = 'island';
   m.tiles.fill(T.WATER); // the builder's own island, which has no size here, still leaves a tile in the middle
   b.coast(mainland, COASTS.mainland.x, COASTS.mainland.y);
   b.coast(island, COASTS.island.x, COASTS.island.y);
-  b.isle('pine_holm', 'Pine Holm', [[42, 176, 9, 8]], T.GRASS, 2);
-  b.isle('gull_rock', 'Gull Rock', [[186, 196, 3.5, 3]], T.STONE);
-  b.isle('reed_atoll', 'Reed Atoll', [[34, 110, 6, 5]], T.SAND);
-  b.isle('ironstack', 'Ironstack', [[202, 128, 6, 5]], T.STONE);
+  b.isle('pine_holm', 'Pine Holm', [[50, 184, 9, 8]], T.GRASS, 2);
+  b.isle('gull_rock', 'Gull Rock', [[194, 204, 3.5, 3]], T.STONE);
+  b.isle('reed_atoll', 'Reed Atoll', [[42, 118, 6, 5]], T.SAND);
+  b.isle('ironstack', 'Ironstack', [[210, 136, 6, 5]], T.STONE);
   b.isle(
     'the_teeth',
     'The Teeth',
     [
-      [210, 40, 3, 3],
-      [217, 33, 2, 2],
-      [203, 31, 2, 2.5],
+      [218, 48, 3, 3],
+      [225, 41, 2, 2],
+      [211, 39, 2, 2.5],
     ],
     T.STONE,
   );
-  m.spawn = { x: 42, y: 176 };
-  m.landing = { x: 42, y: 176 };
-  b.scatter('tree_2', 8, 42, 175, 6);
-  b.scatter('plant_2', 4, 44, 179, 5);
-  b.scatter('plant_3', 5, 34, 110, 4);
-  b.place('big_rock_2', 199, 126);
-  b.scatter('rock_2', 5, 202, 128, 4);
-  b.place('big_rock_3', 208, 39);
-  b.scatter('rock_3', 2, 217, 33, 1);
-  b.scatter('rock_3', 2, 203, 31, 1);
+  m.spawn = { x: 50, y: 184 };
+  m.landing = { x: 50, y: 184 };
+  b.scatter('tree_2', 8, 50, 183, 6);
+  b.scatter('plant_2', 4, 52, 187, 5);
+  b.scatter('plant_3', 5, 42, 118, 4);
+  b.place('big_rock_2', 207, 134);
+  b.scatter('rock_2', 5, 210, 136, 4);
+  b.place('big_rock_3', 216, 47);
+  b.scatter('rock_3', 2, 225, 41, 1);
+  b.scatter('rock_3', 2, 211, 39, 1);
   b.settle();
-  b.shoal('shoal_2', 190, 196);
-  b.spots('spot_2', 4, 186, 196, 6);
-  b.shoal('shoal_3', 41, 110);
+  b.shoal('shoal_2', 198, 204);
+  b.spots('spot_2', 4, 194, 204, 6);
+  b.shoal('shoal_3', 49, 118);
   return b.done();
 }
 const ISLAND = island(),

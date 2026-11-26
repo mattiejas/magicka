@@ -38,7 +38,7 @@ func TestTheLookoutSeesFromWhereverTheBoatWent(t *testing.T) {
 
 func TestSightingAPlacePutsItsOutlineOnTheChart(t *testing.T) {
 	e := setup(t)
-	p := e.sailor(1, offShore(t, Point{X: 42, Y: 176}, -1))
+	p := e.sailor(1, offShore(t, Point{X: 50, Y: 184}, -1))
 	e.run(1)
 	check(t, slices.Contains(p.C.Chart.Found, "pine_holm"), "Pine Holm not sighted", p.C.Chart.Found)
 	check(t, !slices.Contains(p.C.Chart.Landed, "pine_holm"), "landed without going ashore")
@@ -46,7 +46,7 @@ func TestSightingAPlacePutsItsOutlineOnTheChart(t *testing.T) {
 
 func TestGoingAshoreSeesThePlaceWhole(t *testing.T) {
 	e := setup(t)
-	p := e.sailor(1, offShore(t, Point{X: 42, Y: 176}, -1))
+	p := e.sailor(1, offShore(t, Point{X: 50, Y: 184}, -1))
 	e.do(p, ashoreMsg, 1)
 	check(t, slices.Contains(p.C.Chart.Landed, "pine_holm"), "not landed", p.C.Chart.Landed)
 	eq(t, lastChart(e.c[1]).GetLanded(), []string{"pine_holm"})
@@ -78,7 +78,7 @@ func TestTheChartIsSentWholeThenAsWhatIsNew(t *testing.T) {
 
 func TestTheChartIsSavedWithTheCharacter(t *testing.T) {
 	e := setup(t)
-	p := e.sailor(1, offShore(t, Point{X: 42, Y: 176}, -1))
+	p := e.sailor(1, offShore(t, Point{X: 50, Y: 184}, -1))
 	e.run(1)
 	e.w.save(p)
 	c := e.savedChar(1)

@@ -160,7 +160,7 @@ export class WorldView {
   /** Rebuilds the boat when its parts change. */
   private updateBoat(self: SelfState) {
     const dock = this.map.stations.find(station => station.type === 'dock');
-    const key = JSON.stringify(self.boat);
+    const key = JSON.stringify([self.boat, self.boatAway]);
     if (key === this.boatKey) return;
     this.boatKey = key;
     if (this.boat) {
@@ -168,7 +168,7 @@ export class WorldView {
       this.boat.geometry.dispose();
     }
     const required = (id: string) => BOAT_PARTS.find(p => p.id === id)!.qty;
-    if (!dock) return;
+    if (!dock || self.boatAway) return; // the boat is drawn where it is, among the others
     this.boat = new THREE.Mesh(
       boatGeo(id => Math.min(1, (self.boat[id] ?? 0) / required(id))),
       MAT,

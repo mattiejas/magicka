@@ -107,7 +107,7 @@ func TestGoingAshoreRefusesOpenWater(t *testing.T) {
 
 func TestGoingAshoreRefusesAFastBoat(t *testing.T) {
 	e := setup(t)
-	p := e.sailor(1, offShore(t, Point{X: 42, Y: 176}, -1))
+	p := e.sailor(1, offShore(t, Point{X: 50, Y: 184}, -1))
 	p.boat.Sail, p.boat.Speed, p.boat.Heading = sailHalf, 1.6, 180 // along the shore
 	e.do(p, ashoreMsg, 1)
 	check(t, p.aboard(), "went ashore at speed")
@@ -115,7 +115,7 @@ func TestGoingAshoreRefusesAFastBoat(t *testing.T) {
 
 func TestGoingAshoreOnASmallIslandLeavesTheBoatMoored(t *testing.T) {
 	e := setup(t)
-	at := offShore(t, Point{X: 42, Y: 176}, -1) // the west shore of Pine Holm
+	at := offShore(t, Point{X: 50, Y: 184}, -1) // the west shore of Pine Holm
 	p := e.sailor(1, at)
 	e.do(p, ashoreMsg, 1)
 	check(t, !p.aboard(), "still aboard")
@@ -138,16 +138,17 @@ func TestGoingAshoreOnTheMainlandLeadsOntoIt(t *testing.T) {
 	e.do(p, ashoreMsg, 1)
 	eq(t, p.C.Map, "mainland")
 	check(t, land.CanStandOn(p.C.X, p.C.Y), "stands on the mainland")
-	eq(t, *p.C.Afloat, Afloat{Map: "mainland", X: moor.X, Y: moor.Y})
+	a := p.C.Afloat
+	check(t, a.Map == "mainland" && !a.Aboard && within(a.X, moor.X, 1e-9) && within(a.Y, moor.Y, 1e-9), "moored where it was", a)
 	check(t, math.Hypot(float64(p.C.X)-moor.X, float64(p.C.Y)-moor.Y) <= stepAshore, "beside the boat")
 }
 
 func TestAMooredBoatIsBoardedWhereItLies(t *testing.T) {
 	e := setup(t)
-	at := offShore(t, Point{X: 42, Y: 176}, -1)
+	at := offShore(t, Point{X: 50, Y: 184}, -1)
 	p := e.sailor(1, at)
 	e.do(p, ashoreMsg, 1)
-	e.do(p, move(42, 176), 6) // inland
+	e.do(p, move(50, 184), 6) // inland
 	e.do(p, boardMsg, 8)
 	check(t, p.aboard(), "boarded")
 	eq(t, p.boat.At, at)
@@ -194,7 +195,7 @@ func TestASailorLogsBackInAboardAndStopped(t *testing.T) {
 
 func TestTheShipsHandsTellWhereTheBoatRanAground(t *testing.T) {
 	e := setup(t)
-	p := e.sailor(1, offShore(t, Point{X: 42, Y: 176}, -1))
+	p := e.sailor(1, offShore(t, Point{X: 50, Y: 184}, -1))
 	p.boat.Heading, p.boat.Speed, p.boat.Sail = 90, sailSpeed[sailFull], sailFull // straight at Pine Holm
 	e.run(1)
 	found := false

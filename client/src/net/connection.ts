@@ -1,6 +1,7 @@
 // The WebSocket connection: signing in, reconnecting, and applying what the server sends to the state.
 import type { ClientMsg, Entity, ServerMsg } from '@driftwake/shared';
 import type { Entity as PbEntity } from '../pb/driftwake/v1/game_pb';
+import { mergeChart } from './chart';
 import { state, type Track } from './state';
 import { clientId, decode, encode, mergeEntity } from './wire';
 
@@ -73,6 +74,7 @@ function forgetSession() {
   state.me = '';
   state.self = null;
   state.entities.clear();
+  state.voyage = state.chart = null;
 }
 
 function receive(msg: ServerMsg) {
@@ -104,6 +106,12 @@ function receive(msg: ServerMsg) {
     case 'fees':
       state.feesTaken = msg.taken;
       break;
+    case 'voyage':
+      state.voyage = msg.voyage.aboard ? msg.voyage : null;
+      break;
+    case 'chart':
+      state.chart = mergeChart(state.chart, msg.chart);
+      break;
     case 'snapshot':
       applySnapshot(msg);
       break;
@@ -122,11 +130,23 @@ function applySnapshot(snapshot: Extract<ServerMsg, { type: 'snapshot' }>) {
     if (!track && !delta.full) continue; // nothing to apply it to
     const entity = mergeEntity(track?.entity, delta);
     if (track) moveTrack(track, entity, now);
-    else state.entities.set(entity.id, { entity, from: [entity.x, entity.y], path: [], movedAt: now });
+    else
+      state.entities.set(entity.id, {
+        entity,
+        from: [entity.x, entity.y],
+        path: [],
+        movedAt: now,
+        sailedAt: now,
+        headingFrom: entity.boat?.heading ?? 0,
+      });
   }
 }
 
 function moveTrack(track: Track, entity: Entity, now: number) {
+  if (entity.boat) {
+    track.headingFrom = track.entity.boat?.heading ?? entity.boat.heading;
+    track.sailedAt = now;
+  }
   const dx = Math.abs(track.entity.x - entity.x);
   const dy = Math.abs(track.entity.y - entity.y);
   if (dx || dy) {
