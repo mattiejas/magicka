@@ -80,6 +80,7 @@ const (
 	actStation
 	actAttack
 	actPickup
+	actPickupAll
 	actGrave
 	actCraft
 	actTrade
@@ -90,6 +91,7 @@ const (
 type action struct {
 	typ    actionType
 	id     uint32          // target of gather, station, attack, pickup and trade
+	at     Point           // tile of pickup all
 	recipe *content.Recipe // of craft
 	left   int             // items still to craft
 	// Cooking one item at a time, and the tick at which the item on the fire is done. Zero means none is on.

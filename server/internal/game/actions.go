@@ -28,6 +28,10 @@ func (w *World) goal(p *Player) (g goal, ok bool) {
 		if d := w.findDrop(a.id); d != nil && d.Map == m && d.visibleTo(p.ID, w.Tick) {
 			return goal{tile(d.X, d.Y), 0, false}, true
 		}
+	case actPickupAll:
+		if len(w.dropsFor(p, a.at)) > 0 {
+			return goal{tile(a.at.X, a.at.Y), 0, false}, true
+		}
 	case actNPC:
 		if n := w.npcByID(a.id); n != nil && n.Map == m && (n.owner == 0 || n.owner == p.ID) {
 			return goal{tile(n.X, n.Y), 1, false}, true
@@ -135,6 +139,8 @@ func (w *World) performAction(p *Player) {
 		w.askToTrade(p, w.players[id])
 	case actPickup:
 		w.pickup(p, w.findDrop(id))
+	case actPickupAll:
+		w.pickupAll(p, p.act.at)
 	}
 }
 

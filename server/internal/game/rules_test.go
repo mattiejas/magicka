@@ -108,6 +108,7 @@ func TestDecodeRefusesMalformed(t *testing.T) {
 		{Msg: &pb.ClientMessage_ResumeToken{ResumeToken: "x"}},
 		{Msg: &pb.ClientMessage_Swap{Swap: &pb.Swap{A: 0, B: 24}}},
 		{Msg: &pb.ClientMessage_EatSlot{EatSlot: 99}},
+		{Msg: &pb.ClientMessage_PickupAll{PickupAll: kindMonster}},
 		{Msg: &pb.ClientMessage_DropSlot{DropSlot: 24}},
 		{Msg: &pb.ClientMessage_Look{Look: &pb.Look{Cut: 4}}},
 		{Msg: &pb.ClientMessage_Look{Look: &pb.Look{Color: 8}}},

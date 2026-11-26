@@ -4,7 +4,7 @@ import { revealAllLabels } from '../input';
 import { send } from '../net/connection';
 import { myTrack, positionOf, state, tickNow } from '../net/state';
 import { settings } from '../settings';
-import { mainAction, optionsFor, type Thing } from '../things';
+import { mainAction, optionsForAll, type Thing } from '../things';
 import { takeIconUrl } from '../ui/icons/take';
 import { playerMenu } from '../ui/players';
 import { closeMenu, hideTooltip, showMenu, showTooltip } from '../ui/popups';
@@ -225,7 +225,7 @@ function drawLine(line: Line): HTMLElement {
     showMenu(
       event.clientX,
       event.clientY,
-      optionsFor(thing, { send, playerOptions: (name, id) => playerMenu(name, id, place) }),
+      optionsForAll([thing], { send, playerOptions: (name, id) => playerMenu(name, id, place) }),
     );
   });
   row.addEventListener('mousemove', event => {

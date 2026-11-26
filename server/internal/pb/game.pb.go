@@ -459,6 +459,7 @@ type ClientMessage struct {
 	//	*ClientMessage_UseLamp
 	//	*ClientMessage_ChangePassword
 	//	*ClientMessage_TakeOff
+	//	*ClientMessage_PickupAll
 	Msg           isClientMessage_Msg `protobuf_oneof:"msg"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
@@ -807,6 +808,15 @@ func (x *ClientMessage) GetTakeOff() *Empty {
 	return nil
 }
 
+func (x *ClientMessage) GetPickupAll() uint32 {
+	if x != nil {
+		if x, ok := x.Msg.(*ClientMessage_PickupAll); ok {
+			return x.PickupAll
+		}
+	}
+	return 0
+}
+
 type isClientMessage_Msg interface {
 	isClientMessage_Msg()
 }
@@ -950,6 +960,11 @@ type ClientMessage_TakeOff struct {
 	TakeOff *Empty `protobuf:"bytes,34,opt,name=take_off,json=takeOff,proto3,oneof"`
 }
 
+type ClientMessage_PickupAll struct {
+	// Takes everything the player may take on the tile of this drop, the most valuable first.
+	PickupAll uint32 `protobuf:"varint,35,opt,name=pickup_all,json=pickupAll,proto3,oneof"`
+}
+
 func (*ClientMessage_Register) isClientMessage_Msg() {}
 
 func (*ClientMessage_Login) isClientMessage_Msg() {}
@@ -1017,6 +1032,8 @@ func (*ClientMessage_UseLamp) isClientMessage_Msg() {}
 func (*ClientMessage_ChangePassword) isClientMessage_Msg() {}
 
 func (*ClientMessage_TakeOff) isClientMessage_Msg() {}
+
+func (*ClientMessage_PickupAll) isClientMessage_Msg() {}
 
 type Empty struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
@@ -3509,8 +3526,7 @@ var File_driftwake_v1_game_proto protoreflect.FileDescriptor
 
 const file_driftwake_v1_game_proto_rawDesc = "" +
 	"\n" +
-	"\x17driftwake/v1/game.proto\x12\fdriftwake.v1\"\xf6\n" +
-	"\n" +
+	"\x17driftwake/v1/game.proto\x12\fdriftwake.v1\"\x97\v\n" +
 	"\rClientMessage\x127\n" +
 	"\bregister\x18\x01 \x01(\v2\x19.driftwake.v1.CredentialsH\x00R\bregister\x121\n" +
 	"\x05login\x18\x02 \x01(\v2\x19.driftwake.v1.CredentialsH\x00R\x05login\x12#\n" +
@@ -3550,7 +3566,9 @@ const file_driftwake_v1_game_proto_rawDesc = "" +
 	"\x0esell_to_trader\x18\x1f \x01(\rH\x00R\fsellToTrader\x12\x1b\n" +
 	"\buse_lamp\x18  \x01(\tH\x00R\auseLamp\x12G\n" +
 	"\x0fchange_password\x18! \x01(\v2\x1c.driftwake.v1.ChangePasswordH\x00R\x0echangePassword\x120\n" +
-	"\btake_off\x18\" \x01(\v2\x13.driftwake.v1.EmptyH\x00R\atakeOffB\x05\n" +
+	"\btake_off\x18\" \x01(\v2\x13.driftwake.v1.EmptyH\x00R\atakeOff\x12\x1f\n" +
+	"\n" +
+	"pickup_all\x18# \x01(\rH\x00R\tpickupAllB\x05\n" +
 	"\x03msg\"\a\n" +
 	"\x05Empty\"=\n" +
 	"\vCredentials\x12\x12\n" +
@@ -3989,6 +4007,7 @@ func file_driftwake_v1_game_proto_init() {
 		(*ClientMessage_UseLamp)(nil),
 		(*ClientMessage_ChangePassword)(nil),
 		(*ClientMessage_TakeOff)(nil),
+		(*ClientMessage_PickupAll)(nil),
 	}
 	file_driftwake_v1_game_proto_msgTypes[15].OneofWrappers = []any{
 		(*ServerMessage_Welcome)(nil),

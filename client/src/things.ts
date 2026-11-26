@@ -9,7 +9,7 @@ import {
   NODES,
   type StationType,
 } from '@driftwake/shared';
-import { state } from './net/state';
+import { state, tickNow } from './net/state';
 
 /** A fixed part of a map. */
 export type FixedThing =
@@ -120,6 +120,44 @@ export function mainAction(thing: Thing, { send }: Pick<Means, 'send'>): Option 
   if (!deed) return null;
   const [verb, msg] = deed;
   return [`${verb} ${nameWithLevel(thing)}`, () => send(msg)];
+}
+
+/** The drops lying on the same tile as this one. */
+function pileOf(drop: Entity): Entity[] {
+  return [...state.entities.values()]
+    .map(track => track.entity)
+    .filter(e => e.kind === 'drop' && e.x === drop.x && e.y === drop.y);
+}
+
+/** Still private, so the player's own; once public the browser cannot tell whose it was. */
+const isOwn = ({ publicAt }: Entity) => !publicAt || publicAt > tickNow();
+
+/** A drop that lies with others, or null. */
+function dropInPile(thing: Thing): Entity | null {
+  if (thing.kind !== 'entity' || thing.entity.kind !== 'drop') return null;
+  return pileOf(thing.entity).length > 1 ? thing.entity : null;
+}
+
+const takeAll = (drop: Entity, { send }: Pick<Means, 'send'>): Option => [
+  'Take all',
+  () => send({ type: 'pickupAll', id: drop.id }),
+];
+
+/** What clicking a thing in the world does: a pile of the player's own is taken whole. */
+export function clickAction(thing: Thing, means: Pick<Means, 'send'>): Option | null {
+  const drop = dropInPile(thing);
+  if (drop && pileOf(drop).every(isOwn)) return takeAll(drop, means);
+  return mainAction(thing, means);
+}
+
+/** Everything that can be done with these things, taking all of each pile first. */
+export function optionsForAll(things: Thing[], means: Means): Option[] {
+  const piles = new Map<string, Option>();
+  for (const thing of things) {
+    const drop = dropInPile(thing);
+    if (drop && !piles.has(`${drop.x},${drop.y}`)) piles.set(`${drop.x},${drop.y}`, takeAll(drop, means));
+  }
+  return [...piles.values(), ...things.flatMap(thing => optionsFor(thing, means))];
 }
 
 /** Everything that can be done with a thing. */
