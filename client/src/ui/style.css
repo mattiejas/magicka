@@ -249,6 +249,8 @@ h2 {
 #map .cap {
   padding: 6px 8px;
   display: grid;
+  /* Not wider than the box, so a long line cuts its name short instead of running past the padding. */
+  grid-template-columns: minmax(0, 1fr);
   gap: 2px;
   font-size: 12px;
   border-top: 1px solid var(--line);
@@ -561,11 +563,12 @@ h2 {
 #boss small {
   color: var(--mute);
 }
+/* --station-top is set by clearOfTop.ts, so the panel never covers the hint. */
 #station {
   left: 16px;
-  top: 16px;
+  top: var(--station-top, 16px);
   width: 420px;
-  max-height: calc(100vh / var(--ui-scale) - 210px);
+  max-height: calc(100vh / var(--ui-scale) - 194px - var(--station-top, 16px));
   display: flex;
   flex-direction: column;
 }
