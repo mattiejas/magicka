@@ -13,13 +13,14 @@ export type ClientMsg =
   | { type: 'register' | 'login'; name: string; password: string }
   | { type: 'resume'; token: string }
   | { type: 'changePassword'; oldPassword: string; newPassword: string }
-  | { type: 'logout' | 'grave' | 'depositAll' | 'askFees' }
+  | { type: 'logout' | 'grave' | 'depositAll' | 'askFees' | 'takeOff' }
   /** Without an item: everything. */
   | { type: 'claim'; item?: string }
   | { type: 'shop'; op: 'buy' | 'sell'; item: string; qty: number }
   | { type: 'move'; x: number; y: number }
   | { type: 'gather' | 'station' | 'attack' | 'pickup'; id: string }
-  | { type: 'craft'; recipe: string; qty: number }
+  /** intense: cooks one at a time, each to be taken off the fire when it is done. */
+  | { type: 'craft'; recipe: string; qty: number; intense?: boolean }
   | { type: 'equip' | 'eat' | 'drop'; slot: number }
   | { type: 'unequip'; slot: Slot }
   | { type: 'swap'; a: number; b: number }
@@ -124,6 +125,8 @@ export interface SelfState {
   /** How many times loot was earned from each boss, by boss id. */
   kills: Record<string, number>;
   look: Look;
+  /** Food on the fire with the intense method: the tick it is done, and the tick it burns. */
+  fire: { ready: number; burns: number } | null;
 }
 
 export type InfoKind = 'unique' | 'boss' | 'level' | 'bad';

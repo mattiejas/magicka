@@ -7,6 +7,7 @@ export const SKILLS = [
   'woodcutting',
   'fishing',
   'crafting',
+  'cooking',
   'melee',
   'ranged',
   'magic',
@@ -57,8 +58,12 @@ export interface Recipe {
   level: number;
   xp: number;
   in: [string, number][];
+  /** Cooking only: the level from which it never burns. */
+  safe?: number;
+  /** Cooking only: ticks on the fire until it is done. */
+  ready?: number;
 }
-export type Station = 'furnace' | 'anvil' | 'workbench';
+export type Station = 'furnace' | 'anvil' | 'workbench' | 'fire';
 export interface NodeDef {
   id: string;
   name: string;
@@ -167,6 +172,7 @@ const d = data as unknown as {
   hairColors: { name: string; color: string }[];
   economy: Economy;
   methods: Methods;
+  cooking: { burnt: string };
   quests: Quest[];
 };
 export const ITEMS = byId(d.items),
@@ -179,6 +185,8 @@ export const ITEMS = byId(d.items),
   HAIR_COLORS = d.hairColors,
   ECONOMY = d.economy,
   METHODS = d.methods,
+  /** What burnt food becomes. */
+  COOKING = d.cooking,
   QUESTS = d.quests;
 export const nameHash = (s: string) => {
   let h = 0;

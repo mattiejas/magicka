@@ -77,6 +77,11 @@ describe('stations', () => {
     expectAction(bank, 'Use Bank chest', { type: 'station', id: 's1' });
   });
 
+  it('food is cooked at a cooking fire', () => {
+    const fire: Thing = { kind: 'station', id: 's2', type: 'fire', map: 'island' };
+    expectAction(fire, 'Use Cooking fire', { type: 'station', id: 's2' });
+  });
+
   it('a mine is entered, and is the way out when in a cave', () => {
     const mine: Thing = { kind: 'station', id: 's1', type: 'mine', map: 'island' };
     expectAction(mine, 'Enter Old mine', { type: 'station', id: 's1' });

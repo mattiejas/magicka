@@ -37,6 +37,13 @@ const (
 	bossBarInterval = 5
 )
 
+// Cooking at a fire.
+const (
+	relaxedCookInterval = 11  // to cook one item of a stack by itself, with the relaxed method
+	cookWindow          = 4   // between food being done and burning, with the intense method
+	cookBonus           = 1.5 // experience of food taken off the fire in time, as a multiple of the usual
+)
+
 var (
 	lingerTime                         = Ticks(30) // a disconnected player stays at most this long
 	combatTime                         = Ticks(10) // since the last blow, to count as in combat

@@ -586,6 +586,53 @@ h2 {
 .recipe.locked {
   opacity: 0.65;
 }
+.on-fire {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 6px 8px;
+  align-items: center;
+  padding: 8px;
+  margin-bottom: 8px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+}
+.on-fire .cook-bar {
+  grid-column: 1;
+  height: 8px;
+  border-radius: 4px;
+  background: #38444c;
+  overflow: hidden;
+}
+.on-fire .cook-bar .fill {
+  display: block;
+  height: 100%;
+  background: #e08a3c;
+  animation: cook-fill linear forwards;
+}
+.on-fire.done .cook-bar .fill {
+  background: #7fc06a;
+  animation-name: cook-burn;
+}
+.on-fire button {
+  grid-row: 1 / span 2;
+  grid-column: 2;
+}
+@keyframes cook-fill {
+  from {
+    width: 0;
+  }
+  to {
+    width: 100%;
+  }
+}
+@keyframes cook-burn {
+  from {
+    width: 100%;
+  }
+  to {
+    width: 0;
+  }
+}
 #menu {
   min-width: 160px;
   display: grid;

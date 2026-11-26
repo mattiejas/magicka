@@ -41,6 +41,7 @@ Terms are defined in [GLOSSARY.md](../GLOSSARY.md). Numbers are starting points 
 - Relaxed: a big rock that never depletes, at about a third of normal speed. Trees fall at random after about 4 (ash), 6, 8, 11 and 15 (ebony) logs; higher tiers chop slower.
 - Fishing catches one raw fish per tier at fishing spots on the water beside the shore, with a fishing rod. Raw fish heals nothing until it is cooked. The island has tiers 1 and 2, the mainland the rest. Intense: a spot moves along the shore after a few catches, and one of a group glows. Relaxed: a shoal that never moves.
 - More methods open from level 15, through skill level, exploring the mainland and quests. Quests can also unlock areas. The island keeps the basic methods.
+- Cooking turns raw meat, and later the fish of fishing, into food at a cooking fire in camp and in town. Trail rations and hearty feasts are cooked, no longer crafted. Relaxed: the fire cooks a whole stack by itself, slowly, and food burns by chance. Intense: one at a time, taken off the fire when it is done, for more experience.
 - Idle logout after 30 minutes without input.
 
 ## Adventure
@@ -88,4 +89,6 @@ Existing characters are kept until one restart at the public launch.
 - Only time with input in the last five minutes counts as play for the genie.
 - The old mine's boss is Deepstone, which drops mithril, cobalt and, 1 in 100, the Stoneheart. Whoever dies in the mine wakes up in the mainland town; their grave stays in the mine.
 - The big rock also exists for essence; there is no relaxed or intense variant of smithing and crafting yet.
+- Cooking's two methods work from level 1, since a fire needs no exploring. Food burns 40% of the time at its recipe's level, falling evenly to never at 20 levels above it. Burnt food gives no experience and is worth nothing. With the intense method, food is done after 2.4 seconds, a little longer for dishes of higher levels, and burns 2.4 seconds after that; taken off in time it never burns and gives 1.5 times the experience. The relaxed method cooks one item every 6.6 seconds. Measured at the fire with materials from the bank (`pace_test.go`): 15 hours intense, 35 relaxed. Gathering the meat is not counted.
+- Experience earned making rations and feasts before cooking stays crafting experience. Crafting is still trained from level 1 with shafts and arrows.
 - The collection log holds every boss's rare drops, uniques and trophies, per boss, and the capes. What a boss always or commonly drops, and encounters, do not count. A find counts when the boss drops it for a player, whether or not they are there or pick it up, so trading cannot fill the log. From before the log only trophies are known, since anything else could have been traded for. Each boss also shows how many kills earned loot, and the chance of each missing drop. Only the owner can see their log.

@@ -6,6 +6,7 @@ export const SKILLS = [
   'woodcutting',
   'fishing',
   'crafting',
+  'cooking',
   'melee',
   'ranged',
   'magic',
@@ -87,8 +88,12 @@ export interface Recipe {
   level: number;
   xp: number;
   in: [string, number][];
+  /** Cooking only: the level from which it never burns. */
+  safe?: number;
+  /** Cooking only: ticks on the fire until it is done. */
+  ready?: number;
 }
-export type Station = 'furnace' | 'anvil' | 'workbench';
+export type Station = 'furnace' | 'anvil' | 'workbench' | 'fire';
 export const RECIPES: Recipe[] = [];
 const recipe = (
   out: string,
@@ -159,14 +164,41 @@ add({
 });
 add({ id: 'berries', name: 'Berries', icon: 'berries', color: '#a8485e', tier: 1, heal: 4, value: 3 });
 add({ id: 'meat', name: 'Raw meat', icon: 'meat', color: '#b0625a', tier: 1, value: 4 });
+add({ id: 'cooked_meat', name: 'Cooked meat', icon: 'meat', color: '#8a5a3a', tier: 1, heal: 8 });
 add({ id: 'ration', name: 'Trail ration', icon: 'ration', color: '#b58a58', tier: 1, heal: 12 });
 add({ id: 'feast', name: 'Hearty feast', icon: 'ration', color: '#d0a060', tier: 3, heal: 26 });
 add({ id: 'ships_wheel', name: "Ship's wheel", icon: 'wheel', color: '#8d7a5e', tier: 1, value: 50 });
-recipe('ration', 'workbench', 'crafting', 1, 12, [
+
+/** Cooking: food burns less often as the level rises, and never once it is this many levels above the recipe's. */
+export const COOKING = {
+  safeAfter: 20,
+  /** What burnt food becomes. It is worth nothing. */
+  burnt: 'burnt_food',
+  /** Ticks on the fire until the first food is done; food of higher levels takes longer. */
+  readyTicks: 4,
+  readyPerLevels: 20,
+};
+add({ id: COOKING.burnt, name: 'Burnt food', icon: 'meat', color: '#3a302c', tier: 1, value: 0 });
+/** Everything about cooking a dish follows from its level, so that a new one is a single line. */
+const cook = (out: string, level: number, xp: number, inp: [string, number][]) =>
+  RECIPES.push({
+    id: out,
+    out,
+    qty: 1,
+    station: 'fire',
+    skill: 'cooking',
+    level,
+    xp,
+    in: inp,
+    safe: level + COOKING.safeAfter,
+    ready: COOKING.readyTicks + Math.floor(level / COOKING.readyPerLevels),
+  });
+cook('cooked_meat', 1, 35, [['meat', 1]]);
+cook('ration', 1, 52, [
   ['meat', 1],
   ['berries', 1],
 ]);
-recipe('feast', 'workbench', 'crafting', 25, 60, [
+cook('feast', 25, 155, [
   ['meat', 2],
   ['berries', 2],
 ]);
@@ -472,6 +504,7 @@ const CAPE_COLORS: Record<Skill, string> = {
   woodcutting: '#5f8a4a',
   fishing: '#3f86a8',
   crafting: '#b08a4e',
+  cooking: '#c4703a',
   melee: '#a8413c',
   ranged: '#3f7d62',
   magic: '#4a62b0',

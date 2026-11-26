@@ -23,13 +23,16 @@ message ClientMessage {
     // npc: walks to someone and speaks to them. use_lamp: the skill to train.
     string start_quest = 29; uint32 npc = 30; uint32 sell_to_trader = 31; string use_lamp = 32;
     ChangePassword change_password = 33;
+    // Takes food off the fire, with the intense method of cooking.
+    Empty take_off = 34;
   }
 }
 message Empty {}
 message Credentials { string name = 1; string password = 2; }
 message ChangePassword { string old_password = 1; string new_password = 2; }
 message Tile { uint32 x = 1; uint32 y = 2; }
-message Craft { string recipe = 1; uint32 qty = 2; }
+// intense: cooks one at a time, each to be taken off the fire when it is done.
+message Craft { string recipe = 1; uint32 qty = 2; bool intense = 3; }
 message Swap { uint32 a = 1; uint32 b = 2; }
 message Bank { bool withdraw = 1; string item = 2; uint32 qty = 3; }
 message Boat { bool sail = 1; }
@@ -87,6 +90,8 @@ message Self {
   map<string, uint32> found = 15;
   // How many times the player earned loot from each boss, by boss id.
   map<string, uint32> kills = 16;
+  // While food is on the fire with the intense method: the tick it is done, and the tick it burns. Zero means none.
+  uint32 fire_ready = 17; uint32 fire_burns = 18;
 }
 // `entities` hold only what changed, except for entities the browser did not know yet.
 message Snapshot { uint32 tick = 1; MapId map = 2; bool reset = 3; repeated Entity entities = 4; repeated uint32 gone = 5; repeated Event events = 6; }

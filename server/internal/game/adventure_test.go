@@ -118,7 +118,7 @@ func TestLampTrainsAChosenSkill(t *testing.T) {
 	use := func(skill string) {
 		e.do(p, &pb.ClientMessage{Msg: &pb.ClientMessage_UseLamp{UseLamp: skill}}, 1)
 	}
-	use("cooking")
+	use("baking")
 	eq(t, p.count(lamp), 1)
 	use("magic")
 	eq(t, p.C.XP["magic"], round(LampXP(1)))

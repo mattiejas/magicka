@@ -87,6 +87,7 @@ export function build(): Record<string, string> {
       hairColors: c.HAIR_COLORS,
       economy: c.ECONOMY,
       methods: c.METHODS,
+      cooking: c.COOKING,
       quests: QUESTS,
     }),
     'maps.json': line(maps),

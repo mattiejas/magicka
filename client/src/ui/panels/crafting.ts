@@ -14,7 +14,7 @@ const QUANTITIES: [label: string, qty: number][] = [
 ];
 let selectedTier = 1;
 
-function materials(recipe: Recipe): HTMLElement {
+export function materials(recipe: Recipe): HTMLElement {
   const list = h('small');
   for (const [i, [item, qty]] of recipe.in.entries()) {
     if (i) list.append(', ');

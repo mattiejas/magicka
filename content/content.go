@@ -49,6 +49,8 @@ type Recipe struct {
 	Qty, Level              int
 	XP                      float64
 	In                      []Amount
+	Safe                    int // cooking only: the level from which it never burns
+	Ready                   int // cooking only: ticks on the fire until it is done
 }
 
 // Node is a kind of resource.
@@ -157,6 +159,11 @@ type MethodRules struct {
 	GlowTicks int     // how long one node of a group glows
 	GlowBonus float64 // experience of the first strike on a glowing node, as a multiple of the usual
 	GlowGroup int     // fewer nodes than this together do not glow
+}
+
+// CookingRules are what all cooking shares.
+type CookingRules struct {
+	Burnt string // what burnt food becomes
 }
 
 // Need is what a step of a quest asks for. Everything given has to be true.
@@ -323,6 +330,7 @@ var (
 	BoatParts  []Part
 	Prices     Economy
 	Methods    MethodRules
+	Cooking    CookingRules
 	Quests     []*Quest
 	Metals     []string
 	Haircuts   int
@@ -334,7 +342,7 @@ var (
 const InvSize = 24
 
 var Skills = []string{
-	"mining", "smithing", "woodcutting", "fishing", "crafting", "melee", "ranged", "magic", "defence", "vitality",
+	"mining", "smithing", "woodcutting", "fishing", "crafting", "cooking", "melee", "ranged", "magic", "defence", "vitality",
 }
 
 func tuple(b []byte, dst ...any) error {
@@ -365,6 +373,7 @@ func init() {
 		HairColors []struct{ Name string }
 		Economy    Economy
 		Methods    MethodRules
+		Cooking    CookingRules
 		Quests     []*Quest
 	}
 	must(json.Unmarshal(Raw("content.json"), &d))
@@ -383,7 +392,7 @@ func init() {
 	for _, m := range d.Monsters {
 		Monsters[m.ID] = m
 	}
-	BoatParts, Metals, Prices, Methods = d.BoatParts, d.Metals, d.Economy, d.Methods
+	BoatParts, Metals, Prices, Methods, Cooking = d.BoatParts, d.Metals, d.Economy, d.Methods, d.Cooking
 	Quests = d.Quests
 	Haircuts, HairColors = len(d.Haircuts), len(d.HairColors)
 	must(json.Unmarshal(Raw("maps.json"), &Maps))

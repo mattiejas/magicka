@@ -27,6 +27,8 @@ func (w *World) handle(p *Player, msg *pb.ClientMessage) {
 		w.claim(p, m.Claim.GetItem())
 	case *pb.ClientMessage_Craft:
 		w.startCraft(p, m.Craft)
+	case *pb.ClientMessage_TakeOff:
+		w.takeOff(p)
 	case *pb.ClientMessage_EquipSlot:
 		w.tellIf(p, p.equip(int(m.EquipSlot)))
 	case *pb.ClientMessage_Unequip:
@@ -111,7 +113,7 @@ func (w *World) startCraft(p *Player, m *pb.Craft) {
 		return
 	}
 	p.nextAct = w.Tick - 2 // the first item takes as long as the others
-	p.begin(action{typ: actCraft, recipe: r, left: int(m.Qty)})
+	p.begin(action{typ: actCraft, recipe: r, left: int(m.Qty), intense: m.Intense && r.Station == "fire"})
 }
 
 func (w *World) eat(p *Player, slot int) {

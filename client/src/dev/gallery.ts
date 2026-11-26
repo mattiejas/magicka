@@ -271,7 +271,7 @@ const SETS: Record<string, GallerySet> = {
     columns: 4,
     gap: 2.6,
     exhibits: () => [
-      ...['bank', 'furnace', 'anvil', 'workbench', 'reaper', 'dock', 'shop', 'mine'].map(id => {
+      ...['bank', 'furnace', 'anvil', 'workbench', 'fire', 'reaper', 'dock', 'shop', 'mine'].map(id => {
         const object = mesh(stationGeo(id));
         const keeper = keeperOf(id);
         if (keeper) object.add(keeper);

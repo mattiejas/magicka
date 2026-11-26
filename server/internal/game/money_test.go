@@ -217,7 +217,7 @@ func TestShopGoodsCannotBeSoldForProfit(t *testing.T) {
 		check(t, content.Items[id].Basic, id)
 	}
 	for id, item := range content.Items {
-		check(t, item.Value >= 1, id)
+		check(t, item.Value >= 1 || id == content.Cooking.Burnt, id)
 	}
 }
 

@@ -120,34 +120,49 @@ func (w *World) workReady(p *Player, interval int) bool {
 // craft makes one item of the player's recipe at a time.
 func (w *World) craft(p *Player) {
 	r := p.act.recipe
+	if !w.canMake(p, r) {
+		return
+	}
+	p.doing = working
+	if w.workReady(p, craftInterval) {
+		w.make(p, r.Out, r.XP)
+	}
+}
+
+// canMake checks the player can go on with a recipe, and stops them if not.
+func (w *World) canMake(p *Player, r *content.Recipe) bool {
 	if !w.nearStation(p, r.Station) {
 		w.stop(p)
-		return
+		return false
 	}
 	if p.level(r.Skill) < r.Level {
 		w.refuse(p, fmt.Sprintf("You need %s level %d.", r.Skill, r.Level))
-		return
+		return false
 	}
 	for _, in := range r.In {
 		if p.count(in.Item) < in.Qty {
 			w.refuse(p, "You are out of materials.")
-			return
+			return false
 		}
 	}
-	p.doing = working
-	if !w.workReady(p, craftInterval) {
-		return
-	}
+	return true
+}
+
+// make turns the materials of the player's recipe into out, which is usually what the recipe makes.
+func (w *World) make(p *Player, out string, xp float64) {
+	r := p.act.recipe
 	before := copyStacks(p.C.Inv)
 	for _, in := range r.In {
 		p.take(in.Item, in.Qty)
 	}
-	if p.give(r.Out, r.Qty) < r.Qty {
+	if p.give(out, r.Qty) < r.Qty {
 		p.C.Inv = before
 		w.refuse(p, "Your inventory is full.")
 		return
 	}
-	w.addXP(p, r.Skill, r.XP)
+	if xp > 0 {
+		w.addXP(p, r.Skill, xp)
+	}
 	if p.act.left--; p.act.left <= 0 {
 		w.stop(p)
 	}

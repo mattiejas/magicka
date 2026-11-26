@@ -4,6 +4,7 @@ import { myTrack, state } from '../../net/state';
 import { button, byId, h, uiRoot } from '../dom';
 import { hideTooltip } from '../popups';
 import { bankPanel } from './bank';
+import { cookingPanel } from './cooking';
 import { craftingPanel } from './crafting';
 import { dockPanel } from './dock';
 import { hairPanel } from './hair';
@@ -44,6 +45,7 @@ const PANELS: Record<PanelId, Panel> = {
   furnace: craftingPanel('furnace', 'Furnace'),
   anvil: craftingPanel('anvil', 'Anvil'),
   workbench: craftingPanel('workbench', 'Workbench'),
+  fire: cookingPanel,
   shop: shopPanel,
   reaper: reaperPanel,
   grave: gravePanel,
