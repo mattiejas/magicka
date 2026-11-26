@@ -70,6 +70,19 @@ export interface BossView {
   target?: string;
 }
 
+/** A player's boat on this map. Positions are in tiles, the heading in degrees clockwise from north. */
+export interface BoatState {
+  x: number;
+  y: number;
+  heading: number;
+  /** From 0 backing to 3 full sail. */
+  sail: number;
+  /** The owner is aboard; otherwise it is moored. */
+  aboard: boolean;
+  /** Where it was at the start of the latest tick and after each part of its move. */
+  trail?: TilePos[];
+}
+
 export type EntityKind = 'player' | 'monster' | 'node' | 'drop' | 'grave' | 'npc';
 /** Anything the server reports at a position. Nodes are only reported while they are depleted, glowing or rich. */
 export interface Entity {
@@ -103,6 +116,7 @@ export interface Entity {
   tool?: string;
   qty?: number;
   boss?: BossView;
+  boat?: BoatState;
 }
 
 export type GameEvent =
@@ -140,6 +154,8 @@ export interface SelfState {
   fire: { ready: number; burns: number } | null;
   /** Attacks whoever hits the player while they are idle or skilling. */
   fightBack: boolean;
+  /** The boat has left the dock: it is moored elsewhere, or its owner is aboard. */
+  boatAway: boolean;
 }
 
 /** Told every tick to a player aboard their boat. */

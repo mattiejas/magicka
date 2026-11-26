@@ -1,6 +1,6 @@
 # Driftwake
 
-A tile-based browser MMO: skilling makes gear, gear kills bosses, and a boat takes you from the starter island to the mainland. "Driftwake" is a working name that has not been checked for availability; it is set by `GAME_NAME` in `shared/src/content.ts` and `GameName` in `server/internal/game/world.go`.
+A tile-based browser MMO: skilling makes gear, gear kills bosses, and a boat of your own takes you out to sea: to the mainland, and to small islands that start in fog. "Driftwake" is a working name that has not been checked for availability; it is set by `GAME_NAME` in `shared/src/content.ts` and `GameName` in `server/internal/game/world.go`.
 
 ## Run
 

@@ -27,7 +27,7 @@ func (w *World) Join(account int64, name string, load func() (*Char, error), con
 			c = NewChar()
 		}
 		c.fill()
-		p = &Player{ID: id, Account: account, Name: name, C: c, lastCombat: longAgo}
+		p = &Player{ID: id, Account: account, Name: name, C: c, lastCombat: longAgo, boat: c.boatAboard()}
 		w.players[id] = p
 		w.order = append(w.order, p)
 	}

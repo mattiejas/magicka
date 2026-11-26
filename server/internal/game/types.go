@@ -71,7 +71,8 @@ type Char struct {
 	Blocked   []string `json:"blocked,omitempty"` // names of players not to hear from
 	Deaths    int      `json:"deaths,omitempty"`  // counted since November 2026, for seeing where new players stop
 	// The fight back setting is off. Stored the other way round, so that every character starts with it on.
-	NoFightBack bool `json:"noFightBack,omitempty"`
+	NoFightBack bool    `json:"noFightBack,omitempty"`
+	Afloat      *Afloat `json:"afloat,omitempty"`
 }
 
 type actionType int
@@ -88,6 +89,7 @@ const (
 	actCraft
 	actTrade
 	actNPC
+	actBoard
 )
 
 // action is what a player is doing over several ticks.
@@ -137,6 +139,11 @@ type Player struct {
 	known    map[uint32]int // entities the client knows, and the tick it last heard of them
 	knownMap string
 	graveAt  Point // where the client thinks the grave is
+
+	boat       *Boat // while aboard
+	helm       int   // -1 or 1 while steering by hand
+	trail      []Vec // where the boat went this tick
+	toldAboard bool  // the client was last told it is aboard
 }
 
 func (p *Player) at() Point { return Point{X: p.C.X, Y: p.C.Y} }

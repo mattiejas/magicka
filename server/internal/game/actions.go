@@ -44,15 +44,24 @@ func (w *World) goal(p *Player) (g goal, ok bool) {
 		if g := p.C.Grave; g != nil && g.Map == p.C.Map {
 			return goal{tile(g.X, g.Y), 1, false}, true
 		}
+	case actBoard:
+		if at, moored := w.mooredHere(p); moored {
+			t := at.tile()
+			return goal{tile(t.X, t.Y), boardReach, false}, true
+		}
 	}
 	return
 }
 
 // actPlayer continues a player's action for one tick.
 func (w *World) actPlayer(p *Player) {
-	p.via, p.tool = nil, ""
+	p.via, p.tool, p.trail = nil, "", nil
 	if !p.isEating(w.Tick) {
 		p.doing = ""
+	}
+	if p.aboard() {
+		w.sail(p)
+		return
 	}
 	switch p.act.typ {
 	case actNone:
@@ -141,6 +150,8 @@ func (w *World) performAction(p *Player) {
 		w.pickup(p, w.findDrop(id))
 	case actPickupAll:
 		w.pickupAll(p, p.act.at)
+	case actBoard:
+		w.board(p)
 	}
 }
 

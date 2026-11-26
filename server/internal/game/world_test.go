@@ -8,27 +8,6 @@ import (
 	"driftwake/server/internal/pb"
 )
 
-func TestBoatBuildsInStagesAndSails(t *testing.T) {
-	e := setup(t)
-	p := e.player(1)
-	e.atStation(p, "dock", "island")
-	e.do(p, boatMsg(true), 1)
-	eq(t, p.C.Map, "island")
-	for _, b := range content.BoatParts {
-		clear(p.C.Inv)
-		p.give(b.Item, b.Qty)
-		e.do(p, boatMsg(false), 1)
-		eq(t, p.count(b.Item), 0)
-	}
-	check(t, p.C.BoatDone)
-	e.do(p, boatMsg(true), 1)
-	eq(t, p.C.Map, "mainland")
-	check(t, e.c[1].msgs[len(e.c[1].msgs)-1].GetSnapshot().GetReset_() || e.c[1].ents != nil)
-	e.atStation(p, "dock", "mainland")
-	e.do(p, boatMsg(true), 1)
-	eq(t, p.C.Map, "island")
-}
-
 func TestAbuseIsIgnored(t *testing.T) {
 	e := setup(t)
 	p := e.player(1)

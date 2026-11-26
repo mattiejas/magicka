@@ -120,6 +120,30 @@ describe('mergeEntity, with bytes recorded from the server', () => {
     expect(after('drop')).toEqual(drop);
     expect(after('drop', 'drop stays longer')).toEqual({ ...drop, until: 600 });
   });
+  it('follows boats, whose trail never carries over', () => {
+    const sam = { id: '65', kind: 'player', x: 30, y: 40, name: 'Sam', hp: 10, maxHp: 10, level: 1 };
+    const moored = { x: 31.5, y: 41.25, heading: 90, sail: 1, aboard: false };
+    const gear = [null, null, null, null, null];
+    const look = expect.any(Object);
+    expect(after('player with a moored boat')).toEqual({ ...sam, gear, look, boat: moored });
+    const sailing = { x: 32, y: 41.5, heading: 45, sail: 2, aboard: true };
+    expect(after('player with a moored boat', 'player sails')).toMatchObject({
+      boat: {
+        ...sailing,
+        trail: [
+          [31.5, 41.25],
+          [32, 41.5],
+        ],
+      },
+    });
+    // A later delta without a boat keeps the boat, and drops its trail.
+    expect(after('player with a moored boat', 'player sails', 'player stops')).toMatchObject({
+      boat: sailing,
+    });
+    expect(
+      after('player with a moored boat', 'player sails', "player's boat goes away")?.boat,
+    ).toBeUndefined();
+  });
   it('never changes the object it was given', () => {
     const known = Object.freeze(after('plain player'));
     expect(mergeEntity(known, message('player becomes busy'))).not.toBe(known);

@@ -2965,7 +2965,9 @@ type Self struct {
 	FireReady uint32 `protobuf:"varint,17,opt,name=fire_ready,json=fireReady,proto3" json:"fire_ready,omitempty"`
 	FireBurns uint32 `protobuf:"varint,18,opt,name=fire_burns,json=fireBurns,proto3" json:"fire_burns,omitempty"`
 	// Attacks whoever hits the player while they are idle or skilling.
-	FightBack     bool `protobuf:"varint,19,opt,name=fight_back,json=fightBack,proto3" json:"fight_back,omitempty"`
+	FightBack bool `protobuf:"varint,19,opt,name=fight_back,json=fightBack,proto3" json:"fight_back,omitempty"`
+	// The boat has left the dock: it is moored elsewhere, or its owner is aboard.
+	BoatAway      bool `protobuf:"varint,20,opt,name=boat_away,json=boatAway,proto3" json:"boat_away,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -3133,6 +3135,13 @@ func (x *Self) GetFightBack() bool {
 	return false
 }
 
+func (x *Self) GetBoatAway() bool {
+	if x != nil {
+		return x.BoatAway
+	}
+	return false
+}
+
 // `entities` hold only what changed, except for entities the browser did not know yet.
 type Snapshot struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
@@ -3249,7 +3258,9 @@ type Entity struct {
 	// Tick at which a drop disappears.
 	Until *uint32 `protobuf:"varint,22,opt,name=until,proto3,oneof" json:"until,omitempty"`
 	// Tick at which a drop becomes public; zero means never.
-	PublicAt      *uint32 `protobuf:"varint,23,opt,name=public_at,json=publicAt,proto3,oneof" json:"public_at,omitempty"`
+	PublicAt *uint32 `protobuf:"varint,23,opt,name=public_at,json=publicAt,proto3,oneof" json:"public_at,omitempty"`
+	// A player's boat, when it is on this map. Sent whole whenever anything about it changes.
+	Boat          *BoatView `protobuf:"bytes,24,opt,name=boat,proto3" json:"boat,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -3443,6 +3454,13 @@ func (x *Entity) GetPublicAt() uint32 {
 		return *x.PublicAt
 	}
 	return 0
+}
+
+func (x *Entity) GetBoat() *BoatView {
+	if x != nil {
+		return x.Boat
+	}
+	return nil
 }
 
 // Positions are in tiles, the heading in degrees clockwise from north.
@@ -4196,7 +4214,7 @@ const file_driftwake_v1_game_proto_rawDesc = "" +
 	"\x05stack\x18\x02 \x01(\v2\x13.driftwake.v1.StackR\x05stack\"^\n" +
 	"\tEquipSlot\x12&\n" +
 	"\x04slot\x18\x01 \x01(\x0e2\x12.driftwake.v1.SlotR\x04slot\x12)\n" +
-	"\x05stack\x18\x02 \x01(\v2\x13.driftwake.v1.StackR\x05stack\"\x97\b\n" +
+	"\x05stack\x18\x02 \x01(\v2\x13.driftwake.v1.StackR\x05stack\"\xb4\b\n" +
 	"\x04Self\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\rR\x02id\x12\x12\n" +
 	"\x04name\x18\x02 \x01(\tR\x04name\x12%\n" +
@@ -4220,7 +4238,8 @@ const file_driftwake_v1_game_proto_rawDesc = "" +
 	"\n" +
 	"fire_burns\x18\x12 \x01(\rR\tfireBurns\x12\x1d\n" +
 	"\n" +
-	"fight_back\x18\x13 \x01(\bR\tfightBack\x1a5\n" +
+	"fight_back\x18\x13 \x01(\bR\tfightBack\x12\x1b\n" +
+	"\tboat_away\x18\x14 \x01(\bR\bboatAway\x1a5\n" +
 	"\aXpEntry\x12\x10\n" +
 	"\x03key\x18\x01 \x01(\tR\x03key\x12\x14\n" +
 	"\x05value\x18\x02 \x01(\rR\x05value:\x028\x01\x1a7\n" +
@@ -4244,7 +4263,7 @@ const file_driftwake_v1_game_proto_rawDesc = "" +
 	"\x05reset\x18\x03 \x01(\bR\x05reset\x120\n" +
 	"\bentities\x18\x04 \x03(\v2\x14.driftwake.v1.EntityR\bentities\x12\x12\n" +
 	"\x04gone\x18\x05 \x03(\rR\x04gone\x12+\n" +
-	"\x06events\x18\x06 \x03(\v2\x13.driftwake.v1.EventR\x06events\"\x8f\x06\n" +
+	"\x06events\x18\x06 \x03(\v2\x13.driftwake.v1.EventR\x06events\"\xbb\x06\n" +
 	"\x06Entity\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\rR\x02id\x12\x12\n" +
 	"\x04full\x18\x02 \x01(\bR\x04full\x12\x11\n" +
@@ -4270,7 +4289,8 @@ const file_driftwake_v1_game_proto_rawDesc = "" +
 	"\x04rich\x18\x14 \x01(\bH\rR\x04rich\x88\x01\x01\x12\x19\n" +
 	"\x05wants\x18\x15 \x01(\tH\x0eR\x05wants\x88\x01\x01\x12\x19\n" +
 	"\x05until\x18\x16 \x01(\rH\x0fR\x05until\x88\x01\x01\x12 \n" +
-	"\tpublic_at\x18\x17 \x01(\rH\x10R\bpublicAt\x88\x01\x01B\x04\n" +
+	"\tpublic_at\x18\x17 \x01(\rH\x10R\bpublicAt\x88\x01\x01\x12*\n" +
+	"\x04boat\x18\x18 \x01(\v2\x16.driftwake.v1.BoatViewR\x04boatB\x04\n" +
 	"\x02_xB\x04\n" +
 	"\x02_yB\a\n" +
 	"\x05_nameB\a\n" +
@@ -4509,15 +4529,16 @@ var file_driftwake_v1_game_proto_depIdxs = []int32{
 	39, // 57: driftwake.v1.Entity.gear:type_name -> driftwake.v1.Gear
 	21, // 58: driftwake.v1.Entity.look:type_name -> driftwake.v1.Look
 	40, // 59: driftwake.v1.Entity.boss:type_name -> driftwake.v1.BossView
-	5,  // 60: driftwake.v1.BossView.state:type_name -> driftwake.v1.BossState
-	42, // 61: driftwake.v1.Event.hit:type_name -> driftwake.v1.Hit
-	44, // 62: driftwake.v1.Event.impact:type_name -> driftwake.v1.Impact
-	43, // 63: driftwake.v1.Event.level_up:type_name -> driftwake.v1.LevelUp
-	64, // [64:64] is the sub-list for method output_type
-	64, // [64:64] is the sub-list for method input_type
-	64, // [64:64] is the sub-list for extension type_name
-	64, // [64:64] is the sub-list for extension extendee
-	0,  // [0:64] is the sub-list for field type_name
+	38, // 60: driftwake.v1.Entity.boat:type_name -> driftwake.v1.BoatView
+	5,  // 61: driftwake.v1.BossView.state:type_name -> driftwake.v1.BossState
+	42, // 62: driftwake.v1.Event.hit:type_name -> driftwake.v1.Hit
+	44, // 63: driftwake.v1.Event.impact:type_name -> driftwake.v1.Impact
+	43, // 64: driftwake.v1.Event.level_up:type_name -> driftwake.v1.LevelUp
+	65, // [65:65] is the sub-list for method output_type
+	65, // [65:65] is the sub-list for method input_type
+	65, // [65:65] is the sub-list for extension type_name
+	65, // [65:65] is the sub-list for extension extendee
+	0,  // [0:65] is the sub-list for field type_name
 }
 
 func init() { file_driftwake_v1_game_proto_init() }

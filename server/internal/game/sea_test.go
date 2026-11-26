@@ -7,8 +7,6 @@ import (
 	"driftwake/content"
 )
 
-func sea() *content.Map { return content.MapByID["sea"] }
-
 func TestTheSeaHoldsTheIslandAndTheMainlandAsTheyAre(t *testing.T) {
 	s := sea()
 	for _, id := range []string{"island", "mainland"} {

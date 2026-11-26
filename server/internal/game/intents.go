@@ -10,6 +10,13 @@ func (w *World) handle(p *Player, msg *pb.ClientMessage) {
 	if p.trade != nil && interruptsTrade(msg) {
 		w.endTrade(p.trade, "The trade was declined.")
 	}
+	if p.aboard() {
+		if allowedAboard(msg) {
+			w.handleHelm(p, msg)
+		} else {
+			return
+		}
+	}
 	switch m := msg.Msg.(type) {
 	case *pb.ClientMessage_Move:
 		w.startWalk(p, int(m.Move.X), int(m.Move.Y))
@@ -54,6 +61,10 @@ func (w *World) handle(p *Player, msg *pb.ClientMessage) {
 		w.depositAll(p)
 	case *pb.ClientMessage_Boat:
 		w.useDock(p, m.Boat.Sail)
+	case *pb.ClientMessage_Board:
+		if _, ok := w.mooredHere(p); ok {
+			p.begin(action{typ: actBoard})
+		}
 	case *pb.ClientMessage_Look:
 		p.C.Look = &Look{Cut: int(m.Look.Cut), Color: int(m.Look.Color)}
 		w.save(p)
@@ -183,12 +194,7 @@ func (w *World) useDock(p *Player, sail bool) {
 	case !p.C.BoatDone:
 		w.tell(p, "Your boat is not finished.")
 	default:
-		destination := "island"
-		if p.C.Map == "island" {
-			destination = "mainland"
-		}
-		w.travel(p, destination)
-		w.save(p)
+		w.boardAtDock(p)
 	}
 }
 
@@ -206,6 +212,7 @@ func (w *World) takePassage(p *Player) {
 }
 
 func (w *World) arrive(p *Player, mapID string, x, y int) {
+	p.leaveBoat()
 	p.C.Map, p.C.X, p.C.Y = mapID, x, y
 	w.stop(p)
 	p.via = nil

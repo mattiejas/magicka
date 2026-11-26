@@ -16,7 +16,7 @@ import (
 
 // shown is an entity as a client pieced it together.
 func shown(g *pb.Entity) fields {
-	gear, look, boss := g.GetGear(), g.GetLook(), g.GetBoss()
+	gear, look, boss, boat := g.GetGear(), g.GetLook(), g.GetBoss(), g.GetBoat()
 	return fields{
 		x:         int(g.GetX()),
 		y:         int(g.GetY()),
@@ -40,6 +40,10 @@ func shown(g *pb.Entity) fields {
 		bossStart: int(boss.GetStart()),
 		until:     int(g.GetUntil()),
 		publicAt:  int(g.GetPublicAt()),
+		boat: boatFields{
+			shown: boat != nil && !boat.Away, x: boat.GetX(), y: boat.GetY(), heading: boat.GetHeading(),
+			sail: int(boat.GetSail()), aboard: boat.GetAboard(),
+		},
 	}
 }
 
@@ -86,6 +90,10 @@ func (e *env) disturb(p *Player, r func() float64) {
 		e.w.addNPC(&NPC{Kind: npcTrader, Map: e.w.mapOf(p), X: p.C.X, Y: p.C.Y, until: tick + 20, wants: "copper_ore"})
 	case 10:
 		e.w.addNPC(&NPC{Kind: npcGenie, Map: e.w.mapOf(p), X: p.C.X, Y: p.C.Y, until: tick + 20, owner: p.ID})
+	case 11: // the boat is moored nearby, or goes away
+		p.C.Afloat = &Afloat{Map: p.C.Map, X: float64(p.C.X) + r(), Y: float64(p.C.Y) + r(), Heading: r()*360 - 180}
+	case 12:
+		p.C.Afloat = nil
 	}
 }
 

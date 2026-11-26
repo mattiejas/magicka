@@ -24,6 +24,7 @@ type fields struct {
 	bossStart                   int
 	until                       int // tick at which a drop disappears
 	publicAt                    int // tick at which a drop becomes public; zero means never
+	boat                        boatFields
 }
 
 // view is an entity as clients see it on this tick.
@@ -33,6 +34,7 @@ type view struct {
 	owner uint32 // 0 when everyone may see it
 	f     fields
 	via   []Point
+	trail []Vec // of a boat, this tick
 	boss  *bossState
 	delta []byte
 	full  []byte
@@ -117,6 +119,9 @@ func (v *view) describe(before *fields, isNew bool) *pb.Entity {
 	if f.bossSt != b.bossSt || f.bossStart != b.bossStart || f.boss != b.boss {
 		e.Boss = v.bossView()
 	}
+	if f.boat != b.boat {
+		e.Boat = f.boat.pb()
+	}
 	return e
 }
 
@@ -130,11 +135,17 @@ func (v *view) fullBytes() []byte {
 
 // diff encodes what changed since the previous tick, or nothing.
 func (v *view) diff(before *fields) {
-	if v.f == *before && v.via == nil {
+	if v.f == *before && v.via == nil && v.trail == nil {
 		return
 	}
 	e := v.describe(before, false)
 	e.Via = flat(v.via)
+	if v.trail != nil {
+		if e.Boat == nil {
+			e.Boat = v.f.boat.pb()
+		}
+		e.Boat.Trail = flatVecs(v.trail)
+	}
 	v.delta, _ = proto.Marshal(e)
 }
 
@@ -184,6 +195,7 @@ func (w *World) playerView(p *Player) *view {
 		rooted: p.isRooted(w.Tick),
 		look:   p.look(),
 		level:  max(p.level(melee), p.level(ranged), p.level(magic)),
+		boat:   w.boatOf(p),
 	}
 	if p.act.hasTarget() {
 		f.target = p.act.id
@@ -193,7 +205,7 @@ func (w *World) playerView(p *Player) *view {
 			f.gear[i] = e.ID
 		}
 	}
-	return &view{id: p.ID, m: w.mapOf(p), via: p.via, f: f}
+	return &view{id: p.ID, m: w.mapOf(p), via: p.via, trail: p.trail, f: f}
 }
 
 func (a action) hasTarget() bool {
@@ -231,6 +243,7 @@ func (w *World) sendSnapshots() {
 			continue
 		}
 		w.sendSelf(p)
+		w.sendVoyage(p)
 		p.conn.SendRaw(w.snapshotFor(p, visible[w.mapOf(p)], events))
 		if w.Tick%bossBarInterval == 0 {
 			w.sendBossStatus(p)

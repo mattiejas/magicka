@@ -119,6 +119,8 @@ message Self {
   uint32 fire_ready = 17; uint32 fire_burns = 18;
   // Attacks whoever hits the player while they are idle or skilling.
   bool fight_back = 19;
+  // The boat has left the dock: it is moored elsewhere, or its owner is aboard.
+  bool boat_away = 20;
 }
 // `entities` hold only what changed, except for entities the browser did not know yet.
 message Snapshot { uint32 tick = 1; MapId map = 2; bool reset = 3; repeated Entity entities = 4; repeated uint32 gone = 5; repeated Event events = 6; }
@@ -141,6 +143,8 @@ message Entity {
   optional uint32 until = 22;
   // Tick at which a drop becomes public; zero means never.
   optional uint32 public_at = 23;
+  // A player's boat, when it is on this map. Sent whole whenever anything about it changes.
+  BoatView boat = 24;
 }
 // Positions are in tiles, the heading in degrees clockwise from north.
 message BoatView {

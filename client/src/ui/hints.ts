@@ -63,8 +63,8 @@ const ON_THE_MAINLAND: Hint[] = [
 ];
 const ON_THE_ISLAND: Hint[] = [
   {
-    applies: self => self.boatDone,
-    text: 'Your boat is ready. Speak to the shipwright to sail to the mainland.',
+    applies: self => self.boatDone && !self.boatAway,
+    text: 'Your boat is ready. Speak to the shipwright at the dock to set sail. The mainland lies to the north.',
   },
   {
     applies: self => !ownsTool(self, 'pickaxe') || !ownsTool(self, 'axe'),

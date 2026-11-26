@@ -46,6 +46,7 @@ func (w *World) self(p *Player) *pb.Self {
 		Kills:     map[string]uint32{},
 		Look:      &pb.Look{Cut: uint32(l.Cut), Color: uint32(l.Color)},
 		FightBack: !c.NoFightBack,
+		BoatAway:  c.Afloat != nil,
 	}
 	ready, burns := p.onFire()
 	s.FireReady, s.FireBurns = uint32(ready), uint32(burns)
@@ -91,6 +92,7 @@ func (p *Player) isCurrent(s *pb.Self) bool {
 	}
 	ready, burns := p.onFire()
 	return s.Map == pbMap(c.Map) && s.BoatDone == c.BoatDone && s.FightBack == !c.NoFightBack &&
+		s.BoatAway == (c.Afloat != nil) &&
 		int(s.FireReady) == ready && int(s.FireBurns) == burns &&
 		int(s.Look.Cut) == l.Cut && int(s.Look.Color) == l.Color &&
 		sameCounts(s.Xp, c.XP) && sameCounts(s.Boat, c.Boat) && sameCounts(s.Quests, c.Quests) &&

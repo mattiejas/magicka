@@ -1,6 +1,7 @@
 // Translates between the protobuf messages on the wire and the types the rest of the client uses.
 import { create, fromBinary, toBinary, toJsonString } from '@bufbuild/protobuf';
 import {
+  type BoatState,
   type ChartUpdate,
   type ClientMsg,
   type Entity,
@@ -23,6 +24,7 @@ import {
 import {
   BossState,
   ClientMessageSchema,
+  type BoatView as PbBoatView,
   type BossView as PbBossView,
   type Chart as PbChart,
   type Entity as PbEntity,
@@ -209,6 +211,11 @@ function bossView(boss: PbBossView): Entity['boss'] {
   };
 }
 
+function boatState({ away, x, y, heading, sail, aboard, trail }: PbBoatView): BoatState | undefined {
+  if (away) return undefined;
+  return { x, y, heading, sail, aboard, ...(trail.length && { trail: tilePairs(trail) }) };
+}
+
 /** Applies what changed to what is already known about an entity. Always returns a new object. */
 export function mergeEntity(known: Entity | undefined, delta: PbEntity): Entity {
   const isNew = delta.full || !known;
@@ -243,6 +250,8 @@ export function mergeEntity(known: Entity | undefined, delta: PbEntity): Entity 
   if (delta.look) entity.look = { cut: delta.look.cut, color: delta.look.color };
   if (delta.boss) entity.boss = bossView(delta.boss);
   entity.via = delta.via.length ? tilePairs(delta.via) : undefined;
+  if (delta.boat) entity.boat = boatState(delta.boat);
+  else if (entity.boat?.trail) entity.boat = { ...entity.boat, trail: undefined }; // a trail never carries over
   return entity;
 }
 
@@ -272,6 +281,7 @@ function selfState(self: PbSelf): SelfState {
     look: { cut: self.look?.cut ?? 0, color: self.look?.color ?? 0 },
     fire: self.fireReady ? { ready: self.fireReady, burns: self.fireBurns } : null,
     fightBack: self.fightBack,
+    boatAway: self.boatAway,
   };
 }
 
