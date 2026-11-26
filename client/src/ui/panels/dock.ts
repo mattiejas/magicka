@@ -1,4 +1,4 @@
-import { BOAT_PARTS, ITEMS, MAPS, QUESTS, type SelfState } from '@driftwake/shared';
+import { amountOf, BOAT_PARTS, ITEMS, MAPS, QUESTS, type SelfState } from '@driftwake/shared';
 import { send } from '../../net/connection';
 import { button, h } from '../dom';
 import { icon } from '../icons';
@@ -23,7 +23,7 @@ const QUEST = QUESTS.find(quest => quest.id === 'stranded')!;
 
 function questOffer({ quests, boatDone }: SelfState): HTMLElement[] {
   if (boatDone || quests[QUEST.id] !== undefined) return [];
-  const reward = QUEST.reward.map(([item, qty]) => `${qty} ${ITEMS[item].name.toLowerCase()}`).join(' and ');
+  const reward = QUEST.reward.map(([item, qty]) => amountOf(item, qty)).join(' and ');
   return [
     h('p', {}, QUEST.offer),
     h('p', { class: 'mute' }, `Optional. Reward: ${reward}.`),

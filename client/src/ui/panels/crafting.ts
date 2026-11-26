@@ -1,4 +1,4 @@
-import { ITEMS, RECIPES, type Recipe, SKILLS, type Station } from '@driftwake/shared';
+import { amountOf, ITEMS, RECIPES, type Recipe, SKILLS, type Station } from '@driftwake/shared';
 import { send } from '../../net/connection';
 import { button, h } from '../dom';
 import { icon } from '../icons';
@@ -19,7 +19,7 @@ export function materials(recipe: Recipe): HTMLElement {
   for (const [i, [item, qty]] of recipe.in.entries()) {
     if (i) list.append(', ');
     const missing = carried(item) < qty;
-    list.append(h('span', { class: missing ? 'no' : '' }, `${qty} ${ITEMS[item].name}`));
+    list.append(h('span', { class: missing ? 'no' : '' }, amountOf(item, qty)));
   }
   return list;
 }
