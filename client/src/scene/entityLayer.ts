@@ -104,11 +104,13 @@ export class EntityLayer {
     root.rotation.y = figure.facing;
 
     const sinceAttack = now - (this.attackedAt.get(entity.id) ?? Number.NEGATIVE_INFINITY);
+    const hit = Math.max(0, 1 - sinceAttack / ATTACK_MS);
     const pose = {
-      action: moving ? undefined : entity.action,
+      // A figure still finishing its last step does no work, but lands the blow it walked up to make.
+      action: moving && !hit ? undefined : entity.action,
       walk: now / 105,
       moving,
-      hit: Math.max(0, 1 - sinceAttack / ATTACK_MS),
+      hit,
       time: now,
       tool: entity.tool,
     };

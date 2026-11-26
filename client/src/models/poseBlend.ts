@@ -20,6 +20,14 @@ export class PoseBlend {
   private action?: string;
   private moving = false;
   private time = 0;
+  private blow?: string;
+
+  /** Keeps a blow that is still running, even when the next step of a walk no longer names it. */
+  hold(pose: Pose): Pose {
+    if (isBlow(pose)) this.blow = pose.action;
+    else if (pose.hit <= 0) this.blow = undefined;
+    return this.blow && pose.hit > 0 ? { ...pose, action: this.blow } : pose;
+  }
 
   /** Mixes into `joints`, which must be new every frame, and remembers them. */
   apply(joints: PlayerJoints, pose: Pose) {
