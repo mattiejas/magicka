@@ -387,6 +387,14 @@ h2 {
   font-variant-numeric: tabular-nums;
   opacity: 0.75;
 }
+/* Sized here, not by the picture, so a label's width is known before the picture loads. */
+.drop-label i img {
+  width: 12px;
+  height: 12px;
+  margin-right: 3px;
+  vertical-align: -1px;
+  image-rendering: pixelated;
+}
 .drop-label .unique {
   color: #f0c96a;
   font-weight: 600;
