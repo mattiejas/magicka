@@ -14,7 +14,7 @@ const forever = 100 * 365 * 24 * time.Hour
 
 // Help lists what moderators can type in chat.
 const Help = "/mute name minutes reason, /unmute name, /kick name reason, /ban name days reason (0 days is forever), " +
-	"/unban name, /reports, /resolve number, /log"
+	"/unban name, /reports, /resolve number, /log, /retention weeks ago (3 by default)"
 
 // Command carries out a moderator's chat command. handled is false for anything else.
 func (m *Moderation) Command(moderator, text string) (reply string, handled bool) {
@@ -34,6 +34,8 @@ func (m *Moderation) Command(moderator, text string) (reply string, handled bool
 		reply, err = m.listReports()
 	case "log":
 		reply, err = m.listLog()
+	case "retention":
+		reply, err = m.retention(args)
 	case "resolve":
 		reply, err = m.resolve(moderator, args)
 	case "mute", "ban":
