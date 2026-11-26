@@ -15,6 +15,7 @@ import { TileMarker } from './tileMarkers';
 import { WorldView } from './worldView';
 
 const SUNLIGHT = 2.5;
+const destinationMarker = () => new TileMarker('#8fd0c0', 0.8, 0.03);
 /** Half the width of the area around the camera that casts shadows. */
 const SHADOW_RANGE = 24;
 
@@ -30,7 +31,9 @@ export class Scene {
   private boats = new Boats();
   private overlay: Overlay;
   private hover = new TileMarker('#f0ead8', 0.55, 0.025);
-  private destination = new TileMarker('#8fd0c0', 0.8, 0.03);
+  private destination = destinationMarker();
+  /** Where the boat is steered for, marked as a destination is on land. */
+  private course = destinationMarker();
   private ownTile = new TileMarker('#8fd0c0', 0.28, 0.02);
   private quality = settings().quality;
   /** When quality changes the ground clutter, the map is rebuilt on the next frame. */
@@ -39,7 +42,7 @@ export class Scene {
   constructor(canvas: HTMLCanvasElement, overlayRoot: HTMLElement) {
     this.renderer = createRenderer(canvas);
     this.scene.add(this.sky, this.sun, this.sun.target, this.boats.group);
-    this.scene.add(this.hover.mesh, this.destination.mesh, this.ownTile.mesh);
+    this.scene.add(this.hover.mesh, this.destination.mesh, this.course.mesh, this.ownTile.mesh);
     this.overlay = new Overlay(overlayRoot, this.project, id => this.entities.heightOf(id));
     this.applyQuality(this.quality);
     onSettings(({ quality }) => {
@@ -139,7 +142,14 @@ export class Scene {
     this.entities.update(world, now, dt);
     this.boats.update(now, (bx, by) => world.inSight(bx, by));
     this.followPlayer(dt);
+    this.showCourse();
     this.effects.update(now);
+  }
+
+  private showCourse() {
+    const course = state.voyage?.course;
+    if (course) this.course.show([Math.floor(course[0]), Math.floor(course[1])], this.groundAt);
+    else this.course.hide();
   }
 
   private worldFor(id: keyof typeof MAPS): WorldView {

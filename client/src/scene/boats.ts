@@ -12,7 +12,6 @@ const BOB = 0.035;
 const ROLL = 0.035;
 const BOB_MS = 900;
 const ARC_HEIGHT = 0.04;
-const COURSE_COLOR = '#8fd0c0';
 
 /** One finished boat for each sail setting, shared by every boat that shows it. */
 let geometries: THREE.BufferGeometry[] | null = null;
@@ -34,14 +33,10 @@ export class Boats {
       opacity: 0.55,
     }),
   );
-  private course = new THREE.Mesh(
-    new THREE.RingGeometry(0.28, 0.4, 24).rotateX(-Math.PI / 2),
-    new THREE.MeshBasicMaterial({ color: COURSE_COLOR, transparent: true, opacity: 0.85, depthWrite: false }),
-  );
 
   constructor() {
     this.arc.frustumCulled = false;
-    this.group.add(this.arc, this.course);
+    this.group.add(this.arc);
   }
 
   /** `inSight` tells whether a point can be seen, which at sea is only within the lookout. */
@@ -68,7 +63,7 @@ export class Boats {
         this.group.remove(mesh);
         this.meshes.delete(id);
       }
-    this.updateCourse(now);
+    this.updateArc();
   }
 
   clear() {
@@ -88,18 +83,12 @@ export class Boats {
     return mesh;
   }
 
-  /** The dashed arc the boat will follow over the next ticks, from where it is drawn now, and the course. */
-  private updateCourse(now: number) {
+  /** The dashed arc the boat will follow over the next ticks, from where it is drawn now. */
+  private updateArc() {
     const { voyage } = state;
     const mine = state.entities.get(state.me);
     const at = mine && boatAt(mine);
     this.arc.visible = !!voyage && !!at && voyage.ahead.length > 0;
-    this.course.visible = !!voyage?.course;
-    if (voyage?.course) {
-      const pulse = 1 + Math.sin(now / 300) * 0.08;
-      this.course.position.set(voyage.course[0], WATER_LEVEL + ARC_HEIGHT, voyage.course[1]);
-      this.course.scale.setScalar(pulse);
-    }
     if (!this.arc.visible) return;
     const { x, y } = mine!.entity.boat!;
     const points = [[at!.x, at!.y], [x, y], ...voyage!.ahead].map(

@@ -76,7 +76,7 @@ function bindHover(canvas: HTMLCanvasElement, scene: Scene) {
     const { hits, tile } = scene.pick(event.clientX, event.clientY);
     const action = isAboard() ? null : (firstAction(hits) ?? boardOption(tile));
     scene.showHover(action ? null : tile);
-    canvas.style.cursor = isAboard() ? 'crosshair' : action ? 'pointer' : 'default';
+    canvas.style.cursor = action ? 'pointer' : 'default';
     showTooltip(action?.[0] ?? '', event.clientX, event.clientY);
   });
   canvas.addEventListener('mouseleave', () => {
