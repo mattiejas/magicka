@@ -1,6 +1,6 @@
 // Authoring source for the maps. Run `npm run content` after editing.
 import { NODES } from './items';
-export type MapId = 'island' | 'mainland' | 'mine';
+export type MapId = 'island' | 'mainland' | 'mine' | 'sea';
 export const T = { WATER: 0, SAND: 1, GRASS: 2, DIRT: 3, STONE: 4, WOOD: 5, PATH: 6 } as const;
 /** The tallest height there is, and the steepest step between two neighbouring tiles that can be walked. */
 export const MAX_HEIGHT = 35;
@@ -34,6 +34,21 @@ export interface Spawn {
   x: number;
   y: number;
 }
+/** A named piece of land on the sea. One that leads to a map of its own lies at that map's place in the sea. */
+export interface Place {
+  id: string;
+  name: string;
+  /** The map going ashore here leads onto, whose corner lies at x, y. Without one, x, y is the middle. */
+  map?: MapId;
+  x: number;
+  y: number;
+}
+/** Where a boat lies beside a dock, and which way it points, in degrees clockwise from north. */
+export interface Mooring {
+  x: number;
+  y: number;
+  heading: number;
+}
 export interface GameMap {
   id: MapId;
   name: string;
@@ -59,6 +74,12 @@ export interface GameMap {
   /** Where the mine entrance leads. */
   passage?: { to: MapId; x: number; y: number };
   labels: { name: string; x: number; y: number }[];
+  /** On the sea: the places, and of each tile the place it belongs to, as its index + 1, or 0 for none. */
+  places: Place[];
+  placeOf: Uint8Array;
+  /** Tiles from which, besides the spawn, the land that can be walked on is found: one on each small island. */
+  seeds: { x: number; y: number }[];
+  mooring?: Mooring;
 }
 
 export function mulberry(seed: number) {
@@ -111,6 +132,9 @@ class Builder {
       cave: false,
       town: id,
       labels: [],
+      places: [],
+      placeOf: new Uint8Array(size * size),
+      seeds: [],
     };
     for (let y = 0; y < size; y++)
       for (let x = 0; x < size; x++) {
@@ -271,6 +295,47 @@ class Builder {
   private covered(x: number, y: number) {
     return this.crowded(x, y, 1, 0);
   }
+  /** Lays a map's land into the sea with its corner at x, y. Going ashore on it leads onto that map, so here nobody walks on it. */
+  coast(land: GameMap, x: number, y: number) {
+    const place = this.m.places.push({ id: land.id, name: land.name, map: land.id, x, y });
+    for (let j = 0; j < land.size; j++)
+      for (let i = 0; i < land.size; i++) {
+        const from = j * land.size + i,
+          k = (y + j) * this.m.size + x + i;
+        if (land.tiles[from] === T.WATER) continue;
+        this.m.tiles[k] = land.tiles[from];
+        this.m.heights[k] = land.heights[from];
+        this.m.walls[k] = 1;
+        this.m.placeOf[k] = place;
+      }
+  }
+  /**
+   * A small island that can be walked on: ovals with a wobbly shore, `[x, y, rx, ry]` each, and a rim of sand unless
+   * it is rock. `rise` is how high its middle stands.
+   */
+  isle(id: string, name: string, parts: [number, number, number, number][], ground: number, rise = 0) {
+    const [[px, py]] = parts;
+    const place = this.m.places.push({ id, name, x: px, y: py });
+    for (const [cx, cy, rx, ry] of parts) {
+      const r = Math.min(rx, ry),
+        phase = this.rnd() * 6;
+      for (let y = Math.floor(cy - ry - 1); y <= cy + ry + 1; y++)
+        for (let x = Math.floor(cx - rx - 1); x <= cx + rx + 1; x++) {
+          const dx = x - cx,
+            dy = y - cy,
+            a = Math.atan2(dy, dx);
+          const wobble = r > 2 ? 0.14 * Math.sin(3 * a + phase) + 0.09 * Math.sin(5 * a + 2 * phase) : 0;
+          const inside = (1 + wobble - Math.hypot(dx / rx, dy / ry)) * r; // tiles in from the shore, roughly
+          if (inside <= 0) continue;
+          const k = y * this.m.size + x;
+          this.m.tiles[k] = inside < 1.3 && ground !== T.STONE ? T.SAND : ground;
+          this.m.heights[k] = Math.round(rise * smooth((inside - 1) / 3));
+          this.m.placeOf[k] = place;
+        }
+      this.m.seeds.push({ x: Math.round(cx), y: Math.round(cy) });
+      this.keep(Math.round(cx), Math.round(cy), 0); // the walk over it is found from there, so nothing stands on it
+    }
+  }
   keep(x: number, y: number, r: number) {
     for (let j = -r; j <= r; j++) for (let i = -r; i <= r; i++) this.used.add((y + j) * this.m.size + x + i);
   }
@@ -346,9 +411,12 @@ class Builder {
     const open = (x: number, y: number) =>
       x >= 0 && y >= 0 && x < size && y < size && tiles[y * size + x] !== T.WATER && !walls[y * size + x];
     const reach = new Uint8Array(size * size);
-    const { x: sx, y: sy } = this.m.spawn;
-    const queue = [[sx, sy]];
-    reach[sy * size + sx] = 1;
+    const queue: number[][] = [];
+    for (const { x, y } of [this.m.spawn, ...this.m.seeds])
+      if (open(x, y) && !reach[y * size + x]) {
+        reach[y * size + x] = 1;
+        queue.push([x, y]);
+      }
     for (const [x, y] of queue)
       for (const [dx, dy] of [
         [0, -1],
@@ -431,6 +499,7 @@ function island() {
   b.rect(31, 53, 3, 8, T.WOOD);
   m.spawn = { x: 32, y: 35 };
   m.landing = { x: 32, y: 55 };
+  m.mooring = { x: 35.2, y: 59.4, heading: 180 };
   m.safe = { x: 32, y: 34, r: 6 };
   // Ground: a hill in the north, a rise under the ash grove, the crater of the mine and cliffs along the shore.
   b.raise(mound(23, 15, 1, 7, 12));
@@ -498,6 +567,7 @@ function mainland() {
   b.road(48, 40, 74, 34);
   m.spawn = { x: 48, y: 77 };
   m.landing = { x: 48, y: 86 };
+  m.mooring = { x: 51.2, y: 91.4, heading: 180 };
   m.methods = true;
   m.safe = { x: 48, y: 76, r: 7 };
   b.station('bank', 44, 74);
@@ -629,4 +699,55 @@ function mine() {
   );
   return b.done();
 }
-export const MAPS: Record<MapId, GameMap> = { island: island(), mainland: mainland(), mine: mine() };
+/** Where the corners of the island and the mainland lie in the sea, with about 60 tiles of water between them. */
+export const COASTS = { mainland: { x: 72, y: 8 }, island: { x: 88, y: 164 } } as const;
+/**
+ * The sea: the island and the mainland as they are, and small islands to find, each with something worth the
+ * voyage. The further from home, the higher the tier.
+ */
+function sea(island: GameMap, mainland: GameMap) {
+  const NOTHING = 0.001;
+  const b = new Builder('sea', 'The sea', 240, 11, NOTHING, NOTHING, true),
+    m = b.m;
+  m.town = 'island';
+  m.tiles.fill(T.WATER); // the builder's own island, which has no size here, still leaves a tile in the middle
+  b.coast(mainland, COASTS.mainland.x, COASTS.mainland.y);
+  b.coast(island, COASTS.island.x, COASTS.island.y);
+  b.isle('pine_holm', 'Pine Holm', [[42, 176, 9, 8]], T.GRASS, 2);
+  b.isle('gull_rock', 'Gull Rock', [[186, 196, 3.5, 3]], T.STONE);
+  b.isle('reed_atoll', 'Reed Atoll', [[34, 110, 6, 5]], T.SAND);
+  b.isle('ironstack', 'Ironstack', [[202, 128, 6, 5]], T.STONE);
+  b.isle(
+    'the_teeth',
+    'The Teeth',
+    [
+      [210, 40, 3, 3],
+      [217, 33, 2, 2],
+      [203, 31, 2, 2.5],
+    ],
+    T.STONE,
+  );
+  m.spawn = { x: 42, y: 176 };
+  m.landing = { x: 42, y: 176 };
+  b.scatter('tree_2', 8, 42, 175, 6);
+  b.scatter('plant_2', 4, 44, 179, 5);
+  b.scatter('plant_3', 5, 34, 110, 4);
+  b.place('big_rock_2', 199, 126);
+  b.scatter('rock_2', 5, 202, 128, 4);
+  b.place('big_rock_3', 208, 39);
+  b.scatter('rock_3', 2, 217, 33, 1);
+  b.scatter('rock_3', 2, 203, 31, 1);
+  b.settle();
+  b.shoal('shoal_2', 190, 196);
+  b.spots('spot_2', 4, 186, 196, 6);
+  b.shoal('shoal_3', 41, 110);
+  return b.done();
+}
+const ISLAND = island(),
+  MAINLAND = mainland();
+export const MAPS: Record<MapId, GameMap> = {
+  island: ISLAND,
+  mainland: MAINLAND,
+  mine: mine(),
+  sea: sea(ISLAND, MAINLAND),
+};

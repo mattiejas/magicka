@@ -61,7 +61,7 @@ func TestFishingSpotsLieOnWaterBesideTheShore(t *testing.T) {
 
 func TestFishingSpotsAreNearCampAndOnTheMainland(t *testing.T) {
 	island := content.MapByID["island"]
-	tiers := map[string]map[int]bool{"island": {}, "mainland": {}}
+	tiers := map[string]map[int]bool{"island": {}, "mainland": {}, "sea": {}}
 	for _, m := range content.Maps {
 		for _, n := range m.Nodes {
 			if d := content.Nodes[n.Type]; d.Moves {

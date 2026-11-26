@@ -1,7 +1,7 @@
 // Maps, loaded from the generated data file. Edit content/src/maps.ts and run `npm run content`.
 import data from '../../content/data/maps.json';
 import { NODES } from './content';
-export type MapId = 'island' | 'mainland' | 'mine';
+export type MapId = 'island' | 'mainland' | 'mine' | 'sea';
 export const T = { WATER: 0, SAND: 1, GRASS: 2, DIRT: 3, STONE: 4, WOOD: 5, PATH: 6 } as const;
 export type StationType =
   | 'bank'
@@ -30,6 +30,14 @@ export interface Spawn {
   x: number;
   y: number;
 }
+/** A named piece of land on the sea. One that leads to a map of its own lies with that map's corner at x, y. */
+export interface Place {
+  id: string;
+  name: string;
+  map?: MapId;
+  x: number;
+  y: number;
+}
 export interface GameMap {
   id: MapId;
   name: string;
@@ -49,6 +57,11 @@ export interface GameMap {
   /** Underground: what is not floor is rock instead of water. */
   cave: boolean;
   labels: { name: string; x: number; y: number }[];
+  /** On the sea: the places, and of each tile the place it belongs to, as its index + 1, or 0 for none. */
+  places: Place[];
+  placeOf: Uint8Array;
+  /** Where a boat lies beside a dock, and which way it points, in degrees clockwise from north. */
+  mooring?: { x: number; y: number; heading: number };
 }
 
 /** How high one step of a tile's height is, in tiles. */
@@ -66,9 +79,10 @@ export function mulberry(seed: number) {
 interface HeightRows {
   heights?: string[];
   walls?: string[];
+  placeRows?: string[];
 }
 function load(raw: (typeof data)[number]): GameMap {
-  const { rows, heights: heightRows, walls: wallRows, ...m } = raw as typeof raw & HeightRows,
+  const { rows, heights: heightRows, walls: wallRows, placeRows, ...m } = raw as typeof raw & HeightRows,
     size = m.size,
     tiles = Uint8Array.from(rows.join(''), Number),
     heights = Uint8Array.from(heightRows?.join('') ?? '', digit => Number.parseInt(digit, 36)),
@@ -84,6 +98,9 @@ function load(raw: (typeof data)[number]): GameMap {
     tiles,
     heights: heights.length ? heights : new Uint8Array(tiles.length),
     blocked,
+    placeOf: placeRows
+      ? Uint8Array.from(placeRows.join(''), digit => Number.parseInt(digit, 36))
+      : new Uint8Array(tiles.length),
   } as unknown as GameMap;
 }
 export const MAPS = Object.fromEntries(data.map(m => [m.id, load(m)])) as Record<MapId, GameMap>;

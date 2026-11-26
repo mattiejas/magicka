@@ -111,7 +111,7 @@ function questHint({ quests, map }: SelfState): string | undefined {
   }
 }
 
-const HINTS: Record<MapId, Hint[]> = { island: ON_THE_ISLAND, mainland: ON_THE_MAINLAND, mine: [] };
+const HINTS: Record<MapId, Hint[]> = { island: ON_THE_ISLAND, mainland: ON_THE_MAINLAND, mine: [], sea: [] };
 
 export function updateHint() {
   const { self } = state;
