@@ -39,6 +39,7 @@ func TestNoTierCanBeSkipped(t *testing.T) {
 			e := setup(t)
 			p := e.player(1)
 			setLevel(p, 50)
+			p.C.NoFightBack = true // some rocks have monsters beside them
 			n := e.node(fmt.Sprintf("%s_%d", kind, tier), "mainland")
 			attempt := func(tool string) bool {
 				clear(p.C.Inv)

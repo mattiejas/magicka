@@ -63,6 +63,9 @@ func (w *World) handle(p *Player, msg *pb.ClientMessage) {
 		w.stepTrade(p, m.TradeStep)
 	case *pb.ClientMessage_Block:
 		w.block(p, m.Block)
+	case *pb.ClientMessage_FightBack:
+		p.C.NoFightBack = !m.FightBack
+		w.save(p)
 	case *pb.ClientMessage_StartQuest:
 		w.startQuest(p, m.StartQuest)
 	case *pb.ClientMessage_Npc:
@@ -80,7 +83,7 @@ func (w *World) handle(p *Player, msg *pb.ClientMessage) {
 func interruptsTrade(msg *pb.ClientMessage) bool {
 	switch msg.Msg.(type) {
 	case *pb.ClientMessage_TradeStep, *pb.ClientMessage_Chat, *pb.ClientMessage_Block, *pb.ClientMessage_Look,
-		*pb.ClientMessage_Swap:
+		*pb.ClientMessage_Swap, *pb.ClientMessage_FightBack:
 		return false
 	}
 	return true

@@ -70,6 +70,8 @@ type Char struct {
 	GenieAt   int      `json:"genieAt"`
 	Blocked   []string `json:"blocked,omitempty"` // names of players not to hear from
 	Deaths    int      `json:"deaths,omitempty"`  // counted since November 2026, for seeing where new players stop
+	// The fight back setting is off. Stored the other way round, so that every character starts with it on.
+	NoFightBack bool `json:"noFightBack,omitempty"`
 }
 
 type actionType int

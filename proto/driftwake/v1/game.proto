@@ -27,6 +27,8 @@ message ClientMessage {
     Empty take_off = 34;
     // Takes everything the player may take on the tile of this drop, the most valuable first.
     uint32 pickup_all = 35;
+    // Whether to attack whoever hits you while idle or skilling.
+    bool fight_back = 36;
   }
 }
 message Empty {}
@@ -94,6 +96,8 @@ message Self {
   map<string, uint32> kills = 16;
   // While food is on the fire with the intense method: the tick it is done, and the tick it burns. Zero means none.
   uint32 fire_ready = 17; uint32 fire_burns = 18;
+  // Attacks whoever hits the player while they are idle or skilling.
+  bool fight_back = 19;
 }
 // `entities` hold only what changed, except for entities the browser did not know yet.
 message Snapshot { uint32 tick = 1; MapId map = 2; bool reset = 3; repeated Entity entities = 4; repeated uint32 gone = 5; repeated Event events = 6; }
