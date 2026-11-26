@@ -13,7 +13,13 @@ export type ClientMsg =
   | { type: 'register' | 'login'; name: string; password: string }
   | { type: 'resume'; token: string }
   | { type: 'changePassword'; oldPassword: string; newPassword: string }
-  | { type: 'logout' | 'grave' | 'depositAll' | 'askFees' | 'takeOff' }
+  | { type: 'logout' | 'grave' | 'depositAll' | 'askFees' | 'takeOff' | 'goAshore' | 'board' }
+  /** A sail setting, from 0 backing to 3 full sail. */
+  | { type: 'setSail'; sail: number }
+  /** A tile for the helm to steer for. */
+  | { type: 'steer'; x: number; y: number }
+  /** -1 or 1 while steering by hand, 0 when let go. */
+  | { type: 'helm'; turn: -1 | 0 | 1 }
   /** Without an item: everything. */
   | { type: 'claim'; item?: string }
   | { type: 'shop'; op: 'buy' | 'sell'; item: string; qty: number }
@@ -136,6 +142,30 @@ export interface SelfState {
   fightBack: boolean;
 }
 
+/** Told every tick to a player aboard their boat. */
+export interface Voyage {
+  aboard: boolean;
+  speed: number;
+  course: TilePos | null;
+  /** Where the boat will be over the next ticks if nothing changes. */
+  ahead: TilePos[];
+  /** Land is close enough to go ashore, and the boat slow enough for it. */
+  shoreNear: boolean;
+  slowEnough: boolean;
+}
+
+/** What the player has seen of the sea, whole or as what was seen since. */
+export interface ChartUpdate {
+  full: boolean;
+  /** With full: a bit for every tile, row by row. */
+  seen: Uint8Array;
+  /** Otherwise: tiles seen since, as pairs of the first tile's index and how many follow it. */
+  runs: number[];
+  /** Places sighted, whose outline is known, and places gone ashore on, which are seen whole. */
+  found: string[];
+  landed: string[];
+}
+
 export type InfoKind = 'unique' | 'boss' | 'level' | 'bad';
 /** Still encoded against what the client already knows; see mergeEntity. */
 export interface EntityDelta {
@@ -164,6 +194,8 @@ export type ServerMsg =
   | { type: 'tradeRequest'; id: string; name: string }
   /** Null when the trade has ended. */
   | { type: 'trade'; trade: TradeView | null }
+  | { type: 'voyage'; voyage: Voyage }
+  | { type: 'chart'; chart: ChartUpdate }
   | {
       type: 'boss';
       alive: boolean;

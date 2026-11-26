@@ -1,6 +1,7 @@
 // Translates between the protobuf messages on the wire and the types the rest of the client uses.
 import { create, fromBinary, toBinary, toJsonString } from '@bufbuild/protobuf';
 import {
+  type ChartUpdate,
   type ClientMsg,
   type Entity,
   type EntityKind,
@@ -17,11 +18,13 @@ import {
   type Stack,
   type StationType,
   type TilePos,
+  type Voyage,
 } from '@driftwake/shared';
 import {
   BossState,
   ClientMessageSchema,
   type BossView as PbBossView,
+  type Chart as PbChart,
   type Entity as PbEntity,
   type Event as PbEvent,
   InfoKind as PbInfo,
@@ -31,6 +34,7 @@ import {
   type Snapshot as PbSnapshot,
   type Stack as PbStack,
   type TradeView as PbTradeView,
+  type Voyage as PbVoyage,
   ServerMessageSchema,
   TradeAction,
 } from '../pb/driftwake/v1/game_pb';
@@ -86,7 +90,11 @@ const TRADE_ACTIONS = {
   accept: TradeAction.ACCEPT,
   decline: TradeAction.DECLINE,
 };
-const MAP_IDS: Partial<Record<PbMap, MapId>> = { [PbMap.MAINLAND]: 'mainland', [PbMap.MINE]: 'mine' };
+const MAP_IDS: Partial<Record<PbMap, MapId>> = {
+  [PbMap.MAINLAND]: 'mainland',
+  [PbMap.MINE]: 'mine',
+  [PbMap.SEA]: 'sea',
+};
 const mapId = (map: PbMap): MapId => MAP_IDS[map] ?? 'island';
 
 // --- client to server
@@ -108,7 +116,15 @@ function payload(msg: ClientMsg): { case: string; value: unknown } {
     case 'depositAll':
     case 'askFees':
     case 'takeOff':
+    case 'goAshore':
+    case 'board':
       return { case: msg.type, value: {} };
+    case 'setSail':
+      return { case: 'setSail', value: msg.sail };
+    case 'steer':
+      return { case: 'steer', value: { x: msg.x, y: msg.y } };
+    case 'helm':
+      return { case: 'helm', value: msg.turn };
     case 'move':
       return { case: 'move', value: { x: msg.x, y: msg.y } };
     case 'gather':
@@ -264,6 +280,21 @@ function tradeView({ open, partner, mine, theirs, iAccepted, theyAccepted, ready
   return { partner, mine: mine.map(stack), theirs: theirs.map(stack), iAccepted, theyAccepted, readyAt };
 }
 
+function voyage(v: PbVoyage): Voyage {
+  return {
+    aboard: v.aboard,
+    speed: v.speed,
+    course: v.hasCourse ? [v.courseX, v.courseY] : null,
+    ahead: tilePairs(v.ahead),
+    shoreNear: v.shoreNear,
+    slowEnough: v.slowEnough,
+  };
+}
+
+function chart({ full, seen, runs, found, landed }: PbChart): ChartUpdate {
+  return { full, seen, runs, found, landed };
+}
+
 function gameEvent({ event }: PbEvent): GameEvent[] {
   switch (event.case) {
     case 'hit': {
@@ -334,6 +365,10 @@ export function decode(data: ArrayBuffer): ServerMsg | null {
       return { type: 'trade', trade: tradeView(msg.value) };
     case 'feesTaken':
       return { type: 'fees', taken: Number(msg.value) };
+    case 'voyage':
+      return { type: 'voyage', voyage: voyage(msg.value) };
+    case 'chart':
+      return { type: 'chart', chart: chart(msg.value) };
     case 'boss': {
       const { alive, nextTicks, contribution, online, next } = msg.value;
       return { type: 'boss', alive, nextTicks, contribution, online, next };

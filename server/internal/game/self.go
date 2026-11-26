@@ -14,6 +14,8 @@ func pbMap(id string) pb.MapId {
 		return pb.MapId_MAP_ID_MAINLAND
 	case "mine":
 		return pb.MapId_MAP_ID_MINE
+	case "sea":
+		return pb.MapId_MAP_ID_SEA
 	}
 	return pb.MapId_MAP_ID_ISLAND
 }
