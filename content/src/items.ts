@@ -1,4 +1,5 @@
 // Authoring source for items, recipes, nodes, monsters and loot. Run `npm run content` after editing.
+import { MAX_LEVEL } from '../../shared/src/formulas';
 export const GAME_NAME = 'Driftwake'; // working title; rename here before any public launch
 export const SKILLS = [
   'mining',
@@ -30,7 +31,7 @@ export const WOOD_COLORS = ['#8a7a60', '#d8b47c', '#b87a48', '#8f5c38', '#b04a38
 const HIDE_COLORS = ['', '#b98f66', '#8d6a4c', '#6e7b4a', '#5c6f8c', '#6b4456'];
 const FIBRE_COLORS = ['', '#d7c98f', '#a8c27a', '#a9b6d6', '#8fc7cf', '#8a6cae'];
 const GEM_COLORS = ['', '#dfe3e6', '#e0a640', '#a83b4b', '#b9d6d0', '#4fb38a'];
-/** One fish for each tier. Raw fish heals nothing; cooking it is another skill's work. */
+/** One fish for each tier. Raw fish heals nothing until it is cooked. */
 export const FISH = ['', 'perch', 'trout', 'pike', 'salmon', 'sturgeon'];
 const FISH_COLORS = ['', '#8f9a6a', '#a07a6a', '#6f8a6a', '#d08068', '#6a6f80'];
 
@@ -169,7 +170,10 @@ add({ id: 'ration', name: 'Trail ration', icon: 'ration', color: '#b58a58', tier
 add({ id: 'feast', name: 'Hearty feast', icon: 'ration', color: '#d0a060', tier: 3, heal: 26 });
 add({ id: 'ships_wheel', name: "Ship's wheel", icon: 'wheel', color: '#8d7a5e', tier: 1, value: 50 });
 
-/** Cooking: food burns less often as the level rises, and never once it is this many levels above the recipe's. */
+/**
+ * Cooking: food burns less often as the level rises, and never once it is this many levels above the recipe's, or at
+ * the last level.
+ */
 export const COOKING = {
   safeAfter: 20,
   /** What burnt food becomes. It is worth nothing. */
@@ -190,7 +194,8 @@ const cook = (out: string, level: number, xp: number, inp: [string, number][]) =
     level,
     xp,
     in: inp,
-    safe: level + COOKING.safeAfter,
+    // A dish of a high level still stops burning before the last level.
+    safe: Math.min(level + COOKING.safeAfter, MAX_LEVEL),
     ready: COOKING.readyTicks + Math.floor(level / COOKING.readyPerLevels),
   });
 cook('cooked_meat', 1, 35, [['meat', 1]]);
@@ -202,6 +207,21 @@ cook('feast', 25, 155, [
   ['meat', 2],
   ['berries', 2],
 ]);
+/** Cooked fish, by tier: what it heals and the experience of cooking it. Its level is the fish's fishing level. */
+const FISH_HEAL = [0, 6, 10, 15, 20, 25];
+const FISH_COOKING_XP = [0, 30, 50, 65, 120, 140];
+const COOKED_FISH_COLORS = ['', '#b7a070', '#c49070', '#a89a70', '#e0a080', '#a89080'];
+for (let t = 1; t <= 5; t++) {
+  add({
+    id: `cooked_${FISH[t]}`,
+    name: `Cooked ${FISH[t]}`,
+    icon: 'fish',
+    color: COOKED_FISH_COLORS[t],
+    tier: t,
+    heal: FISH_HEAL[t],
+  });
+  cook(`cooked_${FISH[t]}`, TIER_LEVEL[t], FISH_COOKING_XP[t], [[`raw_${FISH[t]}`, 1]]);
+}
 
 for (let t = 1; t <= 5; t++) {
   const m = METALS[t],

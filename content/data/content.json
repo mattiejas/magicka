@@ -126,6 +126,51 @@
    "tier": 1
   },
   {
+   "value": 5,
+   "id": "cooked_perch",
+   "name": "Cooked perch",
+   "icon": "fish",
+   "color": "#b7a070",
+   "tier": 1,
+   "heal": 6
+  },
+  {
+   "value": 13,
+   "id": "cooked_trout",
+   "name": "Cooked trout",
+   "icon": "fish",
+   "color": "#c49070",
+   "tier": 2,
+   "heal": 10
+  },
+  {
+   "value": 30,
+   "id": "cooked_pike",
+   "name": "Cooked pike",
+   "icon": "fish",
+   "color": "#a89a70",
+   "tier": 3,
+   "heal": 15
+  },
+  {
+   "value": 58,
+   "id": "cooked_salmon",
+   "name": "Cooked salmon",
+   "icon": "fish",
+   "color": "#e0a080",
+   "tier": 4,
+   "heal": 20
+  },
+  {
+   "value": 108,
+   "id": "cooked_sturgeon",
+   "name": "Cooked sturgeon",
+   "icon": "fish",
+   "color": "#a89080",
+   "tier": 5,
+   "heal": 25
+  },
+  {
    "value": 6,
    "id": "copper_ore",
    "name": "Copper ore",
@@ -1921,6 +1966,91 @@
    ],
    "safe": 45,
    "ready": 5
+  },
+  {
+   "id": "cooked_perch",
+   "out": "cooked_perch",
+   "qty": 1,
+   "station": "fire",
+   "skill": "cooking",
+   "level": 1,
+   "xp": 30,
+   "in": [
+    [
+     "raw_perch",
+     1
+    ]
+   ],
+   "safe": 21,
+   "ready": 4
+  },
+  {
+   "id": "cooked_trout",
+   "out": "cooked_trout",
+   "qty": 1,
+   "station": "fire",
+   "skill": "cooking",
+   "level": 10,
+   "xp": 50,
+   "in": [
+    [
+     "raw_trout",
+     1
+    ]
+   ],
+   "safe": 30,
+   "ready": 4
+  },
+  {
+   "id": "cooked_pike",
+   "out": "cooked_pike",
+   "qty": 1,
+   "station": "fire",
+   "skill": "cooking",
+   "level": 20,
+   "xp": 65,
+   "in": [
+    [
+     "raw_pike",
+     1
+    ]
+   ],
+   "safe": 40,
+   "ready": 5
+  },
+  {
+   "id": "cooked_salmon",
+   "out": "cooked_salmon",
+   "qty": 1,
+   "station": "fire",
+   "skill": "cooking",
+   "level": 30,
+   "xp": 120,
+   "in": [
+    [
+     "raw_salmon",
+     1
+    ]
+   ],
+   "safe": 50,
+   "ready": 5
+  },
+  {
+   "id": "cooked_sturgeon",
+   "out": "cooked_sturgeon",
+   "qty": 1,
+   "station": "fire",
+   "skill": "cooking",
+   "level": 40,
+   "xp": 140,
+   "in": [
+    [
+     "raw_sturgeon",
+     1
+    ]
+   ],
+   "safe": 50,
+   "ready": 6
   },
   {
    "id": "leather_cowl_1",

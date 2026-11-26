@@ -255,9 +255,9 @@ type maker struct {
 	ticks   int
 }
 
-func newMaker(t *testing.T, skill string, level int, intense bool) *maker {
+func newMaker(t *testing.T, recipe *content.Recipe, level int, intense bool) *maker {
 	e := setup(t)
-	k := &maker{env: e, p: e.player(1), recipe: bestRecipe(skill, level), intense: intense}
+	k := &maker{env: e, p: e.player(1), recipe: recipe, intense: intense}
 	setLevel(k.p, level)
 	e.atStation(k.p, k.recipe.Station, homeOf(level))
 	return k
@@ -328,27 +328,52 @@ func (k *maker) bank() {
 	}
 }
 
-// makingHours it takes from one level to another.
-func makingHours(t *testing.T, skill string, from, to int, intense bool) float64 {
+// fastestRecipe is the recipe of a skill that gives the most experience per second at a level, with its rate. Most
+// experience per item is not enough: a recipe of fewer materials needs fewer walks to the bank.
+func fastestRecipe(t *testing.T, skill string, level int, intense bool) (best *content.Recipe, rate float64) {
+	for _, r := range content.Recipes {
+		if r.Skill != skill || r.Level > level {
+			continue
+		}
+		if got := newMaker(t, r, level, intense).rate(); got > rate {
+			best, rate = r, got
+		}
+	}
+	return
+}
+
+// mostPerItem makes bestRecipe, which is quicker to find than fastestRecipe where a skill has many recipes.
+func mostPerItem(t *testing.T, skill string, level int, intense bool) (*content.Recipe, float64) {
+	r := bestRecipe(skill, level)
+	return r, newMaker(t, r, level, intense).rate()
+}
+
+// makingHours it takes from one level to another, making the recipe that choose picks at each level.
+func makingHours(
+	t *testing.T,
+	choose func(*testing.T, string, int, bool) (*content.Recipe, float64),
+	skill string,
+	from, to int,
+	intense bool,
+) float64 {
 	seconds := 0.0
 	for level := from; level < to; level += 5 {
-		k := newMaker(t, skill, level, intense)
-		rate := k.rate()
+		recipe, rate := choose(t, skill, level, intense)
 		next := min(level+5, to)
 		seconds += float64(XPForLevel(next)-XPForLevel(level)) / rate
-		t.Logf("level %d: %s, %.1f xp/s, %.1f h", level, k.recipe.ID, rate, seconds/3600)
+		t.Logf("level %d: %s, %.1f xp/s, %.1f h", level, recipe.ID, rate, seconds/3600)
 	}
 	return seconds / 3600
 }
 
 func TestPaceOfCooking(t *testing.T) {
-	if h := makingHours(t, "cooking", 1, 10, false); h > 0.5 {
+	if h := makingHours(t, fastestRecipe, "cooking", 1, 10, false); h > 0.5 {
 		t.Errorf("level 10 takes %.2f hours", h)
 	}
-	if h := makingHours(t, "cooking", 1, MaxLevel, true); h < 12 || h > 18 {
+	if h := makingHours(t, fastestRecipe, "cooking", 1, MaxLevel, true); h < 12 || h > 18 {
 		t.Errorf("intense: level 50 takes %.1f hours, not about 15", h)
 	}
-	if h := makingHours(t, "cooking", 1, MaxLevel, false); h < 29 || h > 41 {
+	if h := makingHours(t, fastestRecipe, "cooking", 1, MaxLevel, false); h < 29 || h > 41 {
 		t.Errorf("relaxed: level 50 takes %.1f hours, not about 35", h)
 	}
 }
@@ -359,8 +384,8 @@ func TestPaceOfCrafting(t *testing.T) {
 	for level := 1; level < MaxLevel; level++ {
 		check(t, bestRecipe("crafting", level) != nil, level)
 	}
-	if h := makingHours(t, "crafting", 1, 10, false); h > 0.5 {
+	if h := makingHours(t, mostPerItem, "crafting", 1, 10, false); h > 0.5 {
 		t.Errorf("level 10 takes %.2f hours", h)
 	}
-	t.Logf("level 50 takes %.1f hours at the workbench", makingHours(t, "crafting", 1, MaxLevel, false))
+	t.Logf("level 50 takes %.1f hours at the workbench", makingHours(t, mostPerItem, "crafting", 1, MaxLevel, false))
 }
