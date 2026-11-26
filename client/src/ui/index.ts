@@ -11,6 +11,7 @@ import { updateHint } from './hints';
 import { isLoginShown, loginError, showLogin, showLoginError, takeJustRegistered } from './login';
 import { drawMinimap, minimapPanel } from './minimap';
 import { closePanel, closePanelWhenFar, isPanelId, openPanel, showTrade, updatePanel } from './panels';
+import { keepStationClearOfTop } from './panels/clearOfTop';
 import { warmPortraits } from './portrait';
 import { initUiScale } from './scale';
 import { passwordChangeReply } from './settingsModal';
@@ -52,6 +53,7 @@ function showGame() {
     sidebar(),
     chatBox(),
   );
+  keepStationClearOfTop();
 }
 
 function handleMessage(msg: ServerMsg) {

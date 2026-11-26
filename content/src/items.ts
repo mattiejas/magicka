@@ -62,6 +62,10 @@ export interface Item {
   trophy?: boolean;
   /** Can never be traded or sold. */
   bound?: boolean;
+  /** The name of a single one, when `name` is plural: "1 coin". */
+  one?: string;
+  /** The name of more than one, when it is not `name` with an "s" (unless it ends in one): "5 flax". */
+  plural?: string;
 }
 export type Tool = 'pickaxe' | 'axe' | 'rod';
 export const ITEMS: Record<string, Item> = {};
@@ -151,10 +155,20 @@ add({
   value: WORN_VALUE,
   basic: true,
 });
-add({ id: 'coin', name: 'Coins', icon: 'coin', color: '#d9b25b', tier: 1, stack: true, value: 1 });
+add({
+  id: 'coin',
+  name: 'Coins',
+  one: 'Coin',
+  icon: 'coin',
+  color: '#d9b25b',
+  tier: 1,
+  stack: true,
+  value: 1,
+});
 add({
   id: 'essence',
   name: 'Essence',
+  plural: 'Essence',
   icon: 'essence',
   color: '#8fb8d8',
   tier: 1,
@@ -163,9 +177,26 @@ add({
   ammo: 'essence',
   value: 2,
 });
-add({ id: 'berries', name: 'Berries', icon: 'berries', color: '#a8485e', tier: 1, heal: 4, value: 3 });
-add({ id: 'meat', name: 'Raw meat', icon: 'meat', color: '#b0625a', tier: 1, value: 4 });
-add({ id: 'cooked_meat', name: 'Cooked meat', icon: 'meat', color: '#8a5a3a', tier: 1, heal: 8 });
+add({
+  id: 'berries',
+  name: 'Berries',
+  one: 'Berry',
+  icon: 'berries',
+  color: '#a8485e',
+  tier: 1,
+  heal: 4,
+  value: 3,
+});
+add({ id: 'meat', name: 'Raw meat', plural: 'Raw meat', icon: 'meat', color: '#b0625a', tier: 1, value: 4 });
+add({
+  id: 'cooked_meat',
+  name: 'Cooked meat',
+  plural: 'Cooked meat',
+  icon: 'meat',
+  color: '#8a5a3a',
+  tier: 1,
+  heal: 8,
+});
 add({ id: 'ration', name: 'Trail ration', icon: 'ration', color: '#b58a58', tier: 1, heal: 12 });
 add({ id: 'feast', name: 'Hearty feast', icon: 'ration', color: '#d0a060', tier: 3, heal: 26 });
 add({ id: 'ships_wheel', name: "Ship's wheel", icon: 'wheel', color: '#8d7a5e', tier: 1, value: 50 });
@@ -182,7 +213,15 @@ export const COOKING = {
   readyTicks: 4,
   readyPerLevels: 20,
 };
-add({ id: COOKING.burnt, name: 'Burnt food', icon: 'meat', color: '#3a302c', tier: 1, value: 0 });
+add({
+  id: COOKING.burnt,
+  name: 'Burnt food',
+  plural: 'Burnt food',
+  icon: 'meat',
+  color: '#3a302c',
+  tier: 1,
+  value: 0,
+});
 /** Everything about cooking a dish follows from its level, so that a new one is a single line. */
 const cook = (out: string, level: number, xp: number, inp: [string, number][]) =>
   RECIPES.push({
@@ -215,6 +254,7 @@ for (let t = 1; t <= 5; t++) {
   add({
     id: `cooked_${FISH[t]}`,
     name: `Cooked ${FISH[t]}`,
+    plural: `Cooked ${FISH[t]}`,
     icon: 'fish',
     color: COOKED_FISH_COLORS[t],
     tier: t,
@@ -239,6 +279,7 @@ for (let t = 1; t <= 5; t++) {
   add({
     id: `raw_${FISH[t]}`,
     name: `Raw ${FISH[t]}`,
+    plural: `Raw ${FISH[t]}`,
     icon: 'fish',
     color: FISH_COLORS[t],
     tier: t,
@@ -358,12 +399,21 @@ for (let t = 1; t <= 5; t++) {
   add({
     id: `fibre_${t}`,
     name: FIBRES[t],
+    plural: FIBRES[t],
     icon: 'fibre',
     color: FIBRE_COLORS[t],
     tier: t,
     value: FIBRE_VALUES[t],
   });
-  add({ id: `gem_${t}`, name: GEMS[t], icon: 'gem', color: GEM_COLORS[t], tier: t, value: GEM_VALUES[t] });
+  add({
+    id: `gem_${t}`,
+    name: GEMS[t],
+    plural: GEMS[t],
+    icon: 'gem',
+    color: GEM_COLORS[t],
+    tier: t,
+    value: GEM_VALUES[t],
+  });
   add({
     id: `amulet_${t}`,
     name: `${GEMS[t]} amulet`,

@@ -4,6 +4,7 @@ import { myTrack, state } from '../../net/state';
 import { button, byId, h, uiRoot } from '../dom';
 import { hideTooltip } from '../popups';
 import { bankPanel } from './bank';
+import { placeStation } from './clearOfTop';
 import { cookingPanel } from './cooking';
 import { craftingPanel } from './crafting';
 import { dockPanel } from './dock';
@@ -122,6 +123,7 @@ export function updatePanel() {
   const focused = (document.activeElement as HTMLElement | null)?.dataset?.focus;
   if (old) old.replaceWith(drawn);
   else uiRoot().append(drawn);
+  if (!old) placeStation();
   body.scrollTop = scroll;
   if (focused) drawn.querySelector<HTMLElement>(`[data-focus="${focused}"]`)?.focus();
 }
