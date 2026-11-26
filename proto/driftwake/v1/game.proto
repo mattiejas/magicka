@@ -25,6 +25,8 @@ message ClientMessage {
     ChangePassword change_password = 33;
     // Takes food off the fire, with the intense method of cooking.
     Empty take_off = 34;
+    // Takes everything the player may take on the tile of this drop, the most valuable first.
+    uint32 pickup_all = 35;
   }
 }
 message Empty {}

@@ -3,7 +3,7 @@ import { MAPS, type TilePos, walkable } from '@driftwake/shared';
 import { send } from './net/connection';
 import { state } from './net/state';
 import type { Scene } from './scene/scene';
-import { mainAction, type Option, optionsFor, type Thing } from './things';
+import { clickAction, type Option, optionsForAll, type Thing } from './things';
 import { focusChat } from './ui/chat';
 import { byId } from './ui/dom';
 import { closePanel } from './ui/panels';
@@ -18,10 +18,10 @@ const LEFT_BUTTON = 0;
 let revealLabels = false;
 export const revealAllLabels = () => revealLabels;
 
-/** The main action of the nearest thing that has one. */
+/** What clicking the nearest thing that does something does. */
 function firstAction(things: Thing[]): Option | null {
   for (const thing of things) {
-    const action = mainAction(thing, { send });
+    const action = clickAction(thing, { send });
     if (action) return action;
   }
   return null;
@@ -57,7 +57,7 @@ function bindClicks(canvas: HTMLCanvasElement, scene: Scene) {
     const { hits, tile } = scene.pick(event.clientX, event.clientY);
     const place = { x: event.clientX, y: event.clientY };
     const playerOptions = (name: string, id: string) => playerMenu(name, id, place);
-    const items = hits.flatMap(thing => optionsFor(thing, { send, playerOptions }));
+    const items = optionsForAll(hits, { send, playerOptions });
     if (tile) items.push(['Walk here', () => walkTo(scene, tile)]);
     showMenu(event.clientX, event.clientY, items);
   });

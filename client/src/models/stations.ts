@@ -328,12 +328,34 @@ const SHAPES: Record<string, () => Geometry> = {
   mine,
 };
 
+interface Keeper {
+  name: string;
+  gear: (string | null)[];
+  action?: string;
+  /** Where they stand, and which way they face, relative to the station. */
+  at: [x: number, z: number, turn: number];
+}
+
+const KEEPERS: Record<string, Keeper> = {
+  shop: { name: 'Shopkeeper', gear: [null, null, 'leather_jerkin_2', null], at: [0, -0.12, 0] },
+  // Beside the post, turned toward the boat, hammer in hand.
+  dock: {
+    name: 'Shipwright',
+    gear: [null, 'cloth_hood_1', 'leather_jerkin_1', 'leather_chaps_1'],
+    action: 'craft',
+    at: [0.38, 0.22, 0.6],
+  },
+};
+
 /** The person at a station, if there is one. */
 export function keeperOf(type: string): THREE.Object3D | null {
-  if (type !== 'shop') return null;
-  const keeper = playerModel('Shopkeeper', [null, null, 'leather_jerkin_2', null]);
-  posePlayer(keeper, { moving: false, walk: 0, hit: 0, time: 0 });
-  keeper.root.position.z = -0.12;
+  const wanted = KEEPERS[type];
+  if (!wanted) return null;
+  const keeper = playerModel(wanted.name, wanted.gear);
+  posePlayer(keeper, { action: wanted.action, moving: false, walk: 0, hit: 0, time: 0 });
+  const [x, z, turn] = wanted.at;
+  keeper.root.position.set(x, 0, z);
+  keeper.root.rotation.y = turn;
   return keeper.root;
 }
 

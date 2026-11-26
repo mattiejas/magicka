@@ -21,6 +21,10 @@ func (w *World) handle(p *Player, msg *pb.ClientMessage) {
 		p.begin(action{typ: actAttack, id: m.Attack})
 	case *pb.ClientMessage_Pickup:
 		p.begin(action{typ: actPickup, id: m.Pickup})
+	case *pb.ClientMessage_PickupAll:
+		if d := w.findDrop(m.PickupAll); d != nil {
+			p.begin(action{typ: actPickupAll, at: Point{X: d.X, Y: d.Y}})
+		}
 	case *pb.ClientMessage_Grave:
 		p.begin(action{typ: actGrave})
 	case *pb.ClientMessage_Claim:

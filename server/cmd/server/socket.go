@@ -79,11 +79,13 @@ type session struct {
 	player   uint32
 	account  auth.Session
 	chat     *budget
+	started  time.Time // when the player came into the world
 }
 
 func (s *session) end() {
 	if s.player != 0 {
 		s.server.world.Leave(s.player, s.conn)
+		s.server.store.CountSession(s.started, time.Now())
 	}
 }
 
@@ -205,6 +207,9 @@ func (s *session) signIn(attempt func(*auth.Auth) (*auth.Session, error)) {
 		s.conn.fail(refusal)
 		return
 	}
+	if err := s.server.store.CountReturn(account.Account, time.Now()); err != nil {
+		log.Print(err) // a missed count must not keep anyone out
+	}
 	welcome := &pb.Welcome{Token: account.Token, Id: game.PlayerID(account.Account)}
 	s.conn.Send(&pb.ServerMessage{Msg: &pb.ServerMessage_Welcome{Welcome: welcome}})
 	load := func() (*game.Char, error) { return s.server.store.Load(account.Account) }
@@ -214,7 +219,7 @@ func (s *session) signIn(attempt func(*auth.Auth) (*auth.Session, error)) {
 		s.conn.fail("Your character could not be loaded.")
 		return
 	}
-	s.player, s.account = player, *account
+	s.player, s.account, s.started = player, *account, time.Now()
 	s.signedIn.Store(true)
 }
 

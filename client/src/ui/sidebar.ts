@@ -32,7 +32,8 @@ export function sidebar(): HTMLElement {
     'div',
     { id: 'side', class: 'panel' },
     h('div', { class: 'tabs' }, ...tabs),
-    h('div', { class: 'body' }),
+    // The inventory always stays in the body, hidden behind other tabs, so the body keeps its height.
+    h('div', { class: 'body' }, h('div', { class: 'pane inventory' }), h('div', { class: 'pane tab' })),
     healthBar(),
   );
 }
@@ -47,11 +48,8 @@ interface TabContent {
   render: (self: SelfState) => Node[];
   /** Everything the tab shows that can change. It is only redrawn when this does. */
   shows: (self: SelfState) => unknown;
-  /** Redraws parts by itself, after `render`. */
-  update?: (self: SelfState, body: HTMLElement) => void;
 }
-const CONTENT: Record<Tab, TabContent> = {
-  inventory: { render: inventory, shows: self => self.inv.length, update: updateInventory },
+const OTHER_TABS: Record<Exclude<Tab, 'inventory'>, TabContent> = {
   equipment: { render: equipment, shows: self => self.equip },
   // A skill's list shows its level only, so that gaining XP leaves it, and where it is scrolled to, alone.
   skills: {
@@ -64,14 +62,22 @@ const CONTENT: Record<Tab, TabContent> = {
 
 export function updateSidebar() {
   const { self } = state;
-  const body = document.querySelector<HTMLElement>('#side .body');
-  if (!self || !body) return;
+  const inventoryPane = document.querySelector<HTMLElement>('#side .pane.inventory');
+  const tabPane = document.querySelector<HTMLElement>('#side .pane.tab');
+  if (!self || !inventoryPane || !tabPane) return;
   for (const tab of document.querySelectorAll<HTMLElement>('#side .tabs button'))
     tab.classList.toggle('on', tab.dataset.tab === currentTab);
-  body.classList.toggle('log', currentTab === 'log');
-  const { render, shows, update } = CONTENT[currentTab];
-  renderIfChanged(body, JSON.stringify([currentTab, shows(self)]), () => render(self));
-  update?.(self, body);
+  renderIfChanged(inventoryPane, String(self.inv.length), () => inventory(self));
+  updateInventory(self, inventoryPane);
+  const tab = currentTab;
+  const isInventory = tab === 'inventory';
+  inventoryPane.classList.toggle('covered', !isInventory);
+  inventoryPane.inert = !isInventory;
+  tabPane.hidden = isInventory;
+  if (isInventory) return;
+  const { render, shows } = OTHER_TABS[tab];
+  tabPane.classList.toggle('log', tab === 'log');
+  renderIfChanged(tabPane, JSON.stringify([tab, shows(self)]), () => render(self));
 }
 
 // --- inventory

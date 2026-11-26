@@ -19,6 +19,8 @@ export type ClientMsg =
   | { type: 'shop'; op: 'buy' | 'sell'; item: string; qty: number }
   | { type: 'move'; x: number; y: number }
   | { type: 'gather' | 'station' | 'attack' | 'pickup'; id: string }
+  /** Takes everything the player may take on the tile of this drop. */
+  | { type: 'pickupAll'; id: string }
   /** intense: cooks one at a time, each to be taken off the fire when it is done. */
   | { type: 'craft'; recipe: string; qty: number; intense?: boolean }
   | { type: 'equip' | 'eat' | 'drop'; slot: number }

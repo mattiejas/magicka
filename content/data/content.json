@@ -49,6 +49,7 @@
    "value": 1,
    "id": "coin",
    "name": "Coins",
+   "one": "Coin",
    "icon": "coin",
    "color": "#d9b25b",
    "tier": 1,
@@ -58,6 +59,7 @@
    "value": 2,
    "id": "essence",
    "name": "Essence",
+   "plural": "Essence",
    "icon": "essence",
    "color": "#8fb8d8",
    "tier": 1,
@@ -69,6 +71,7 @@
    "value": 3,
    "id": "berries",
    "name": "Berries",
+   "one": "Berry",
    "icon": "berries",
    "color": "#a8485e",
    "tier": 1,
@@ -78,6 +81,7 @@
    "value": 4,
    "id": "meat",
    "name": "Raw meat",
+   "plural": "Raw meat",
    "icon": "meat",
    "color": "#b0625a",
    "tier": 1
@@ -86,6 +90,7 @@
    "value": 5,
    "id": "cooked_meat",
    "name": "Cooked meat",
+   "plural": "Cooked meat",
    "icon": "meat",
    "color": "#8a5a3a",
    "tier": 1,
@@ -121,6 +126,7 @@
    "value": 0,
    "id": "burnt_food",
    "name": "Burnt food",
+   "plural": "Burnt food",
    "icon": "meat",
    "color": "#3a302c",
    "tier": 1
@@ -129,6 +135,7 @@
    "value": 5,
    "id": "cooked_perch",
    "name": "Cooked perch",
+   "plural": "Cooked perch",
    "icon": "fish",
    "color": "#b7a070",
    "tier": 1,
@@ -138,6 +145,7 @@
    "value": 13,
    "id": "cooked_trout",
    "name": "Cooked trout",
+   "plural": "Cooked trout",
    "icon": "fish",
    "color": "#c49070",
    "tier": 2,
@@ -147,6 +155,7 @@
    "value": 30,
    "id": "cooked_pike",
    "name": "Cooked pike",
+   "plural": "Cooked pike",
    "icon": "fish",
    "color": "#a89a70",
    "tier": 3,
@@ -156,6 +165,7 @@
    "value": 58,
    "id": "cooked_salmon",
    "name": "Cooked salmon",
+   "plural": "Cooked salmon",
    "icon": "fish",
    "color": "#e0a080",
    "tier": 4,
@@ -165,6 +175,7 @@
    "value": 108,
    "id": "cooked_sturgeon",
    "name": "Cooked sturgeon",
+   "plural": "Cooked sturgeon",
    "icon": "fish",
    "color": "#a89080",
    "tier": 5,
@@ -198,6 +209,7 @@
    "value": 4,
    "id": "raw_perch",
    "name": "Raw perch",
+   "plural": "Raw perch",
    "icon": "fish",
    "color": "#8f9a6a",
    "tier": 1
@@ -358,6 +370,7 @@
    "value": 4,
    "id": "fibre_1",
    "name": "Flax",
+   "plural": "Flax",
    "icon": "fibre",
    "color": "#d7c98f",
    "tier": 1
@@ -366,6 +379,7 @@
    "value": 30,
    "id": "gem_1",
    "name": "Quartz",
+   "plural": "Quartz",
    "icon": "gem",
    "color": "#dfe3e6",
    "tier": 1
@@ -496,6 +510,7 @@
    "value": 11,
    "id": "raw_trout",
    "name": "Raw trout",
+   "plural": "Raw trout",
    "icon": "fish",
    "color": "#a07a6a",
    "tier": 2
@@ -656,6 +671,7 @@
    "value": 10,
    "id": "fibre_2",
    "name": "Silkgrass",
+   "plural": "Silkgrass",
    "icon": "fibre",
    "color": "#a8c27a",
    "tier": 2
@@ -664,6 +680,7 @@
    "value": 80,
    "id": "gem_2",
    "name": "Topaz",
+   "plural": "Topaz",
    "icon": "gem",
    "color": "#e0a640",
    "tier": 2
@@ -794,6 +811,7 @@
    "value": 25,
    "id": "raw_pike",
    "name": "Raw pike",
+   "plural": "Raw pike",
    "icon": "fish",
    "color": "#6f8a6a",
    "tier": 3
@@ -954,6 +972,7 @@
    "value": 22,
    "id": "fibre_3",
    "name": "Moonreed",
+   "plural": "Moonreed",
    "icon": "fibre",
    "color": "#a9b6d6",
    "tier": 3
@@ -962,6 +981,7 @@
    "value": 180,
    "id": "gem_3",
    "name": "Garnet",
+   "plural": "Garnet",
    "icon": "gem",
    "color": "#a83b4b",
    "tier": 3
@@ -1092,6 +1112,7 @@
    "value": 48,
    "id": "raw_salmon",
    "name": "Raw salmon",
+   "plural": "Raw salmon",
    "icon": "fish",
    "color": "#d08068",
    "tier": 4
@@ -1252,6 +1273,7 @@
    "value": 45,
    "id": "fibre_4",
    "name": "Frostvine",
+   "plural": "Frostvine",
    "icon": "fibre",
    "color": "#8fc7cf",
    "tier": 4
@@ -1260,6 +1282,7 @@
    "value": 350,
    "id": "gem_4",
    "name": "Opal",
+   "plural": "Opal",
    "icon": "gem",
    "color": "#b9d6d0",
    "tier": 4
@@ -1390,6 +1413,7 @@
    "value": 90,
    "id": "raw_sturgeon",
    "name": "Raw sturgeon",
+   "plural": "Raw sturgeon",
    "icon": "fish",
    "color": "#6a6f80",
    "tier": 5
@@ -1550,6 +1574,7 @@
    "value": 85,
    "id": "fibre_5",
    "name": "Nightbloom",
+   "plural": "Nightbloom",
    "icon": "fibre",
    "color": "#8a6cae",
    "tier": 5
@@ -1558,6 +1583,7 @@
    "value": 700,
    "id": "gem_5",
    "name": "Beryl",
+   "plural": "Beryl",
    "icon": "gem",
    "color": "#4fb38a",
    "tier": 5

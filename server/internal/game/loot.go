@@ -1,7 +1,9 @@
 package game
 
 import (
+	"cmp"
 	"math"
+	"slices"
 
 	"driftwake/content"
 	"driftwake/server/internal/pb"
@@ -116,6 +118,49 @@ func (w *World) pickup(p *Player, d *Drop) {
 		}
 	}
 	w.save(p)
+}
+
+// pickupAll takes everything on a tile the player may take, as much as fits, and says once if something is left.
+func (w *World) pickupAll(p *Player, at Point) {
+	w.stop(p)
+	lying, taken := w.dropsFor(p, at), map[*Drop]bool{}
+	for _, d := range lying {
+		if p.give(d.Item, d.Qty) == d.Qty {
+			taken[d] = true
+		}
+	}
+	if len(taken) < len(lying) {
+		w.tell(p, "Your inventory is full.")
+	}
+	if len(taken) == 0 {
+		return
+	}
+	w.drops = slices.DeleteFunc(w.drops, func(d *Drop) bool { return taken[d] })
+	w.save(p)
+}
+
+// dropsFor are the drops on a tile of the player's map that they may take, in the order taking all takes them:
+// uniques, then by shop value, then the oldest.
+func (w *World) dropsFor(p *Player, at Point) []*Drop {
+	m := w.mapOf(p)
+	var out []*Drop
+	for _, d := range w.drops {
+		if d.Map == m && d.X == at.X && d.Y == at.Y && d.visibleTo(p.ID, w.Tick) {
+			out = append(out, d)
+		}
+	}
+	slices.SortStableFunc(out, func(a, b *Drop) int { return cmp.Compare(dropWorth(b), dropWorth(a)) })
+	return out
+}
+
+// uniqueWorth puts uniques before anything else, as the labels on the ground do.
+const uniqueWorth = 1e9
+
+func dropWorth(d *Drop) int {
+	if content.Items[d.Item].Unique {
+		return uniqueWorth
+	}
+	return content.Items[d.Item].Value * d.Qty
 }
 
 func (w *World) removeExpiredDrops() {
