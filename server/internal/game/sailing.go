@@ -25,6 +25,7 @@ const (
 	ashoreSpeed   = 0.6  // and no faster
 	hardGrounding = 1.8  // hitting land faster than this runs the boat hard aground
 	subSteps      = 6    // a tick's move is made in parts, so the boat cannot skip over a thin spit of land
+	pushOff       = 30.0 // degrees a tick a boat against land under sail turns, pushing off the shore
 )
 
 // Vec is a point between tiles: tile x, y covers x to x+1.
@@ -75,12 +76,19 @@ func (b *Boat) step(turn int, water waterAt) sailed {
 		b.Speed = 0
 	}
 	rudder, wasTouching := b.turn(turn), b.Touching
+	if wasTouching {
+		// Against land the boat has no way to turn by, so it turns where it lies before it moves on.
+		b.Heading, rudder = normalAngle(b.Heading+b.pushOffShore(turn)), 0
+	}
 	for i := 0; i < subSteps && b.Speed != 0; i++ {
 		b.Heading = normalAngle(b.Heading + rudder/subSteps)
 		next := b.At.ahead(b.Heading, b.Speed/subSteps)
 		if land := next.tile(); !water(land.X, land.Y) {
 			out.hit, out.land, out.hard, out.nudged = true, land, math.Abs(b.Speed) > hardGrounding, !wasTouching
-			b.Speed, b.Course, b.Touching = 0, nil, true
+			b.Speed, b.Touching = 0, true
+			if b.Course != nil && !water(b.Course.tile().X, b.Course.tile().Y) {
+				b.Course = nil // steered for land: the shore is as near as the boat comes
+			}
 			break
 		}
 		b.At, b.Touching = next, false
@@ -104,6 +112,21 @@ func (b *Boat) turn(hand int) float64 {
 	}
 	off := normalAngle(bearing(b.At, *b.Course) - b.Heading)
 	return max(-rate, min(rate, off))
+}
+
+// pushOffShore is how far a boat against land turns this tick: towards its course, or as the player steers by
+// hand, while it is under sail.
+func (b *Boat) pushOffShore(hand int) float64 {
+	switch {
+	case b.Sail <= sailStopped:
+		return 0
+	case hand != 0:
+		return float64(hand) * pushOff
+	case b.Course == nil:
+		return 0
+	}
+	off := normalAngle(bearing(b.At, *b.Course) - b.Heading)
+	return max(-pushOff, min(pushOff, off))
 }
 
 // ahead is where a boat would be over the next ticks if nothing changed, for drawing its arc.

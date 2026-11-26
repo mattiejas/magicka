@@ -258,3 +258,40 @@ func TestAheadDoesNotMoveTheBoat(t *testing.T) {
 		t.Errorf("ahead moved the boat or gave %d points", len(arc))
 	}
 }
+
+func TestABoatAgainstLandTurnsOffItForItsCourse(t *testing.T) {
+	b := &Boat{At: Vec{5.5, 20}, Sail: sailFull, Speed: sailSpeed[sailFull]}
+	b.steerFor(Vec{5.5, 0}) // on land: the boat runs into the shore and stops there
+	sailFor(b, 10, 0, landFrom(10))
+	if !b.Touching || b.Course != nil {
+		t.Fatalf("steered for land: touching %v, course %v", b.Touching, b.Course)
+	}
+	b.steerFor(Vec{5.5, 30})
+	sailFor(b, 15, 0, landFrom(10))
+	if b.Touching || b.At.Y < 15 {
+		t.Errorf("did not turn off the shore for open water: at %v, heading %v", b.At, b.Heading)
+	}
+}
+
+func TestACourseOnTheWaterOutlastsHittingLand(t *testing.T) {
+	b := &Boat{At: Vec{5.5, 20}, Sail: sailHalf, Speed: 1.2}
+	b.steerFor(Vec{20, 5}) // across the water, beyond land that lies in the way
+	water := func(x, y int) bool { return y > 10 || x > 15 }
+	for range 20 {
+		if b.step(0, water).hit {
+			break
+		}
+	}
+	if b.Course == nil {
+		t.Error("hitting land let go of a course on the water")
+	}
+}
+
+func TestAStoppedBoatAgainstLandDoesNotTurn(t *testing.T) {
+	b := &Boat{At: Vec{5.5, 11.2}, Touching: true, Sail: sailStopped}
+	b.steerFor(Vec{5.5, 30})
+	b.step(0, landFrom(10))
+	if b.Heading != 0 {
+		t.Errorf("turned without sail to %v", b.Heading)
+	}
+}
