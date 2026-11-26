@@ -1,10 +1,11 @@
-// Text drawn over the world: names, health bars, damage numbers and chat.
-import { type Entity, MONSTERS, type TilePos } from '@driftwake/shared';
+// Text drawn over the world: names, health bars, damage numbers, XP, levels and chat.
+import { type Entity, MONSTERS, type Skill, type TilePos } from '@driftwake/shared';
 import { centreOf, state } from '../net/state';
 import { DamageBar } from '../ui/damageBar';
 import { uiScale } from '../ui/scale';
 import { ChatLabels } from './chatLabels';
 import { DropLabels } from './dropLabels';
+import { LevelLabels, STACK_GAP_PX } from './levelLabels';
 import { XpLabels } from './xpLabels';
 
 export type Project = (x: number, z: number, height: number) => { x: number; y: number; visible: boolean };
@@ -28,6 +29,7 @@ export class Overlay {
   private texts: FloatingText[] = [];
   private dropLabels: DropLabels;
   private xpLabels: XpLabels;
+  private levelLabels: LevelLabels;
   private project: Project;
   private chatLabels: ChatLabels;
 
@@ -39,7 +41,16 @@ export class Overlay {
     this.project = inScaledPixels(project);
     this.dropLabels = new DropLabels(root, this.project);
     this.xpLabels = new XpLabels(root, this.project, heightOf);
-    this.chatLabels = new ChatLabels(root, this.project, heightOf, () => this.xpLabels.height);
+    // Above the head, from the bottom: your own XP gains, new levels, then chat.
+    const xpBeneath = (player: string) => (player === state.me ? this.xpLabels.height : 0);
+    this.levelLabels = new LevelLabels(root, this.project, heightOf, xpBeneath);
+    this.chatLabels = new ChatLabels(root, this.project, heightOf, speaker =>
+      stacked(xpBeneath(speaker), this.levelLabels.height(speaker)),
+    );
+  }
+
+  levelUp(player: string, skill: Skill, level: number) {
+    this.levelLabels.add(player, skill, level);
   }
 
   /** Shows a chat line above its speaker's head. */
@@ -47,8 +58,10 @@ export class Overlay {
     this.chatLabels.say(speaker, text);
   }
 
-  forgetChat() {
+  /** Signing in again starts with nobody speaking or levelling. */
+  forget() {
     this.chatLabels.forget();
+    this.levelLabels.forget();
   }
 
   damage(target: string, at: TilePos, amount: number) {
@@ -71,6 +84,7 @@ export class Overlay {
     }
     this.dropLabels.update();
     this.xpLabels.update(now);
+    this.levelLabels.update(now);
     this.chatLabels.update(now);
     this.texts = this.texts.filter(text => this.updateText(text, now));
   }
@@ -119,6 +133,10 @@ const inScaledPixels =
     const scale = uiScale();
     return { ...screen, x: screen.x / scale, y: screen.y / scale };
   };
+
+/** The height of two things one above the other, in pixels. */
+const stacked = (lower: number, upper: number) =>
+  lower && upper ? lower + STACK_GAP_PX + upper : lower + upper;
 
 const isHurt = (entity: Entity) => entity.hp! < entity.maxHp!;
 const hasTag = (entity: Entity) =>

@@ -284,6 +284,10 @@ function gameEvent({ event }: PbEvent): GameEvent[] {
     }
     case 'death':
       return [{ type: 'death', id: clientId(event.value) }];
+    case 'levelUp': {
+      const { player, skill, level } = event.value;
+      return [{ type: 'levelUp', player: clientId(player), skill: skill as Skill, level }];
+    }
     default:
       return [];
   }

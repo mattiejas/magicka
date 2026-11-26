@@ -5423,5 +5423,1622 @@
     ]
    ]
   }
- ]
+ ],
+ "unlocks": {
+  "mining": [
+   {
+    "level": 1,
+    "kind": "node",
+    "id": "rock_1",
+    "text": "mine copper rock",
+    "item": "copper_ore"
+   },
+   {
+    "level": 1,
+    "kind": "node",
+    "id": "essence_rock",
+    "text": "mine essence rock",
+    "item": "essence"
+   },
+   {
+    "level": 1,
+    "kind": "gear",
+    "id": "copper_pickaxe",
+    "text": "use copper pickaxe",
+    "item": "copper_pickaxe"
+   },
+   {
+    "level": 10,
+    "kind": "node",
+    "id": "rock_2",
+    "text": "mine iron rock",
+    "item": "iron_ore"
+   },
+   {
+    "level": 10,
+    "kind": "gear",
+    "id": "iron_pickaxe",
+    "text": "use iron pickaxe",
+    "item": "iron_pickaxe"
+   },
+   {
+    "level": 15,
+    "kind": "node",
+    "id": "big_rock_1",
+    "text": "mine big copper rock",
+    "item": "copper_ore"
+   },
+   {
+    "level": 15,
+    "kind": "node",
+    "id": "big_rock_2",
+    "text": "mine big iron rock",
+    "item": "iron_ore"
+   },
+   {
+    "level": 15,
+    "kind": "node",
+    "id": "big_essence_rock",
+    "text": "mine big essence rock",
+    "item": "essence"
+   },
+   {
+    "level": 15,
+    "kind": "method",
+    "id": "mining",
+    "text": "strike glowing rocks for more XP"
+   },
+   {
+    "level": 20,
+    "kind": "node",
+    "id": "rock_3",
+    "text": "mine mithril rock",
+    "item": "mithril_ore"
+   },
+   {
+    "level": 20,
+    "kind": "node",
+    "id": "big_rock_3",
+    "text": "mine big mithril rock",
+    "item": "mithril_ore"
+   },
+   {
+    "level": 20,
+    "kind": "gear",
+    "id": "mithril_pickaxe",
+    "text": "use mithril pickaxe",
+    "item": "mithril_pickaxe"
+   },
+   {
+    "level": 30,
+    "kind": "node",
+    "id": "rock_4",
+    "text": "mine cobalt rock",
+    "item": "cobalt_ore"
+   },
+   {
+    "level": 30,
+    "kind": "node",
+    "id": "big_rock_4",
+    "text": "mine big cobalt rock",
+    "item": "cobalt_ore"
+   },
+   {
+    "level": 30,
+    "kind": "gear",
+    "id": "cobalt_pickaxe",
+    "text": "use cobalt pickaxe",
+    "item": "cobalt_pickaxe"
+   },
+   {
+    "level": 40,
+    "kind": "node",
+    "id": "rock_5",
+    "text": "mine adamantite rock",
+    "item": "adamantite_ore"
+   },
+   {
+    "level": 40,
+    "kind": "node",
+    "id": "big_rock_5",
+    "text": "mine big adamantite rock",
+    "item": "adamantite_ore"
+   },
+   {
+    "level": 40,
+    "kind": "gear",
+    "id": "adamantite_pickaxe",
+    "text": "use adamantite pickaxe",
+    "item": "adamantite_pickaxe"
+   },
+   {
+    "level": 50,
+    "kind": "gear",
+    "id": "cape_mining",
+    "text": "wear mining cape",
+    "item": "cape_mining"
+   }
+  ],
+  "smithing": [
+   {
+    "level": 1,
+    "kind": "recipe",
+    "id": "copper_bar",
+    "text": "smelt copper bar",
+    "item": "copper_bar"
+   },
+   {
+    "level": 1,
+    "kind": "recipe",
+    "id": "copper_pickaxe",
+    "text": "smith copper pickaxe",
+    "item": "copper_pickaxe"
+   },
+   {
+    "level": 1,
+    "kind": "recipe",
+    "id": "copper_axe",
+    "text": "smith copper axe",
+    "item": "copper_axe"
+   },
+   {
+    "level": 2,
+    "kind": "recipe",
+    "id": "copper_sword",
+    "text": "smith copper sword",
+    "item": "copper_sword"
+   },
+   {
+    "level": 2,
+    "kind": "recipe",
+    "id": "copper_arrowhead",
+    "text": "smith copper arrowhead",
+    "item": "copper_arrowhead"
+   },
+   {
+    "level": 3,
+    "kind": "recipe",
+    "id": "copper_helm",
+    "text": "smith copper helm",
+    "item": "copper_helm"
+   },
+   {
+    "level": 4,
+    "kind": "recipe",
+    "id": "copper_greaves",
+    "text": "smith copper greaves",
+    "item": "copper_greaves"
+   },
+   {
+    "level": 5,
+    "kind": "recipe",
+    "id": "copper_plate",
+    "text": "smith copper plate",
+    "item": "copper_plate"
+   },
+   {
+    "level": 10,
+    "kind": "recipe",
+    "id": "iron_bar",
+    "text": "smelt iron bar",
+    "item": "iron_bar"
+   },
+   {
+    "level": 10,
+    "kind": "recipe",
+    "id": "iron_pickaxe",
+    "text": "smith iron pickaxe",
+    "item": "iron_pickaxe"
+   },
+   {
+    "level": 10,
+    "kind": "recipe",
+    "id": "iron_axe",
+    "text": "smith iron axe",
+    "item": "iron_axe"
+   },
+   {
+    "level": 11,
+    "kind": "recipe",
+    "id": "iron_sword",
+    "text": "smith iron sword",
+    "item": "iron_sword"
+   },
+   {
+    "level": 11,
+    "kind": "recipe",
+    "id": "iron_arrowhead",
+    "text": "smith iron arrowhead",
+    "item": "iron_arrowhead"
+   },
+   {
+    "level": 12,
+    "kind": "recipe",
+    "id": "iron_helm",
+    "text": "smith iron helm",
+    "item": "iron_helm"
+   },
+   {
+    "level": 13,
+    "kind": "recipe",
+    "id": "iron_greaves",
+    "text": "smith iron greaves",
+    "item": "iron_greaves"
+   },
+   {
+    "level": 14,
+    "kind": "recipe",
+    "id": "iron_plate",
+    "text": "smith iron plate",
+    "item": "iron_plate"
+   },
+   {
+    "level": 20,
+    "kind": "recipe",
+    "id": "mithril_bar",
+    "text": "smelt mithril bar",
+    "item": "mithril_bar"
+   },
+   {
+    "level": 20,
+    "kind": "recipe",
+    "id": "mithril_pickaxe",
+    "text": "smith mithril pickaxe",
+    "item": "mithril_pickaxe"
+   },
+   {
+    "level": 20,
+    "kind": "recipe",
+    "id": "mithril_axe",
+    "text": "smith mithril axe",
+    "item": "mithril_axe"
+   },
+   {
+    "level": 21,
+    "kind": "recipe",
+    "id": "mithril_sword",
+    "text": "smith mithril sword",
+    "item": "mithril_sword"
+   },
+   {
+    "level": 21,
+    "kind": "recipe",
+    "id": "mithril_arrowhead",
+    "text": "smith mithril arrowhead",
+    "item": "mithril_arrowhead"
+   },
+   {
+    "level": 22,
+    "kind": "recipe",
+    "id": "mithril_helm",
+    "text": "smith mithril helm",
+    "item": "mithril_helm"
+   },
+   {
+    "level": 23,
+    "kind": "recipe",
+    "id": "mithril_greaves",
+    "text": "smith mithril greaves",
+    "item": "mithril_greaves"
+   },
+   {
+    "level": 24,
+    "kind": "recipe",
+    "id": "mithril_plate",
+    "text": "smith mithril plate",
+    "item": "mithril_plate"
+   },
+   {
+    "level": 30,
+    "kind": "recipe",
+    "id": "cobalt_bar",
+    "text": "smelt cobalt bar",
+    "item": "cobalt_bar"
+   },
+   {
+    "level": 30,
+    "kind": "recipe",
+    "id": "cobalt_pickaxe",
+    "text": "smith cobalt pickaxe",
+    "item": "cobalt_pickaxe"
+   },
+   {
+    "level": 30,
+    "kind": "recipe",
+    "id": "cobalt_axe",
+    "text": "smith cobalt axe",
+    "item": "cobalt_axe"
+   },
+   {
+    "level": 31,
+    "kind": "recipe",
+    "id": "cobalt_sword",
+    "text": "smith cobalt sword",
+    "item": "cobalt_sword"
+   },
+   {
+    "level": 31,
+    "kind": "recipe",
+    "id": "cobalt_arrowhead",
+    "text": "smith cobalt arrowhead",
+    "item": "cobalt_arrowhead"
+   },
+   {
+    "level": 32,
+    "kind": "recipe",
+    "id": "cobalt_helm",
+    "text": "smith cobalt helm",
+    "item": "cobalt_helm"
+   },
+   {
+    "level": 33,
+    "kind": "recipe",
+    "id": "cobalt_greaves",
+    "text": "smith cobalt greaves",
+    "item": "cobalt_greaves"
+   },
+   {
+    "level": 34,
+    "kind": "recipe",
+    "id": "cobalt_plate",
+    "text": "smith cobalt plate",
+    "item": "cobalt_plate"
+   },
+   {
+    "level": 40,
+    "kind": "recipe",
+    "id": "adamantite_bar",
+    "text": "smelt adamantite bar",
+    "item": "adamantite_bar"
+   },
+   {
+    "level": 40,
+    "kind": "recipe",
+    "id": "adamantite_pickaxe",
+    "text": "smith adamantite pickaxe",
+    "item": "adamantite_pickaxe"
+   },
+   {
+    "level": 40,
+    "kind": "recipe",
+    "id": "adamantite_axe",
+    "text": "smith adamantite axe",
+    "item": "adamantite_axe"
+   },
+   {
+    "level": 41,
+    "kind": "recipe",
+    "id": "adamantite_sword",
+    "text": "smith adamantite sword",
+    "item": "adamantite_sword"
+   },
+   {
+    "level": 41,
+    "kind": "recipe",
+    "id": "adamantite_arrowhead",
+    "text": "smith adamantite arrowhead",
+    "item": "adamantite_arrowhead"
+   },
+   {
+    "level": 42,
+    "kind": "recipe",
+    "id": "adamantite_helm",
+    "text": "smith adamantite helm",
+    "item": "adamantite_helm"
+   },
+   {
+    "level": 43,
+    "kind": "recipe",
+    "id": "adamantite_greaves",
+    "text": "smith adamantite greaves",
+    "item": "adamantite_greaves"
+   },
+   {
+    "level": 44,
+    "kind": "recipe",
+    "id": "adamantite_plate",
+    "text": "smith adamantite plate",
+    "item": "adamantite_plate"
+   },
+   {
+    "level": 50,
+    "kind": "gear",
+    "id": "cape_smithing",
+    "text": "wear smithing cape",
+    "item": "cape_smithing"
+   }
+  ],
+  "woodcutting": [
+   {
+    "level": 1,
+    "kind": "node",
+    "id": "tree_1",
+    "text": "chop ash tree",
+    "item": "ash_log"
+   },
+   {
+    "level": 1,
+    "kind": "gear",
+    "id": "copper_axe",
+    "text": "use copper axe",
+    "item": "copper_axe"
+   },
+   {
+    "level": 10,
+    "kind": "node",
+    "id": "tree_2",
+    "text": "chop pine tree",
+    "item": "pine_log"
+   },
+   {
+    "level": 10,
+    "kind": "gear",
+    "id": "iron_axe",
+    "text": "use iron axe",
+    "item": "iron_axe"
+   },
+   {
+    "level": 15,
+    "kind": "method",
+    "id": "woodcutting",
+    "text": "strike glowing trees for more XP"
+   },
+   {
+    "level": 20,
+    "kind": "node",
+    "id": "tree_3",
+    "text": "chop oak tree",
+    "item": "oak_log"
+   },
+   {
+    "level": 20,
+    "kind": "gear",
+    "id": "mithril_axe",
+    "text": "use mithril axe",
+    "item": "mithril_axe"
+   },
+   {
+    "level": 30,
+    "kind": "node",
+    "id": "tree_4",
+    "text": "chop maple tree",
+    "item": "maple_log"
+   },
+   {
+    "level": 30,
+    "kind": "gear",
+    "id": "cobalt_axe",
+    "text": "use cobalt axe",
+    "item": "cobalt_axe"
+   },
+   {
+    "level": 40,
+    "kind": "node",
+    "id": "tree_5",
+    "text": "chop ebony tree",
+    "item": "ebony_log"
+   },
+   {
+    "level": 40,
+    "kind": "gear",
+    "id": "adamantite_axe",
+    "text": "use adamantite axe",
+    "item": "adamantite_axe"
+   },
+   {
+    "level": 50,
+    "kind": "gear",
+    "id": "cape_woodcutting",
+    "text": "wear woodcutting cape",
+    "item": "cape_woodcutting"
+   }
+  ],
+  "fishing": [
+   {
+    "level": 1,
+    "kind": "node",
+    "id": "spot_1",
+    "text": "fish at perch spot",
+    "item": "raw_perch"
+   },
+   {
+    "level": 10,
+    "kind": "node",
+    "id": "spot_2",
+    "text": "fish at trout spot",
+    "item": "raw_trout"
+   },
+   {
+    "level": 15,
+    "kind": "node",
+    "id": "shoal_1",
+    "text": "fish at perch shoal",
+    "item": "raw_perch"
+   },
+   {
+    "level": 15,
+    "kind": "node",
+    "id": "shoal_2",
+    "text": "fish at trout shoal",
+    "item": "raw_trout"
+   },
+   {
+    "level": 15,
+    "kind": "method",
+    "id": "fishing",
+    "text": "strike glowing fishing spots for more XP"
+   },
+   {
+    "level": 20,
+    "kind": "node",
+    "id": "spot_3",
+    "text": "fish at pike spot",
+    "item": "raw_pike"
+   },
+   {
+    "level": 20,
+    "kind": "node",
+    "id": "shoal_3",
+    "text": "fish at pike shoal",
+    "item": "raw_pike"
+   },
+   {
+    "level": 30,
+    "kind": "node",
+    "id": "spot_4",
+    "text": "fish at salmon spot",
+    "item": "raw_salmon"
+   },
+   {
+    "level": 30,
+    "kind": "node",
+    "id": "shoal_4",
+    "text": "fish at salmon shoal",
+    "item": "raw_salmon"
+   },
+   {
+    "level": 40,
+    "kind": "node",
+    "id": "spot_5",
+    "text": "fish at sturgeon spot",
+    "item": "raw_sturgeon"
+   },
+   {
+    "level": 40,
+    "kind": "node",
+    "id": "shoal_5",
+    "text": "fish at sturgeon shoal",
+    "item": "raw_sturgeon"
+   },
+   {
+    "level": 50,
+    "kind": "gear",
+    "id": "cape_fishing",
+    "text": "wear fishing cape",
+    "item": "cape_fishing"
+   }
+  ],
+  "crafting": [
+   {
+    "level": 1,
+    "kind": "node",
+    "id": "plant_1",
+    "text": "pick flax",
+    "item": "fibre_1"
+   },
+   {
+    "level": 1,
+    "kind": "recipe",
+    "id": "ash_shaft",
+    "text": "craft ash shaft",
+    "item": "ash_shaft"
+   },
+   {
+    "level": 1,
+    "kind": "recipe",
+    "id": "copper_arrow",
+    "text": "craft copper arrow",
+    "item": "copper_arrow"
+   },
+   {
+    "level": 2,
+    "kind": "recipe",
+    "id": "leather_cowl_1",
+    "text": "craft soft cowl",
+    "item": "leather_cowl_1"
+   },
+   {
+    "level": 2,
+    "kind": "recipe",
+    "id": "cloth_hood_1",
+    "text": "craft flax hood",
+    "item": "cloth_hood_1"
+   },
+   {
+    "level": 2,
+    "kind": "recipe",
+    "id": "ash_bow",
+    "text": "craft ash bow",
+    "item": "ash_bow"
+   },
+   {
+    "level": 2,
+    "kind": "recipe",
+    "id": "ash_staff",
+    "text": "craft ash staff",
+    "item": "ash_staff"
+   },
+   {
+    "level": 3,
+    "kind": "recipe",
+    "id": "leather_chaps_1",
+    "text": "craft soft chaps",
+    "item": "leather_chaps_1"
+   },
+   {
+    "level": 3,
+    "kind": "recipe",
+    "id": "cloth_skirt_1",
+    "text": "craft flax wrap",
+    "item": "cloth_skirt_1"
+   },
+   {
+    "level": 4,
+    "kind": "recipe",
+    "id": "leather_jerkin_1",
+    "text": "craft soft jerkin",
+    "item": "leather_jerkin_1"
+   },
+   {
+    "level": 4,
+    "kind": "recipe",
+    "id": "cloth_robe_1",
+    "text": "craft flax robe",
+    "item": "cloth_robe_1"
+   },
+   {
+    "level": 5,
+    "kind": "recipe",
+    "id": "amulet_1",
+    "text": "craft quartz amulet",
+    "item": "amulet_1"
+   },
+   {
+    "level": 10,
+    "kind": "node",
+    "id": "plant_2",
+    "text": "pick silkgrass",
+    "item": "fibre_2"
+   },
+   {
+    "level": 10,
+    "kind": "recipe",
+    "id": "pine_shaft",
+    "text": "craft pine shaft",
+    "item": "pine_shaft"
+   },
+   {
+    "level": 10,
+    "kind": "recipe",
+    "id": "iron_arrow",
+    "text": "craft iron arrow",
+    "item": "iron_arrow"
+   },
+   {
+    "level": 11,
+    "kind": "recipe",
+    "id": "leather_cowl_2",
+    "text": "craft thick cowl",
+    "item": "leather_cowl_2"
+   },
+   {
+    "level": 11,
+    "kind": "recipe",
+    "id": "cloth_hood_2",
+    "text": "craft silkgrass hood",
+    "item": "cloth_hood_2"
+   },
+   {
+    "level": 11,
+    "kind": "recipe",
+    "id": "pine_bow",
+    "text": "craft pine bow",
+    "item": "pine_bow"
+   },
+   {
+    "level": 11,
+    "kind": "recipe",
+    "id": "pine_staff",
+    "text": "craft pine staff",
+    "item": "pine_staff"
+   },
+   {
+    "level": 12,
+    "kind": "recipe",
+    "id": "leather_chaps_2",
+    "text": "craft thick chaps",
+    "item": "leather_chaps_2"
+   },
+   {
+    "level": 12,
+    "kind": "recipe",
+    "id": "cloth_skirt_2",
+    "text": "craft silkgrass wrap",
+    "item": "cloth_skirt_2"
+   },
+   {
+    "level": 13,
+    "kind": "recipe",
+    "id": "leather_jerkin_2",
+    "text": "craft thick jerkin",
+    "item": "leather_jerkin_2"
+   },
+   {
+    "level": 13,
+    "kind": "recipe",
+    "id": "cloth_robe_2",
+    "text": "craft silkgrass robe",
+    "item": "cloth_robe_2"
+   },
+   {
+    "level": 14,
+    "kind": "recipe",
+    "id": "amulet_2",
+    "text": "craft topaz amulet",
+    "item": "amulet_2"
+   },
+   {
+    "level": 20,
+    "kind": "node",
+    "id": "plant_3",
+    "text": "pick moonreed",
+    "item": "fibre_3"
+   },
+   {
+    "level": 20,
+    "kind": "recipe",
+    "id": "oak_shaft",
+    "text": "craft oak shaft",
+    "item": "oak_shaft"
+   },
+   {
+    "level": 20,
+    "kind": "recipe",
+    "id": "mithril_arrow",
+    "text": "craft mithril arrow",
+    "item": "mithril_arrow"
+   },
+   {
+    "level": 21,
+    "kind": "recipe",
+    "id": "leather_cowl_3",
+    "text": "craft thorned cowl",
+    "item": "leather_cowl_3"
+   },
+   {
+    "level": 21,
+    "kind": "recipe",
+    "id": "cloth_hood_3",
+    "text": "craft moonreed hood",
+    "item": "cloth_hood_3"
+   },
+   {
+    "level": 21,
+    "kind": "recipe",
+    "id": "oak_bow",
+    "text": "craft oak bow",
+    "item": "oak_bow"
+   },
+   {
+    "level": 21,
+    "kind": "recipe",
+    "id": "oak_staff",
+    "text": "craft oak staff",
+    "item": "oak_staff"
+   },
+   {
+    "level": 22,
+    "kind": "recipe",
+    "id": "leather_chaps_3",
+    "text": "craft thorned chaps",
+    "item": "leather_chaps_3"
+   },
+   {
+    "level": 22,
+    "kind": "recipe",
+    "id": "cloth_skirt_3",
+    "text": "craft moonreed wrap",
+    "item": "cloth_skirt_3"
+   },
+   {
+    "level": 23,
+    "kind": "recipe",
+    "id": "leather_jerkin_3",
+    "text": "craft thorned jerkin",
+    "item": "leather_jerkin_3"
+   },
+   {
+    "level": 23,
+    "kind": "recipe",
+    "id": "cloth_robe_3",
+    "text": "craft moonreed robe",
+    "item": "cloth_robe_3"
+   },
+   {
+    "level": 24,
+    "kind": "recipe",
+    "id": "amulet_3",
+    "text": "craft garnet amulet",
+    "item": "amulet_3"
+   },
+   {
+    "level": 30,
+    "kind": "node",
+    "id": "plant_4",
+    "text": "pick frostvine",
+    "item": "fibre_4"
+   },
+   {
+    "level": 30,
+    "kind": "recipe",
+    "id": "maple_shaft",
+    "text": "craft maple shaft",
+    "item": "maple_shaft"
+   },
+   {
+    "level": 30,
+    "kind": "recipe",
+    "id": "cobalt_arrow",
+    "text": "craft cobalt arrow",
+    "item": "cobalt_arrow"
+   },
+   {
+    "level": 31,
+    "kind": "recipe",
+    "id": "leather_cowl_4",
+    "text": "craft storm cowl",
+    "item": "leather_cowl_4"
+   },
+   {
+    "level": 31,
+    "kind": "recipe",
+    "id": "cloth_hood_4",
+    "text": "craft frostvine hood",
+    "item": "cloth_hood_4"
+   },
+   {
+    "level": 31,
+    "kind": "recipe",
+    "id": "maple_bow",
+    "text": "craft maple bow",
+    "item": "maple_bow"
+   },
+   {
+    "level": 31,
+    "kind": "recipe",
+    "id": "maple_staff",
+    "text": "craft maple staff",
+    "item": "maple_staff"
+   },
+   {
+    "level": 32,
+    "kind": "recipe",
+    "id": "leather_chaps_4",
+    "text": "craft storm chaps",
+    "item": "leather_chaps_4"
+   },
+   {
+    "level": 32,
+    "kind": "recipe",
+    "id": "cloth_skirt_4",
+    "text": "craft frostvine wrap",
+    "item": "cloth_skirt_4"
+   },
+   {
+    "level": 33,
+    "kind": "recipe",
+    "id": "leather_jerkin_4",
+    "text": "craft storm jerkin",
+    "item": "leather_jerkin_4"
+   },
+   {
+    "level": 33,
+    "kind": "recipe",
+    "id": "cloth_robe_4",
+    "text": "craft frostvine robe",
+    "item": "cloth_robe_4"
+   },
+   {
+    "level": 34,
+    "kind": "recipe",
+    "id": "amulet_4",
+    "text": "craft opal amulet",
+    "item": "amulet_4"
+   },
+   {
+    "level": 40,
+    "kind": "node",
+    "id": "plant_5",
+    "text": "pick nightbloom",
+    "item": "fibre_5"
+   },
+   {
+    "level": 40,
+    "kind": "recipe",
+    "id": "ebony_shaft",
+    "text": "craft ebony shaft",
+    "item": "ebony_shaft"
+   },
+   {
+    "level": 40,
+    "kind": "recipe",
+    "id": "adamantite_arrow",
+    "text": "craft adamantite arrow",
+    "item": "adamantite_arrow"
+   },
+   {
+    "level": 41,
+    "kind": "recipe",
+    "id": "leather_cowl_5",
+    "text": "craft dread cowl",
+    "item": "leather_cowl_5"
+   },
+   {
+    "level": 41,
+    "kind": "recipe",
+    "id": "cloth_hood_5",
+    "text": "craft nightbloom hood",
+    "item": "cloth_hood_5"
+   },
+   {
+    "level": 41,
+    "kind": "recipe",
+    "id": "ebony_bow",
+    "text": "craft ebony bow",
+    "item": "ebony_bow"
+   },
+   {
+    "level": 41,
+    "kind": "recipe",
+    "id": "ebony_staff",
+    "text": "craft ebony staff",
+    "item": "ebony_staff"
+   },
+   {
+    "level": 42,
+    "kind": "recipe",
+    "id": "leather_chaps_5",
+    "text": "craft dread chaps",
+    "item": "leather_chaps_5"
+   },
+   {
+    "level": 42,
+    "kind": "recipe",
+    "id": "cloth_skirt_5",
+    "text": "craft nightbloom wrap",
+    "item": "cloth_skirt_5"
+   },
+   {
+    "level": 43,
+    "kind": "recipe",
+    "id": "leather_jerkin_5",
+    "text": "craft dread jerkin",
+    "item": "leather_jerkin_5"
+   },
+   {
+    "level": 43,
+    "kind": "recipe",
+    "id": "cloth_robe_5",
+    "text": "craft nightbloom robe",
+    "item": "cloth_robe_5"
+   },
+   {
+    "level": 44,
+    "kind": "recipe",
+    "id": "amulet_5",
+    "text": "craft beryl amulet",
+    "item": "amulet_5"
+   },
+   {
+    "level": 50,
+    "kind": "gear",
+    "id": "cape_crafting",
+    "text": "wear crafting cape",
+    "item": "cape_crafting"
+   }
+  ],
+  "cooking": [
+   {
+    "level": 1,
+    "kind": "recipe",
+    "id": "cooked_meat",
+    "text": "cook raw meat",
+    "item": "cooked_meat"
+   },
+   {
+    "level": 1,
+    "kind": "recipe",
+    "id": "ration",
+    "text": "cook trail ration",
+    "item": "ration"
+   },
+   {
+    "level": 1,
+    "kind": "recipe",
+    "id": "cooked_perch",
+    "text": "cook raw perch",
+    "item": "cooked_perch"
+   },
+   {
+    "level": 10,
+    "kind": "recipe",
+    "id": "cooked_trout",
+    "text": "cook raw trout",
+    "item": "cooked_trout"
+   },
+   {
+    "level": 20,
+    "kind": "recipe",
+    "id": "cooked_pike",
+    "text": "cook raw pike",
+    "item": "cooked_pike"
+   },
+   {
+    "level": 25,
+    "kind": "recipe",
+    "id": "feast",
+    "text": "cook hearty feast",
+    "item": "feast"
+   },
+   {
+    "level": 30,
+    "kind": "recipe",
+    "id": "cooked_salmon",
+    "text": "cook raw salmon",
+    "item": "cooked_salmon"
+   },
+   {
+    "level": 40,
+    "kind": "recipe",
+    "id": "cooked_sturgeon",
+    "text": "cook raw sturgeon",
+    "item": "cooked_sturgeon"
+   },
+   {
+    "level": 50,
+    "kind": "gear",
+    "id": "cape_cooking",
+    "text": "wear cooking cape",
+    "item": "cape_cooking"
+   }
+  ],
+  "melee": [
+   {
+    "level": 1,
+    "kind": "gear",
+    "id": "copper_sword",
+    "text": "wield copper sword",
+    "item": "copper_sword"
+   },
+   {
+    "level": 10,
+    "kind": "gear",
+    "id": "iron_sword",
+    "text": "wield iron sword",
+    "item": "iron_sword"
+   },
+   {
+    "level": 20,
+    "kind": "gear",
+    "id": "mithril_sword",
+    "text": "wield mithril sword",
+    "item": "mithril_sword"
+   },
+   {
+    "level": 30,
+    "kind": "gear",
+    "id": "cobalt_sword",
+    "text": "wield cobalt sword",
+    "item": "cobalt_sword"
+   },
+   {
+    "level": 40,
+    "kind": "gear",
+    "id": "adamantite_sword",
+    "text": "wield adamantite sword",
+    "item": "adamantite_sword"
+   },
+   {
+    "level": 40,
+    "kind": "gear",
+    "id": "rootcleaver",
+    "text": "wield Rootcleaver",
+    "item": "rootcleaver"
+   },
+   {
+    "level": 50,
+    "kind": "gear",
+    "id": "cape_melee",
+    "text": "wear melee cape",
+    "item": "cape_melee"
+   }
+  ],
+  "ranged": [
+   {
+    "level": 1,
+    "kind": "gear",
+    "id": "ash_bow",
+    "text": "wield ash bow",
+    "item": "ash_bow"
+   },
+   {
+    "level": 1,
+    "kind": "gear",
+    "id": "leather_cowl_1",
+    "text": "wear soft cowl",
+    "item": "leather_cowl_1"
+   },
+   {
+    "level": 1,
+    "kind": "gear",
+    "id": "leather_jerkin_1",
+    "text": "wear soft jerkin",
+    "item": "leather_jerkin_1"
+   },
+   {
+    "level": 1,
+    "kind": "gear",
+    "id": "leather_chaps_1",
+    "text": "wear soft chaps",
+    "item": "leather_chaps_1"
+   },
+   {
+    "level": 10,
+    "kind": "gear",
+    "id": "pine_bow",
+    "text": "wield pine bow",
+    "item": "pine_bow"
+   },
+   {
+    "level": 10,
+    "kind": "gear",
+    "id": "leather_cowl_2",
+    "text": "wear thick cowl",
+    "item": "leather_cowl_2"
+   },
+   {
+    "level": 10,
+    "kind": "gear",
+    "id": "leather_jerkin_2",
+    "text": "wear thick jerkin",
+    "item": "leather_jerkin_2"
+   },
+   {
+    "level": 10,
+    "kind": "gear",
+    "id": "leather_chaps_2",
+    "text": "wear thick chaps",
+    "item": "leather_chaps_2"
+   },
+   {
+    "level": 20,
+    "kind": "gear",
+    "id": "oak_bow",
+    "text": "wield oak bow",
+    "item": "oak_bow"
+   },
+   {
+    "level": 20,
+    "kind": "gear",
+    "id": "leather_cowl_3",
+    "text": "wear thorned cowl",
+    "item": "leather_cowl_3"
+   },
+   {
+    "level": 20,
+    "kind": "gear",
+    "id": "leather_jerkin_3",
+    "text": "wear thorned jerkin",
+    "item": "leather_jerkin_3"
+   },
+   {
+    "level": 20,
+    "kind": "gear",
+    "id": "leather_chaps_3",
+    "text": "wear thorned chaps",
+    "item": "leather_chaps_3"
+   },
+   {
+    "level": 30,
+    "kind": "gear",
+    "id": "maple_bow",
+    "text": "wield maple bow",
+    "item": "maple_bow"
+   },
+   {
+    "level": 30,
+    "kind": "gear",
+    "id": "leather_cowl_4",
+    "text": "wear storm cowl",
+    "item": "leather_cowl_4"
+   },
+   {
+    "level": 30,
+    "kind": "gear",
+    "id": "leather_jerkin_4",
+    "text": "wear storm jerkin",
+    "item": "leather_jerkin_4"
+   },
+   {
+    "level": 30,
+    "kind": "gear",
+    "id": "leather_chaps_4",
+    "text": "wear storm chaps",
+    "item": "leather_chaps_4"
+   },
+   {
+    "level": 40,
+    "kind": "gear",
+    "id": "ebony_bow",
+    "text": "wield ebony bow",
+    "item": "ebony_bow"
+   },
+   {
+    "level": 40,
+    "kind": "gear",
+    "id": "leather_cowl_5",
+    "text": "wear dread cowl",
+    "item": "leather_cowl_5"
+   },
+   {
+    "level": 40,
+    "kind": "gear",
+    "id": "leather_jerkin_5",
+    "text": "wear dread jerkin",
+    "item": "leather_jerkin_5"
+   },
+   {
+    "level": 40,
+    "kind": "gear",
+    "id": "leather_chaps_5",
+    "text": "wear dread chaps",
+    "item": "leather_chaps_5"
+   },
+   {
+    "level": 40,
+    "kind": "gear",
+    "id": "briarstring",
+    "text": "wield Briarstring",
+    "item": "briarstring"
+   },
+   {
+    "level": 50,
+    "kind": "gear",
+    "id": "cape_ranged",
+    "text": "wear ranged cape",
+    "item": "cape_ranged"
+   }
+  ],
+  "magic": [
+   {
+    "level": 1,
+    "kind": "gear",
+    "id": "ash_staff",
+    "text": "wield ash staff",
+    "item": "ash_staff"
+   },
+   {
+    "level": 1,
+    "kind": "gear",
+    "id": "cloth_hood_1",
+    "text": "wear flax hood",
+    "item": "cloth_hood_1"
+   },
+   {
+    "level": 1,
+    "kind": "gear",
+    "id": "cloth_robe_1",
+    "text": "wear flax robe",
+    "item": "cloth_robe_1"
+   },
+   {
+    "level": 1,
+    "kind": "gear",
+    "id": "cloth_skirt_1",
+    "text": "wear flax wrap",
+    "item": "cloth_skirt_1"
+   },
+   {
+    "level": 10,
+    "kind": "gear",
+    "id": "pine_staff",
+    "text": "wield pine staff",
+    "item": "pine_staff"
+   },
+   {
+    "level": 10,
+    "kind": "gear",
+    "id": "cloth_hood_2",
+    "text": "wear silkgrass hood",
+    "item": "cloth_hood_2"
+   },
+   {
+    "level": 10,
+    "kind": "gear",
+    "id": "cloth_robe_2",
+    "text": "wear silkgrass robe",
+    "item": "cloth_robe_2"
+   },
+   {
+    "level": 10,
+    "kind": "gear",
+    "id": "cloth_skirt_2",
+    "text": "wear silkgrass wrap",
+    "item": "cloth_skirt_2"
+   },
+   {
+    "level": 20,
+    "kind": "gear",
+    "id": "oak_staff",
+    "text": "wield oak staff",
+    "item": "oak_staff"
+   },
+   {
+    "level": 20,
+    "kind": "gear",
+    "id": "cloth_hood_3",
+    "text": "wear moonreed hood",
+    "item": "cloth_hood_3"
+   },
+   {
+    "level": 20,
+    "kind": "gear",
+    "id": "cloth_robe_3",
+    "text": "wear moonreed robe",
+    "item": "cloth_robe_3"
+   },
+   {
+    "level": 20,
+    "kind": "gear",
+    "id": "cloth_skirt_3",
+    "text": "wear moonreed wrap",
+    "item": "cloth_skirt_3"
+   },
+   {
+    "level": 30,
+    "kind": "gear",
+    "id": "maple_staff",
+    "text": "wield maple staff",
+    "item": "maple_staff"
+   },
+   {
+    "level": 30,
+    "kind": "gear",
+    "id": "cloth_hood_4",
+    "text": "wear frostvine hood",
+    "item": "cloth_hood_4"
+   },
+   {
+    "level": 30,
+    "kind": "gear",
+    "id": "cloth_robe_4",
+    "text": "wear frostvine robe",
+    "item": "cloth_robe_4"
+   },
+   {
+    "level": 30,
+    "kind": "gear",
+    "id": "cloth_skirt_4",
+    "text": "wear frostvine wrap",
+    "item": "cloth_skirt_4"
+   },
+   {
+    "level": 40,
+    "kind": "gear",
+    "id": "ebony_staff",
+    "text": "wield ebony staff",
+    "item": "ebony_staff"
+   },
+   {
+    "level": 40,
+    "kind": "gear",
+    "id": "cloth_hood_5",
+    "text": "wear nightbloom hood",
+    "item": "cloth_hood_5"
+   },
+   {
+    "level": 40,
+    "kind": "gear",
+    "id": "cloth_robe_5",
+    "text": "wear nightbloom robe",
+    "item": "cloth_robe_5"
+   },
+   {
+    "level": 40,
+    "kind": "gear",
+    "id": "cloth_skirt_5",
+    "text": "wear nightbloom wrap",
+    "item": "cloth_skirt_5"
+   },
+   {
+    "level": 40,
+    "kind": "gear",
+    "id": "heartwood",
+    "text": "wield Heartwood staff",
+    "item": "heartwood"
+   },
+   {
+    "level": 50,
+    "kind": "gear",
+    "id": "cape_magic",
+    "text": "wear magic cape",
+    "item": "cape_magic"
+   }
+  ],
+  "defence": [
+   {
+    "level": 1,
+    "kind": "gear",
+    "id": "copper_helm",
+    "text": "wear copper helm",
+    "item": "copper_helm"
+   },
+   {
+    "level": 1,
+    "kind": "gear",
+    "id": "copper_plate",
+    "text": "wear copper plate",
+    "item": "copper_plate"
+   },
+   {
+    "level": 1,
+    "kind": "gear",
+    "id": "copper_greaves",
+    "text": "wear copper greaves",
+    "item": "copper_greaves"
+   },
+   {
+    "level": 10,
+    "kind": "gear",
+    "id": "iron_helm",
+    "text": "wear iron helm",
+    "item": "iron_helm"
+   },
+   {
+    "level": 10,
+    "kind": "gear",
+    "id": "iron_plate",
+    "text": "wear iron plate",
+    "item": "iron_plate"
+   },
+   {
+    "level": 10,
+    "kind": "gear",
+    "id": "iron_greaves",
+    "text": "wear iron greaves",
+    "item": "iron_greaves"
+   },
+   {
+    "level": 20,
+    "kind": "gear",
+    "id": "mithril_helm",
+    "text": "wear mithril helm",
+    "item": "mithril_helm"
+   },
+   {
+    "level": 20,
+    "kind": "gear",
+    "id": "mithril_plate",
+    "text": "wear mithril plate",
+    "item": "mithril_plate"
+   },
+   {
+    "level": 20,
+    "kind": "gear",
+    "id": "mithril_greaves",
+    "text": "wear mithril greaves",
+    "item": "mithril_greaves"
+   },
+   {
+    "level": 30,
+    "kind": "gear",
+    "id": "cobalt_helm",
+    "text": "wear cobalt helm",
+    "item": "cobalt_helm"
+   },
+   {
+    "level": 30,
+    "kind": "gear",
+    "id": "cobalt_plate",
+    "text": "wear cobalt plate",
+    "item": "cobalt_plate"
+   },
+   {
+    "level": 30,
+    "kind": "gear",
+    "id": "cobalt_greaves",
+    "text": "wear cobalt greaves",
+    "item": "cobalt_greaves"
+   },
+   {
+    "level": 40,
+    "kind": "gear",
+    "id": "adamantite_helm",
+    "text": "wear adamantite helm",
+    "item": "adamantite_helm"
+   },
+   {
+    "level": 40,
+    "kind": "gear",
+    "id": "adamantite_plate",
+    "text": "wear adamantite plate",
+    "item": "adamantite_plate"
+   },
+   {
+    "level": 40,
+    "kind": "gear",
+    "id": "adamantite_greaves",
+    "text": "wear adamantite greaves",
+    "item": "adamantite_greaves"
+   },
+   {
+    "level": 50,
+    "kind": "gear",
+    "id": "cape_defence",
+    "text": "wear defence cape",
+    "item": "cape_defence"
+   }
+  ],
+  "vitality": [
+   {
+    "level": 1,
+    "kind": "gear",
+    "id": "amulet_1",
+    "text": "wear quartz amulet",
+    "item": "amulet_1"
+   },
+   {
+    "level": 10,
+    "kind": "gear",
+    "id": "amulet_2",
+    "text": "wear topaz amulet",
+    "item": "amulet_2"
+   },
+   {
+    "level": 20,
+    "kind": "gear",
+    "id": "amulet_3",
+    "text": "wear garnet amulet",
+    "item": "amulet_3"
+   },
+   {
+    "level": 25,
+    "kind": "gear",
+    "id": "stoneheart",
+    "text": "wear Stoneheart",
+    "item": "stoneheart"
+   },
+   {
+    "level": 30,
+    "kind": "gear",
+    "id": "amulet_4",
+    "text": "wear opal amulet",
+    "item": "amulet_4"
+   },
+   {
+    "level": 40,
+    "kind": "gear",
+    "id": "amulet_5",
+    "text": "wear beryl amulet",
+    "item": "amulet_5"
+   },
+   {
+    "level": 50,
+    "kind": "gear",
+    "id": "cape_vitality",
+    "text": "wear vitality cape",
+    "item": "cape_vitality"
+   }
+  ]
+ }
 }

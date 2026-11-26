@@ -3321,6 +3321,7 @@ type Event struct {
 	//	*Event_Hit
 	//	*Event_Impact
 	//	*Event_Death
+	//	*Event_LevelUp
 	Event         isEvent_Event `protobuf_oneof:"event"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
@@ -3390,6 +3391,15 @@ func (x *Event) GetDeath() uint32 {
 	return 0
 }
 
+func (x *Event) GetLevelUp() *LevelUp {
+	if x != nil {
+		if x, ok := x.Event.(*Event_LevelUp); ok {
+			return x.LevelUp
+		}
+	}
+	return nil
+}
+
 type isEvent_Event interface {
 	isEvent_Event()
 }
@@ -3406,11 +3416,17 @@ type Event_Death struct {
 	Death uint32 `protobuf:"varint,3,opt,name=death,proto3,oneof"`
 }
 
+type Event_LevelUp struct {
+	LevelUp *LevelUp `protobuf:"bytes,4,opt,name=level_up,json=levelUp,proto3,oneof"`
+}
+
 func (*Event_Hit) isEvent_Event() {}
 
 func (*Event_Impact) isEvent_Event() {}
 
 func (*Event_Death) isEvent_Event() {}
+
+func (*Event_LevelUp) isEvent_Event() {}
 
 type Hit struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
@@ -3480,6 +3496,67 @@ func (x *Hit) GetStyle() string {
 	return ""
 }
 
+// A player reached a level, which everyone nearby sees. Several levels at once are one, at the last of them.
+type LevelUp struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Player        uint32                 `protobuf:"varint,1,opt,name=player,proto3" json:"player,omitempty"`
+	Skill         string                 `protobuf:"bytes,2,opt,name=skill,proto3" json:"skill,omitempty"`
+	Level         uint32                 `protobuf:"varint,3,opt,name=level,proto3" json:"level,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *LevelUp) Reset() {
+	*x = LevelUp{}
+	mi := &file_driftwake_v1_game_proto_msgTypes[33]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *LevelUp) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*LevelUp) ProtoMessage() {}
+
+func (x *LevelUp) ProtoReflect() protoreflect.Message {
+	mi := &file_driftwake_v1_game_proto_msgTypes[33]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use LevelUp.ProtoReflect.Descriptor instead.
+func (*LevelUp) Descriptor() ([]byte, []int) {
+	return file_driftwake_v1_game_proto_rawDescGZIP(), []int{33}
+}
+
+func (x *LevelUp) GetPlayer() uint32 {
+	if x != nil {
+		return x.Player
+	}
+	return 0
+}
+
+func (x *LevelUp) GetSkill() string {
+	if x != nil {
+		return x.Skill
+	}
+	return ""
+}
+
+func (x *LevelUp) GetLevel() uint32 {
+	if x != nil {
+		return x.Level
+	}
+	return 0
+}
+
 type Impact struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Boss          uint32                 `protobuf:"varint,1,opt,name=boss,proto3" json:"boss,omitempty"`
@@ -3492,7 +3569,7 @@ type Impact struct {
 
 func (x *Impact) Reset() {
 	*x = Impact{}
-	mi := &file_driftwake_v1_game_proto_msgTypes[33]
+	mi := &file_driftwake_v1_game_proto_msgTypes[34]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -3504,7 +3581,7 @@ func (x *Impact) String() string {
 func (*Impact) ProtoMessage() {}
 
 func (x *Impact) ProtoReflect() protoreflect.Message {
-	mi := &file_driftwake_v1_game_proto_msgTypes[33]
+	mi := &file_driftwake_v1_game_proto_msgTypes[34]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3517,7 +3594,7 @@ func (x *Impact) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Impact.ProtoReflect.Descriptor instead.
 func (*Impact) Descriptor() ([]byte, []int) {
-	return file_driftwake_v1_game_proto_rawDescGZIP(), []int{33}
+	return file_driftwake_v1_game_proto_rawDescGZIP(), []int{34}
 }
 
 func (x *Impact) GetBoss() uint32 {
@@ -3805,17 +3882,22 @@ const file_driftwake_v1_game_proto_rawDesc = "" +
 	"\x05start\x18\x04 \x01(\rR\x05start\x12\x10\n" +
 	"\x03end\x18\x05 \x01(\rR\x03end\x12\x16\n" +
 	"\x06target\x18\x06 \x01(\rR\x06target\x12\x18\n" +
-	"\acentres\x18\a \x03(\rR\acentres\"\x7f\n" +
+	"\acentres\x18\a \x03(\rR\acentres\"\xb3\x01\n" +
 	"\x05Event\x12%\n" +
 	"\x03hit\x18\x01 \x01(\v2\x11.driftwake.v1.HitH\x00R\x03hit\x12.\n" +
 	"\x06impact\x18\x02 \x01(\v2\x14.driftwake.v1.ImpactH\x00R\x06impact\x12\x16\n" +
-	"\x05death\x18\x03 \x01(\rH\x00R\x05deathB\a\n" +
+	"\x05death\x18\x03 \x01(\rH\x00R\x05death\x122\n" +
+	"\blevel_up\x18\x04 \x01(\v2\x15.driftwake.v1.LevelUpH\x00R\alevelUpB\a\n" +
 	"\x05event\"W\n" +
 	"\x03Hit\x12\x12\n" +
 	"\x04from\x18\x01 \x01(\rR\x04from\x12\x0e\n" +
 	"\x02to\x18\x02 \x01(\rR\x02to\x12\x16\n" +
 	"\x06damage\x18\x03 \x01(\rR\x06damage\x12\x14\n" +
-	"\x05style\x18\x04 \x01(\tR\x05style\"d\n" +
+	"\x05style\x18\x04 \x01(\tR\x05style\"M\n" +
+	"\aLevelUp\x12\x16\n" +
+	"\x06player\x18\x01 \x01(\rR\x06player\x12\x14\n" +
+	"\x05skill\x18\x02 \x01(\tR\x05skill\x12\x14\n" +
+	"\x05level\x18\x03 \x01(\rR\x05level\"d\n" +
 	"\x06Impact\x12\x12\n" +
 	"\x04boss\x18\x01 \x01(\rR\x04boss\x12\x16\n" +
 	"\x06attack\x18\x02 \x01(\tR\x06attack\x12\x14\n" +
@@ -3882,7 +3964,7 @@ func file_driftwake_v1_game_proto_rawDescGZIP() []byte {
 }
 
 var file_driftwake_v1_game_proto_enumTypes = make([]protoimpl.EnumInfo, 7)
-var file_driftwake_v1_game_proto_msgTypes = make([]protoimpl.MessageInfo, 39)
+var file_driftwake_v1_game_proto_msgTypes = make([]protoimpl.MessageInfo, 40)
 var file_driftwake_v1_game_proto_goTypes = []any{
 	(Slot)(0),              // 0: driftwake.v1.Slot
 	(TradeAction)(0),       // 1: driftwake.v1.TradeAction
@@ -3924,12 +4006,13 @@ var file_driftwake_v1_game_proto_goTypes = []any{
 	(*BossView)(nil),       // 37: driftwake.v1.BossView
 	(*Event)(nil),          // 38: driftwake.v1.Event
 	(*Hit)(nil),            // 39: driftwake.v1.Hit
-	(*Impact)(nil),         // 40: driftwake.v1.Impact
-	nil,                    // 41: driftwake.v1.Self.XpEntry
-	nil,                    // 42: driftwake.v1.Self.BoatEntry
-	nil,                    // 43: driftwake.v1.Self.QuestsEntry
-	nil,                    // 44: driftwake.v1.Self.FoundEntry
-	nil,                    // 45: driftwake.v1.Self.KillsEntry
+	(*LevelUp)(nil),        // 40: driftwake.v1.LevelUp
+	(*Impact)(nil),         // 41: driftwake.v1.Impact
+	nil,                    // 42: driftwake.v1.Self.XpEntry
+	nil,                    // 43: driftwake.v1.Self.BoatEntry
+	nil,                    // 44: driftwake.v1.Self.QuestsEntry
+	nil,                    // 45: driftwake.v1.Self.FoundEntry
+	nil,                    // 46: driftwake.v1.Self.KillsEntry
 }
 var file_driftwake_v1_game_proto_depIdxs = []int32{
 	9,  // 0: driftwake.v1.ClientMessage.register:type_name -> driftwake.v1.Credentials
@@ -3970,17 +4053,17 @@ var file_driftwake_v1_game_proto_depIdxs = []int32{
 	0,  // 35: driftwake.v1.EquipSlot.slot:type_name -> driftwake.v1.Slot
 	30, // 36: driftwake.v1.EquipSlot.stack:type_name -> driftwake.v1.Stack
 	3,  // 37: driftwake.v1.Self.map:type_name -> driftwake.v1.MapId
-	41, // 38: driftwake.v1.Self.xp:type_name -> driftwake.v1.Self.XpEntry
+	42, // 38: driftwake.v1.Self.xp:type_name -> driftwake.v1.Self.XpEntry
 	31, // 39: driftwake.v1.Self.inventory:type_name -> driftwake.v1.InvSlot
 	32, // 40: driftwake.v1.Self.equipment:type_name -> driftwake.v1.EquipSlot
 	30, // 41: driftwake.v1.Self.bank:type_name -> driftwake.v1.Stack
-	42, // 42: driftwake.v1.Self.boat:type_name -> driftwake.v1.Self.BoatEntry
+	43, // 42: driftwake.v1.Self.boat:type_name -> driftwake.v1.Self.BoatEntry
 	21, // 43: driftwake.v1.Self.look:type_name -> driftwake.v1.Look
 	30, // 44: driftwake.v1.Self.reaper:type_name -> driftwake.v1.Stack
 	30, // 45: driftwake.v1.Self.kept:type_name -> driftwake.v1.Stack
-	43, // 46: driftwake.v1.Self.quests:type_name -> driftwake.v1.Self.QuestsEntry
-	44, // 47: driftwake.v1.Self.found:type_name -> driftwake.v1.Self.FoundEntry
-	45, // 48: driftwake.v1.Self.kills:type_name -> driftwake.v1.Self.KillsEntry
+	44, // 46: driftwake.v1.Self.quests:type_name -> driftwake.v1.Self.QuestsEntry
+	45, // 47: driftwake.v1.Self.found:type_name -> driftwake.v1.Self.FoundEntry
+	46, // 48: driftwake.v1.Self.kills:type_name -> driftwake.v1.Self.KillsEntry
 	3,  // 49: driftwake.v1.Snapshot.map:type_name -> driftwake.v1.MapId
 	35, // 50: driftwake.v1.Snapshot.entities:type_name -> driftwake.v1.Entity
 	38, // 51: driftwake.v1.Snapshot.events:type_name -> driftwake.v1.Event
@@ -3989,12 +4072,13 @@ var file_driftwake_v1_game_proto_depIdxs = []int32{
 	37, // 54: driftwake.v1.Entity.boss:type_name -> driftwake.v1.BossView
 	5,  // 55: driftwake.v1.BossView.state:type_name -> driftwake.v1.BossState
 	39, // 56: driftwake.v1.Event.hit:type_name -> driftwake.v1.Hit
-	40, // 57: driftwake.v1.Event.impact:type_name -> driftwake.v1.Impact
-	58, // [58:58] is the sub-list for method output_type
-	58, // [58:58] is the sub-list for method input_type
-	58, // [58:58] is the sub-list for extension type_name
-	58, // [58:58] is the sub-list for extension extendee
-	0,  // [0:58] is the sub-list for field type_name
+	41, // 57: driftwake.v1.Event.impact:type_name -> driftwake.v1.Impact
+	40, // 58: driftwake.v1.Event.level_up:type_name -> driftwake.v1.LevelUp
+	59, // [59:59] is the sub-list for method output_type
+	59, // [59:59] is the sub-list for method input_type
+	59, // [59:59] is the sub-list for extension type_name
+	59, // [59:59] is the sub-list for extension extendee
+	0,  // [0:59] is the sub-list for field type_name
 }
 
 func init() { file_driftwake_v1_game_proto_init() }
@@ -4060,6 +4144,7 @@ func file_driftwake_v1_game_proto_init() {
 		(*Event_Hit)(nil),
 		(*Event_Impact)(nil),
 		(*Event_Death)(nil),
+		(*Event_LevelUp)(nil),
 	}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
@@ -4067,7 +4152,7 @@ func file_driftwake_v1_game_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_driftwake_v1_game_proto_rawDesc), len(file_driftwake_v1_game_proto_rawDesc)),
 			NumEnums:      7,
-			NumMessages:   39,
+			NumMessages:   40,
 			NumExtensions: 0,
 			NumServices:   0,
 		},

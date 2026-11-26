@@ -179,6 +179,12 @@ type Quest struct {
 	Reward           []Amount
 }
 
+// Unlock is something a level of a skill opens. The list is built from the content by content/src/unlocks.ts.
+type Unlock struct {
+	Level int
+	Text  string // what the player can now do, to follow "You can"
+}
+
 type Part struct {
 	ID, Name, Item string
 	Qty            int
@@ -332,6 +338,7 @@ var (
 	Methods    MethodRules
 	Cooking    CookingRules
 	Quests     []*Quest
+	Unlocks    map[string][]Unlock // by skill, by level
 	Metals     []string
 	Haircuts   int
 	HairColors int
@@ -375,6 +382,7 @@ func init() {
 		Methods    MethodRules
 		Cooking    CookingRules
 		Quests     []*Quest
+		Unlocks    map[string][]Unlock
 	}
 	must(json.Unmarshal(Raw("content.json"), &d))
 	for _, i := range d.Items {
@@ -393,7 +401,7 @@ func init() {
 		Monsters[m.ID] = m
 	}
 	BoatParts, Metals, Prices, Methods, Cooking = d.BoatParts, d.Metals, d.Economy, d.Methods, d.Cooking
-	Quests = d.Quests
+	Quests, Unlocks = d.Quests, d.Unlocks
 	Haircuts, HairColors = len(d.Haircuts), len(d.HairColors)
 	must(json.Unmarshal(Raw("maps.json"), &Maps))
 	for _, m := range Maps {

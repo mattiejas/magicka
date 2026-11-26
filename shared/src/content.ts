@@ -171,6 +171,17 @@ export interface Economy {
   graveFeePercent: number;
   reaperFeePercent: number;
 }
+/** Something a level of a skill opens; see content/src/unlocks.ts. */
+export interface Unlock {
+  level: number;
+  kind: 'node' | 'recipe' | 'gear' | 'method';
+  /** The node, recipe or item; for a method, the skill. */
+  id: string;
+  /** What the player can now do, to follow "You can". */
+  text: string;
+  /** Whose icon to show; a method shows the skill's. */
+  item?: string;
+}
 const byId = <T extends { id: string }>(l: T[]) =>
   Object.fromEntries(l.map(v => [v.id, v])) as Record<string, T>;
 const d = data as unknown as {
@@ -186,6 +197,7 @@ const d = data as unknown as {
   methods: Methods;
   cooking: { burnt: string };
   quests: Quest[];
+  unlocks: Record<Skill, Unlock[]>;
 };
 export const ITEMS = byId(d.items),
   RECIPES = d.recipes,
@@ -199,7 +211,9 @@ export const ITEMS = byId(d.items),
   METHODS = d.methods,
   /** What burnt food becomes. */
   COOKING = d.cooking,
-  QUESTS = d.quests;
+  QUESTS = d.quests,
+  /** What each level of each skill opens, by level. */
+  UNLOCKS = d.unlocks;
 export const nameHash = (s: string) => {
   let h = 0;
   for (const ch of s) h = (h * 31 + ch.charCodeAt(0)) % 9973;

@@ -6,8 +6,8 @@ import { SPOKEN_MS, type Speech, type Spoken, say, stillShown } from './speech';
 import { COLUMN_HEIGHT } from './xpLabels';
 
 const FADE_MS = 400;
-/** Space between your own line and the XP gains under it. */
-const XP_GAP_PX = 4;
+/** Space between a line and what is under it. */
+const GAP_PX = 4;
 const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)');
 
 export class ChatLabels {
@@ -18,8 +18,8 @@ export class ChatLabels {
     private root: HTMLElement,
     private project: Project,
     private heightOf: (id: string) => number,
-    /** In pixels, so that your own line sits on top of your XP gains. */
-    private xpHeight: () => number,
+    /** In pixels, so that a line sits on top of XP gains and new levels. */
+    private beneath: (speaker: string) => number,
   ) {}
 
   say(speaker: string, text: string) {
@@ -52,8 +52,8 @@ export class ChatLabels {
     const [x, z] = centreOf(state.entities.get(speaker)!);
     const screen = this.project(x, z, this.heightOf(speaker) + COLUMN_HEIGHT);
     label.style.display = screen.visible ? '' : 'none';
-    const xp = speaker === state.me ? this.xpHeight() : 0;
-    const y = screen.y - (xp ? xp + XP_GAP_PX : 0);
+    const below = this.beneath(speaker);
+    const y = screen.y - (below ? below + GAP_PX : 0);
     label.style.transform = `translate(${screen.x | 0}px,${y | 0}px) translate(-50%,-100%)`;
     const left = SPOKEN_MS - (now - line.at);
     label.style.opacity = reducedMotion.matches ? '' : String(Math.min(1, left / FADE_MS));

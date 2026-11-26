@@ -61,15 +61,16 @@ export class Scene {
     if (event.type === 'hit') this.showHit(event);
     else if (event.type === 'impact') this.effects.impact(event);
     else if (event.type === 'death') this.entities.die(event.id);
+    else if (event.type === 'levelUp') this.overlay.levelUp(event.player, event.skill, event.level);
   }
 
   showChat(speaker: string, text: string) {
     this.overlay.chat(speaker, text);
   }
 
-  /** Signing in again, as someone else or after the connection dropped, starts with nobody speaking. */
-  forgetChat() {
-    this.overlay.forgetChat();
+  /** Signing in again, as someone else or after the connection dropped, starts with nobody speaking or levelling. */
+  forgetOverhead() {
+    this.overlay.forget();
   }
 
   /** What is under the mouse: things to click, nearest first, and the tile on the ground. */
